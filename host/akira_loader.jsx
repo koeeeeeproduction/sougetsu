@@ -75,6 +75,7 @@
     load("akira_highlighter.jsx", false);
     load("akira_showcase.jsx", false);
     load("akira_saas.jsx", false);
+    load("akira_templates2.jsx", false);
     $._flex.isLocked = wasLocked;
     load("paste_feature.jsx", false);
 })();
