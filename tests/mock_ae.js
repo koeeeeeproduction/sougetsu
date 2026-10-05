@@ -150,7 +150,7 @@ function makeEnv(opts) {
     CompItem, FolderItem, FootageItem, AVLayer, ShapeLayer, TextLayer, CameraLayer, LightLayer, SolidSource: function () { },
     PropertyType: PT, PropertyValueType: PVT,
     ParagraphJustification: { LEFT_JUSTIFY: 7413, CENTER_JUSTIFY: 7415, RIGHT_JUSTIFY: 7414 },
-    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, MULTIPLY: 5, EXCLUSION: 27 },
+    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, MULTIPLY: 5, OVERLAY: 13, EXCLUSION: 27 },
     TrackMatteType: { ALPHA: 1, ALPHA_INVERTED: 2, LUMA: 3 }, AutoOrientType: { CAMERA_OR_POINT_OF_INTEREST: 3 },
     alert: (m) => { throw new Error('alert: ' + m); },
     app: {

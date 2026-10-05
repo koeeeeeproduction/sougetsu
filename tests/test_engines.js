@@ -20,23 +20,29 @@ t('every engine flag the panel checks', () => {
   ['stagger', 'depthPrepare', 'depthReveal', 'cursor', 'hover', 'textAnim', 'codeGlyphs', 'promptBar', 'halftoneWave', 'carousel', 'attach', 'background', 'wipe'].forEach(n => A.strictEqual(typeof e.ctx.$._flexSaaS[n], 'function', n));
 });
 
-t('every shake preset builds a flex_shake adjustment layer', () => {
+t('every shake preset builds its adjustment layer like the original engine', () => {
   SHAKES.forEach(n => {
-    const e = env(), L = e.comp.layers.addText('t'); L.selected = true; e.comp.time = 1;
-    A.strictEqual(e.ctx[n](1, 100, 100, 1, 5, 100, 1, 1, 1), 'true', n);
-    const S = e.comp._l.find(l => l.name === 'flex_shake');
-    A.ok(S && S.adjustmentLayer, n); A.strictEqual(S.index, L.index - 1, n + ' sits above the selection');
-    A.strictEqual(S.inPoint, 1, n); A.ok(S.outPoint > 1, n); A.strictEqual(e.undo(), 0, n);
-    const fx = S.property('ADBE Effect Parade'); A.ok(fx.numProperties >= 2, n);
-    const tr = fx.property('ADBE Geometry2');
-    const keyed = tr.property(2).numKeys + tr.property(4).numKeys + tr.property(5).numKeys; A.ok(keyed > 0, n + ' has motion keys');
+    const e = env(), L = e.comp.layers.addText('t'); L.selected = true; L.inPoint = 0.5; L.outPoint = 4; e.comp.time = 1;
+    A.strictEqual(e.ctx[n](1, 100, 100, 8, 5, 100, 1, 1, 1), 'true', n);
+    const S = e.comp._l.find(l => l.adjustmentLayer);
+    A.ok(S, n); A.strictEqual(S.index, L.index - 1, n + ' sits above the layer');
+    A.strictEqual(S.inPoint, 0.5, n); A.strictEqual(S.outPoint, 4, n); A.strictEqual(S.label, 8, n); A.strictEqual(S.stretch, 100, n);
+    const tile = S.property('ADBE Effect Parade').property('ADBE Tile'); A.ok(tile.property(1).numKeys >= 4, n + ' tile jolt keys');
+    A.strictEqual(tile.property(1).keys[0].t, 1, n + ' starts at the playhead');
+    A.ok(e.comp._l.some(l => l.name === 'Flex_flash'), n + ' flash'); A.strictEqual(e.undo(), 0, n);
   });
-  const e = env({ noComp: true }); A.ok(/^ERROR:/.test(e.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
-  const l = env({ locked: true }); A.ok(/^ERROR:/.test(l.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
+  const e = env(); A.strictEqual(e.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0), 'ERROR: Please select at least one layer.');
+  const a = e.comp.layers.addText('a'), b = e.comp.layers.addText('b'); a.selected = b.selected = true;
+  A.ok(/only works with one selected layer/.test(e.ctx.QuickShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
+  A.strictEqual(e.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0), 'true'); // basic covers the whole selection with one layer
+  A.strictEqual(e.ctx.QuickShake_001_JF(0, 100, 100, 1, 5, 100, 1, 1, 0), 'true');
+  A.strictEqual(e.comp._l.filter(l => l.name === 'Flex_quick').length, 2);
+  A.ok(/^ERROR:/.test(env({ noComp: true }).ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
+  A.ok(/^ERROR:/.test(env({ locked: true }).ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
 });
-t('shake speed stretches the keyframes', () => {
-  const run = (speed) => { const e = env(); e.ctx.BasicShake_001_JF(1, speed, 100, 1, 5, 100, 1, 1, 0); const p = e.comp._l[0].property('ADBE Effect Parade').property('ADBE Geometry2').property(2); return p.keys[p.keys.length - 1].t; };
-  A.ok(run(50) > run(200));
+t('shake speed becomes layer stretch (200 - speed)', () => {
+  const run = (speed) => { const e = env(), L = e.comp.layers.addText('t'); L.selected = true; e.ctx.BasicShake_001_JF(1, speed, 100, 1, 5, 100, 1, 1, 0); return e.comp._l.find(l => l.adjustmentLayer).stretch; };
+  A.strictEqual(run(50), 150); A.strictEqual(run(150), 50);
 });
 
 t('highlighter: create / list / apply / animate / toEGP / remove', () => {
