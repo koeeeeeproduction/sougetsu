@@ -103,3 +103,8 @@ Every function above has passed `node --check` (syntax only) and is logically co
 
 ## Still only in the vendor's compiled core (can be rebuilt the same way, one at a time)
 motion showcase, SaaS effects, type realign, map rigs, extra UI templates, Liquid Glass / Glass / Shatter / Carousel / Morph shape rigs, and the social-media Templates engine (left out on purpose for trademark reasons).
+
+## Repo status (2026-10-05)
+- `host/akira_other.jsx` (15) and `host/akira_maps.jsx` (10) are now in the repo, alongside shapes2 (9) and rigs (17). Together they cover all 56 previously missing functions. `isLocked` is deliberately not a function (see Batch M).
+- Mock-AE tests: `node tests/test_other_maps.js` exercises every function in other + maps, including undo-group balance.
+- Still not in this repo: the client panel, `CSXS/manifest.xml`, `akira_loader.jsx`, and the core host files (core, tools, tools2, color, text, library, layers, expressions, subtitles, reference, general, curve, organizer, shapes, colormatch, fonts, counters, paste_feature).
