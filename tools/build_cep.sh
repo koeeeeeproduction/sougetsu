@@ -16,5 +16,6 @@ cat > "$OUT/.debug" <<'XML'
 </ExtensionList>
 XML
 find "$OUT" \( -name '.DS_Store' -o -name '*.pyc' -o -name '__pycache__' \) -prune -exec rm -rf {} +
-(cd dist && zip -qr "$ID.zip" "$ID")
+cp tools/package/INSTALL_WINDOWS.bat tools/package/INSTALL_MAC.command tools/package/README.txt tools/akira_selftest.jsx dist/
+(cd dist && zip -qr "$ID.zip" "$ID" INSTALL_WINDOWS.bat INSTALL_MAC.command README.txt akira_selftest.jsx)
 echo "Built $OUT ($(du -sh "$OUT" | cut -f1)) and dist/$ID.zip"
