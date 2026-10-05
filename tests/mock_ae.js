@@ -24,7 +24,8 @@ class Prop {
   get numKeys() { return this.keys.length; }
   keyTime(i) { return this.keys[i - 1].t; } keyValue(i) { return this.keys[i - 1].v; }
   removeKey(i) { this.keys.splice(i - 1, 1); }
-  setTemporalEaseAtKey() { } setInterpolationTypeAtKey() { } setSpatialTangentsAtKey() { }
+  setTemporalEaseAtKey() { } setInterpolationTypeAtKey() { } setSpatialTangentsAtKey() { } addToMotionGraphicsTemplate() { return true; }
+  nearestKeyIndex(t) { let b = 1, d = 1e9; this.keys.forEach((k, i) => { if (Math.abs(k.t - t) < d) { d = Math.abs(k.t - t); b = i + 1; } }); return b; }
   keyInInterpolationType() { return 1; } keyOutInterpolationType() { return 1; } isInterpolationTypeValid() { return true; }
   remove() { const a = this.parentProperty._kids; a.splice(a.indexOf(this), 1); }
   get propertyIndex() { return this.parentProperty._kids.indexOf(this) + 1; }
@@ -40,10 +41,10 @@ const EFFECTS = {
   'CC Light Sweep': () => [new Prop('Center', 'CC Light Sweep-0001', [0, 0], PVT.TwoD_SPATIAL), new Prop('Direction', 'CC Light Sweep-0002', 0)],
 };
 const SHAPE_KIDS = {
-  'ADBE Vector Group': () => [group('Contents', 'ADBE Vectors Group'), group('Transform', 'ADBE Vector Transform Group')],
+  'ADBE Vector Group': () => [group('Contents', 'ADBE Vectors Group'), group('Transform', 'ADBE Vector Transform Group', true)],
   'ADBE Vector Shape - Group': () => [new Prop('Path', 'ADBE Vector Shape', null, PVT.SHAPE)],
   'ADBE Vector Shape - Ellipse': () => [new Prop('Size', 'ADBE Vector Ellipse Size', [100, 100], PVT.TwoD), new Prop('Position', 'ADBE Vector Ellipse Position', [0, 0], PVT.TwoD_SPATIAL)],
-  'ADBE Vector Shape - Rect': () => [new Prop('Size', 'ADBE Vector Rect Size', [100, 100], PVT.TwoD), new Prop('Roundness', 'ADBE Vector Rect Roundness', 0)],
+  'ADBE Vector Shape - Rect': () => [new Prop('Size', 'ADBE Vector Rect Size', [100, 100], PVT.TwoD), new Prop('Roundness', 'ADBE Vector Rect Roundness', 0), new Prop('Position', 'ADBE Vector Rect Position', [0, 0], PVT.TwoD_SPATIAL)],
   'ADBE Vector Shape - Star': () => ['Points', 'Outer Radius', 'Inner Radius'].map(n => new Prop(n, 'ADBE Vector Star ' + n, 0)),
   'ADBE Vector Graphic - Fill': () => [new Prop('Color', 'ADBE Vector Fill Color', [1, 0, 0]), new Prop('Opacity', 'ADBE Vector Fill Opacity', 100)],
   'ADBE Vector Graphic - Stroke': () => [new Prop('Color', 'ADBE Vector Stroke Color', [1, 1, 1]), new Prop('Stroke Width', 'ADBE Vector Stroke Width', 2), new Prop('Opacity', 'ADBE Vector Stroke Opacity', 100),
@@ -57,7 +58,7 @@ class Group extends Prop {
   get numProperties() { return this._kids.length; }
   _add(p) { p.parentProperty = this; this._kids.push(p); return p; }
   property(k) {
-    if (typeof k === 'number') return this._kids[k - 1];
+    if (typeof k === 'number') { if (this.lenient) { while (this._kids.length < k) this._add(new Prop('p' + (this._kids.length + 1), this.matchName + '-' + String(this._kids.length + 1).padStart(4, '0'), 0)); } return this._kids[k - 1]; }
     const f = this._kids.find(c => c.matchName === k || c.name === k);
     if (f) return f;
     if (this.lenient) return this._add(new Group(k, k, true));
@@ -65,7 +66,7 @@ class Group extends Prop {
   }
   addProperty(mn) {
     let p;
-    if (EFFECTS[mn] || SHAPE_KIDS[mn] || /Effect Parade/.test(this.matchName) || /Vectors Group|Root Vectors|Stroke Dashes/.test(this.matchName)) {
+    if (this.lenient || EFFECTS[mn] || SHAPE_KIDS[mn] || /Effect Parade/.test(this.matchName) || /Vectors Group|Root Vectors|Stroke Dashes/.test(this.matchName)) {
       if (/Stroke Dash|Stroke Gap/.test(mn)) p = new Prop(mn, mn, 0);
       else { p = new Group(mn.replace(/^ADBE (Vector )?/, ''), mn, !EFFECTS[mn] && !SHAPE_KIDS[mn]); (EFFECTS[mn] || SHAPE_KIDS[mn] || (() => []))().forEach(c => p._add(c)); }
     } else throw new Error('addProperty ' + mn + ' not allowed on ' + this.matchName);
@@ -93,9 +94,9 @@ class AVLayer {
     this.transform.zRotation = this.transform.rotation;
     this.root = group('root', 'root');
     this.root._add(group('Effects', 'ADBE Effect Parade'));
-    this.root._add(tg); this.root._add(group('Masks', 'ADBE Mask Parade'));
+    this.root._add(tg); this.root._add(group('Masks', 'ADBE Mask Parade', true));
     if (kind === 'shape') this.root._add(group('Contents', 'ADBE Root Vectors Group'));
-    if (kind === 'text') { const tp = group('Text', 'ADBE Text Properties'); tp._add(new Prop('Source Text', 'ADBE Text Document', { text: name, fontSize: 50, justification: 7413, boxText: false }, PVT.CUSTOM_VALUE)); this.root._add(tp); }
+    if (kind === 'text') { const tp = group('Text', 'ADBE Text Properties', true); tp._add(new Prop('Source Text', 'ADBE Text Document', { text: name, fontSize: 50, justification: 7413, boxText: false }, PVT.CUSTOM_VALUE)); this.root._add(tp); }
     if (kind === 'camera') { const co = group('Camera Options', 'ADBE Camera Options Group', true); this.root._add(co); }
     if (kind === 'shape' || kind === 'text') { const eg = group('Geometry Options', 'ADBE Extrsn Options Grp'); eg._add(new Prop('Extrusion Depth', 'ADBE Extrsn Depth', 0)); this.root._add(eg); }
   }
@@ -106,8 +107,10 @@ class AVLayer {
   moveBefore(o) { this.remove(); const a = this.containingComp._l; a.splice(a.indexOf(o), 0, this); }
   moveAfter(o) { this.remove(); const a = this.containingComp._l; a.splice(a.indexOf(o) + 1, 0, this); }
   moveToEnd() { this.remove(); this.containingComp._l.push(this); }
+  moveToBeginning() { this.remove(); this.containingComp._l.unshift(this); }
   duplicate() { const d = new this.constructor(this.containingComp, this.name, this.kind); d.comment = this.comment; d.source = this.source; d.threeDLayer = this.threeDLayer; this.containingComp._l.splice(this.index - 1, 0, d); return d; }
   setTrackMatte(m, t) { this.trackMatte = m; this.trackMatteType = t; }
+  copyToComp(c) { const L = new this.constructor(c, this.name, this.kind); c._l.unshift(L); return L; }
   get width() { return this.source ? this.source.width : 100; }
 }
 class ShapeLayer extends AVLayer { } class TextLayer extends AVLayer { } class CameraLayer extends AVLayer { } class LightLayer extends AVLayer { }
@@ -116,10 +119,10 @@ class FootageItem { constructor(f) { this.file = f; this.width = 640; this.heigh
 class CompItem {
   constructor(name, w, h, par, dur, fps) {
     this.name = name; this.width = w || 1920; this.height = h || 1080; this.pixelAspect = par || 1; this.duration = dur || 10; this.frameRate = fps || 25;
-    this.frameDuration = 1 / this.frameRate; this.time = 0; this._l = []; this.renderer = 'ADBE Ernst'; this.workAreaStart = 0; this.workAreaDuration = 2;
+    this.frameDuration = 1 / this.frameRate; this.time = 0; this.comment = ''; this.motionBlur = false; this._l = []; this.renderer = 'ADBE Ernst'; this.workAreaStart = 0; this.workAreaDuration = 2;
     const c = this, put = (L) => { c._l.unshift(L); return L; };
     this.layers = {
-      addShape: () => put(new ShapeLayer(c, 'Shape Layer', 'shape')), addNull: () => put(new AVLayer(c, 'Null', 'null')),
+      addShape: () => put(new ShapeLayer(c, 'Shape Layer', 'shape')), addNull: () => { const L = put(new AVLayer(c, 'Null', 'null')); L.source = { width: 100, height: 100 }; return L; },
       addText: (t) => put(new TextLayer(c, t || 'Text', 'text')), addCamera: (n) => put(new CameraLayer(c, n, 'camera')),
       addSolid: (col, n, w, h) => { const L = put(new AVLayer(c, n, 'solid')); L.source = { width: w, height: h, mainSource: {} }; L.color = col; return L; },
       add: (item) => { const L = put(new AVLayer(c, item.name, 'av')); L.source = item; L.transform.anchorPoint.setValue([item.width / 2, item.height / 2]); return L; },
@@ -128,6 +131,8 @@ class CompItem {
   get numLayers() { return this._l.length; }
   layer(i) { return this._l[i - 1]; }
   get selectedLayers() { return this._l.filter(l => l.selected); }
+  saveFrameToPng(t, f) { this.savedFrame = f.p; }
+  openInViewer() { }
 }
 
 function makeEnv(opts) {
@@ -141,17 +146,17 @@ function makeEnv(opts) {
   File.prototype.open = function () { return this.exists; }; File.prototype.read = function () { return fs.readFileSync(this.p, 'utf8'); }; File.prototype.close = function () { };
   File.openDialog = () => null;
   const ctx = {
-    console, Shape, KeyframeEase, File, Folder: function (p) { this.fullName = p; }, ImportOptions: function (f) { this.file = f; },
+    console, Shape, KeyframeEase, File, Folder: Object.assign(function (p) { this.fullName = p; }, { temp: { fullName: require('os').tmpdir() } }), ImportOptions: function (f) { this.file = f; },
     CompItem, FolderItem, FootageItem, AVLayer, ShapeLayer, TextLayer, CameraLayer, LightLayer, SolidSource: function () { },
     PropertyType: PT, PropertyValueType: PVT,
     ParagraphJustification: { LEFT_JUSTIFY: 7413, CENTER_JUSTIFY: 7415, RIGHT_JUSTIFY: 7414 },
-    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, EXCLUSION: 27 },
-    TrackMatteType: { ALPHA: 1, ALPHA_INVERTED: 2 }, AutoOrientType: { CAMERA_OR_POINT_OF_INTEREST: 3 },
+    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, MULTIPLY: 5, EXCLUSION: 27 },
+    TrackMatteType: { ALPHA: 1, ALPHA_INVERTED: 2, LUMA: 3 }, AutoOrientType: { CAMERA_OR_POINT_OF_INTEREST: 3 },
     alert: (m) => { throw new Error('alert: ' + m); },
     app: {
       beginUndoGroup() { undoDepth++; undoMax = Math.max(undoMax, undoDepth); }, endUndoGroup() { undoDepth--; },
       effects: opts.effects || [],
-      project: { activeItem: comp, items, importFile: (o) => { const it = new FootageItem(o.file); items.push(it); return it; } },
+      project: { activeItem: comp, items, renderQueue: { items: { add: (c) => { ctx.queued = c; return {}; } } }, importFile: (o) => { const it = new FootageItem(o.file); items.push(it); return it; } },
     },
   };
   ctx.$ = { global: ctx, _flex: { isLocked: !!opts.locked } };

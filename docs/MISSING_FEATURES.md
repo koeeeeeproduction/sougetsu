@@ -123,7 +123,22 @@ names only. With `client/` now in the repo, every call site and reply handler wa
 - New: `host/akira_json.jsx` (ES3 JSON parser on `H`, no eval), `host/map_rigs.jsx` (shim the Maps panel falls back to), `tools/wraptool.py`,
   `tools/build_cep.sh`, `tests/mock_ae.js` + `tests/test_contracts.js` (23 contract tests, all passing).
 
-## Still not in this build (separate engines the panel loads from their own host files)
-`saas_effects.jsx` (`$._flexSaaS.*`: stagger, cursor, hover, textAnim, codeGlyphs, promptBar, halftoneWave, carousel, attach, background,
-wipe, depthPrepare, depthReveal), the Highlighter (`$._flexHL`, `highlighterVersion`), `ui_templates_extra.jsx` (`uiTemplateXVersion >= 8`),
-and FlexSwitcher keybinds (`run('reloadKeybinds')`). Those panels report the engine as missing; nothing else breaks.
+## Round Q (2026-10-05): the separately loaded engines
+A full scan of every `$._flex.*`, `$._flexHL.*`, `$._flexSaaS.*`, `run('…')` and global `*_JF` / `*_FlexGUI` name the panel evaluates now
+resolves (233 `$._flex` names + 22 globals; the only unresolved strings are panel-side flags and Node helpers).
+- `host/akira_shakes.jsx`: the 15 preset shakes + `AddCustomShake_JF` (globals, `(atCti, speed%, strength%, colorFx, flashFrames,
+  flashStrength, flashColor, flashBlend, flashOn)` -> `"true"`). Each builds a `flex_shake` adjustment layer (Motion Tile + Transform keys
+  following the panel's 14-frame envelopes; optics/invert/mosaic/flicker looks; optional flash).
+- `host/akira_highlighter.jsx`: `$._flexHL.list/create/apply/animate/remove/toEGP`, `highlighterVersion = 7`.
+- `host/akira_showcase.jsx`: Motion Showcase (orbit / helix / depth) build, live update, render queue, selection; version global `1.0.1`.
+- `host/akira_saas.jsx`: all 13 SaaS Effects (stagger, depth prepare/reveal, 3D cursor, proximity hover, text animations, code glyphs,
+  prompt bar, halftone wave, UI carousel, attach, background, gradient wipe), `saasVersion = 9`.
+- Version flags: `uiTemplateXVersion`, `_flexReferenceWorkspaceHostVersion`; `reloadKeybinds` no-op.
+- Shims named after the vendor host files the panel falls back to (`saas_effects.jsx`, `motion_showcase.jsx`, `project_organizer.jsx`,
+  `type_realign.jsx`, `reference_workspace.jsx`, `ui_templates_extra.jsx`, `graph_editor_20.jsx`, `index.jsx`, `map_rigs.jsx`): each re-runs
+  `akira_loader.jsx`, so a panel that missed the startup load recovers.
+- `tests/test_engines.js` (6 tests) on top of `tests/test_contracts.js` (23).
+
+The "Missing host engine: project_organizer.jsx" error seen in the Sougetsu_AkiraFX_test.zxp build came from that ZXP being packed with
+the older host files (old organizer without the `$._flex` aliases, no maps/json, old shapes2/rigs/other). Always build from this repo
+(`tools/build_cep.sh`).

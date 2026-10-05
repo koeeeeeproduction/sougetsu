@@ -38,8 +38,12 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         if (typeof fn !== "function" || name === "run") { return "ERR:Unknown function: " + name; }
         try { return fn.call(F, a, b, c); } catch (e) { return "ERR:" + e.toString(); }
     };
-    F.saasVersion = 0;
+    F.saasVersion = 0; // akira_saas.jsx raises this to 9 when it loads
     F.flexTypeReAlignVersion = 1;
+    if (typeof F.buildUITemplate === "function") { F.uiTemplateXVersion = 8; }
+    // Settings > Keybinds writes a file for the separate FlexSwitcher app, then pings the host; nothing to reload here.
+    F.reloadKeybinds = function () { return "OK"; };
+    try { if (typeof $.global.getReferenceWorkspaceContext_FlexGUI === "function") { $.global._flexReferenceWorkspaceHostVersion = "2.0.0"; } } catch (eRW) { }
 
     // ================= layer-effects inspector =================
     function firstSel(comp) { var s = H.selectedLayers(comp); return s.length ? s[0] : null; }

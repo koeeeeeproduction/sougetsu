@@ -71,6 +71,10 @@
     load("akira_projectscan.jsx", false);
     load("akira_other.jsx", false);
     load("akira_maps.jsx", false);
+    load("akira_shakes.jsx", false);
+    load("akira_highlighter.jsx", false);
+    load("akira_showcase.jsx", false);
+    load("akira_saas.jsx", false);
     $._flex.isLocked = wasLocked;
     load("paste_feature.jsx", false);
 })();
