@@ -64,6 +64,7 @@
     load("akira_shapes.jsx", false);
     load("akira_shapes2.jsx", false);
     load("akira_rigs.jsx", false);
+    load("akira_grid.jsx", false);
     load("akira_colormatch.jsx", false);
     load("akira_captions.jsx", false);
     load("akira_fonts.jsx", false);

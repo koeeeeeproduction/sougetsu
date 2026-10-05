@@ -117,4 +117,16 @@ t('SaaS effects: every generator replies SUCCESS on a sensible selection', () =>
   A.strictEqual(e.undo(), 0);
 });
 
+t('Akira Grid builds its own expression-driven shape layer (no plug-in)', () => {
+  const e = env(), r = e.F.akiraGrid('3|2|200|150|0|80|22');
+  A.strictEqual(r, 'OK:Akira Grid', r);
+  const L = e.comp.layer(1), fx = L.property('ADBE Effect Parade');
+  A.strictEqual(L.name, 'Akira Grid');
+  ['Columns', 'Rows', 'Width', 'Height', 'Border', 'Marker Size', 'Opacity', 'Color', 'Track Layer'].forEach(n => A.ok(fx.property(n), n));
+  A.strictEqual(fx.property('Columns').property(1).value, 3);
+  A.strictEqual(L.property('ADBE Root Vectors Group').numProperties, 3);
+  A.strictEqual(e.undo(), 0);
+  A.ok(/^ERR:/.test(M.makeEnv({ files: ORDER, noComp: true }).F.akiraGrid('1|1|250|250|3|100|22')));
+});
+
 console.log(process.exitCode ? 'SOME TESTS FAILED' : 'ALL ' + passed + ' ENGINE TESTS PASSED');
