@@ -10,6 +10,15 @@
     function rec(status, name, detail) {
         if (status === "PASS") { PASS += 1; } else if (status === "SKIP") { SKIP += 1; } else { FAIL += 1; }
         log(status + "  " + name + (detail ? "  ->  " + String(detail).replace(/[\r\n]+/g, " ").substring(0, 400) : ""));
+        flush();
+    }
+    function where(e) { var f = ""; try { f = String(e.fileName || "").replace(/^.*[\/\\]/, ""); } catch (x) { } return e.toString() + " [" + (f || "?") + " line " + e.line + "]"; }
+    function flush() {
+        try {
+            var f = new File(Folder.desktop.fullName + "/AkiraFX_selftest_report.txt");
+            f.encoding = "UTF-8"; f.open("w");
+            f.write(["RESULT so far: " + PASS + " passed, " + FAIL + " failed, " + SKIP + " skipped", ""].concat(REPORT).join("\r\n")); f.close();
+        } catch (e) { }
     }
 
     // ---------- 1. find + load the extension ----------
@@ -48,7 +57,7 @@
     log("Date: " + new Date().toString());
     log("");
     try { app.beginSuppressDialogs(); } catch (eS) { }
-    try { $.evalFile(new File(ext + "/host/akira_loader.jsx")); } catch (eL) { rec("FAIL", "load akira_loader.jsx", eL.toString() + " line " + eL.line); }
+    try { $.evalFile(new File(ext + "/host/akira_loader.jsx")); } catch (eL) { rec("FAIL", "load akira_loader.jsx", where(eL)); }
     if (typeof $._flex === "undefined" || !$._flex._h) { rec("FAIL", "host engine loaded", "$._flex._h missing - stopping"); return finish(); }
     var F = $._flex, H = F._h, G = $.global, wasLocked = F.isLocked;
     F.isLocked = false; // test only; restored at the end
@@ -89,7 +98,7 @@
     // t(name, fn, check): fn returns the host reply; check(reply) may return an error string.
     function t(name, fn, check) {
         var r;
-        try { r = fn(); } catch (e) { rec("FAIL", name, "exception: " + e.toString() + " (line " + e.line + ")"); return null; }
+        try { r = fn(); } catch (e) { rec("FAIL", name, "exception: " + where(e)); return null; }
         if (bad(r)) { rec("FAIL", name, r); return r; }
         if (check) { var msg; try { msg = check(r); } catch (e2) { msg = "check threw: " + e2.toString(); } if (msg) { rec("FAIL", name, msg + "  | reply: " + r); return r; } }
         rec("PASS", name, String(r).substring(0, 120));
@@ -105,16 +114,23 @@
     }
     function J(v) { return H.toJSON(v); }
     function section(s) { log(""); log("== " + s); }
+    function sec(name, fn) {
+        section(name);
+        try { fn(); } catch (e) { rec("FAIL", "SECTION CRASHED: " + name, where(e) + (e.stack ? " stack: " + e.stack : "") + " | " + $.stack); }
+    }
 
     // a real PNG for footage-based tests (maps basemap, depth map, showcase cards)
-    var imgComp = app.project.items.addComp("ST image source", 1280, 720, 1, 2, 25);
-    var bgs = imgComp.layers.addSolid([0.2, 0.4, 0.7], "bg", 1280, 720, 1);
-    try { var rmp = bgs.property("ADBE Effect Parade").addProperty("ADBE Ramp"); rmp.property(2).setValue([1, 0.6, 0.2]); } catch (eR) { }
-    var PNG = renderPng(imgComp, "img");
+    var imgComp = null, PNG = null;
+    try {
+        imgComp = app.project.items.addComp("ST image source", 1280, 720, 1, 2, 25);
+        var bgs = imgComp.layers.addSolid([0.2, 0.4, 0.7], "bg", 1280, 720, 1);
+        try { var rmp = bgs.property("ADBE Effect Parade").addProperty("ADBE Ramp"); rmp.property(2).setValue([1, 0.6, 0.2]); } catch (eR) { }
+        PNG = renderPng(imgComp, "img");
+    } catch (eI) { rec("FAIL", "setup: test image comp", where(eI)); }
     log("Test PNG: " + (PNG || "could not render - footage tests will be skipped"));
 
     // ---------- 2. Other ----------
-    section("Other");
+    sec("Other", function () {
     var c = newComp("other"), A = rect(c, "A"), B = rect(c, "B", [500, 300]); B.inPoint = 2; B.outPoint = 6;
     sel(c, [A]);
     A.property("ADBE Effect Parade").addProperty("ADBE Gaussian Blur 2");
@@ -136,7 +152,8 @@
     t("flexProjectAnalyze", function () { return F.flexProjectAnalyze(); });
 
     // ---------- 3. Shapes ----------
-    section("Shapes");
+    });
+    sec("Shapes", function () {
     c = newComp("shapes");
     t("addShapeLayer", function () { return F.addShapeLayer(); });
     var prims = ["circle", "rect", "cross", "line"];
@@ -161,7 +178,8 @@
     t("removeMorph", function () { return F.removeMorph(); });
 
     // ---------- 4. Rigs ----------
-    section("Rigs (carousel, orb, glass, effects)");
+    });
+    sec("Rigs (carousel, orb, glass, effects)", function () {
     c = newComp("carousel");
     var cards = [rect(c, "Card 1", [600, 540], [200, 260]), rect(c, "Card 2", [960, 540], [200, 260]), rect(c, "Card 3", [1320, 540], [200, 260])];
     sel(c, cards);
@@ -203,7 +221,8 @@
     t("applyShatterEffect", function () { return F.applyShatterEffect(); });
 
     // ---------- 5. Shakes ----------
-    section("Shakes");
+    });
+    sec("Shakes", function () {
     var SH = ["BasicShake_001_JF", "QuickShake_001_JF", "WaveV1_Shake_001_JF", "WaveV2_Shake_001_JF", "BounceInShake_001_JF", "BounceOutShake_001_JF", "SqueezeV1Shake_001_JF",
         "SqueezeV2Shake_001_JF", "WarpShake_001_JF", "LensShake_001_JF", "InvertShake_001_JF", "InvertPixleShake_001_JF", "DarkFlickerShake_001_JF", "WhiteFlickerShake_001_JF", "AddCustomShake_JF"];
     c = newComp("shakes");
@@ -216,7 +235,8 @@
     }
 
     // ---------- 6. Highlighter ----------
-    section("Highlighter");
+    });
+    sec("Highlighter", function () {
     c = newComp("highlighter");
     var hT = text(c, "Highlight me"); sel(c, [hT]);
     var HL = $._flexHL;
@@ -229,7 +249,8 @@
     t("$._flexHL.remove", function () { return HL.remove("id=" + hid); });
 
     // ---------- 7. Motion Showcase ----------
-    section("Motion Showcase");
+    });
+    sec("Motion Showcase", function () {
     c = newComp("showcase");
     var scA = c.layers.add(imgComp), scB = c.layers.add(imgComp), scT = text(c, "Card text"); sel(c, [scA, scB, scT]);
     var selRes = t("getMotionShowcaseSelection_FlexGUI", function () { return G.getMotionShowcaseSelection_FlexGUI(encodeURIComponent("")); });
@@ -241,7 +262,8 @@
     try { while (app.project.renderQueue.numItems) { app.project.renderQueue.item(1).remove(); } } catch (eRQ) { }
 
     // ---------- 8. SaaS Effects ----------
-    section("SaaS Effects");
+    });
+    sec("SaaS Effects", function () {
     var X = $._flexSaaS;
     function pair(cc) { var a = rect(cc, "UI A", [500, 400], [260, 120]), b = rect(cc, "UI B", [1300, 700], [260, 120]); sel(cc, [a, b]); return [a, b]; }
     c = newComp("saas stagger"); pair(c);
@@ -279,7 +301,8 @@
     skipIf("depthReveal (AI map file)", !depthMap, "depthPrepare frame was not rendered", function () { return X.depthReveal("source=ai;look=fog;io=in;palette=neon;accent=#00ff55;style=sweep;farFirst=true;soft=25;direction=bottom;duration=1.5;blur=0;push=0;zoom=0;slide=0;parX=0;parY=0;sway=0;map=" + depthMap); });
 
     // ---------- 9. Maps ----------
-    section("Map Rigs");
+    });
+    sec("Map Rigs", function () {
     c = newComp("maps");
     var tmp = Folder.temp.fullName, frame = { minX: 0.48, maxX: 0.56, minY: 0.30, maxY: 0.345 };
     var rigRes = t("flexMap_createFromFile", function () {
@@ -299,7 +322,8 @@
     t("flexMap_bakeRig", function () { return F.flexMap_bakeRig(m ? m[1] : rIdx, rId); });
 
     // ---------- 10. expression errors across everything built ----------
-    section("Expression check (every expression the tools created, evaluated at t=1s)");
+    });
+    sec("Expression check (every expression the tools created, evaluated at t=1s)", function () {
     var exprErr = 0, exprCount = 0;
     function scan(comp, grp, path) {
         var j;
@@ -322,6 +346,7 @@
     log("Expressions evaluated: " + exprCount + ", with errors: " + exprErr);
     if (exprCount && !exprErr) { rec("PASS", "all expressions evaluate without errors", exprCount + " expressions"); }
 
+    });
     F.isLocked = wasLocked;
     finish();
 
