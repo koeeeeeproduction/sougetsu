@@ -410,6 +410,7 @@
                     '<div class="row"><span>Pet</span><select data-sel="petId">' + PETS.filter(unlocked).map(function (p) { return '<option value="' + p.id + '"' + (pet().id === p.id ? ' selected' : '') + '>' + p.name + '</option>'; }).join('') + '</select></div>' +
                     '<div class="row"><span>Frequency</span><span style="display:flex;align-items:center;gap:6px;color:#888">Rare<input type="range" min="1" max="4" step="1" data-num="freq" value="' + S.set.freq + '">Frequent</span></div>' +
                     '<div class="row"><span>🔊 Volume</span><input type="range" min="0" max="100" step="5" data-num="volume" value="' + S.set.volume + '"></div>' +
+                    '<h3>LAYOUT</h3><div class="row"><span>Vertical panel layout (tabs on the left)</span><input type="checkbox" data-layout ' + (window.AkiraLayout && window.AkiraLayout.get() === 'vertical' ? 'checked' : '') + '></div>' +
                     '<h3>DO NOT DISTURB</h3>' + tog('dndRender', 'During rendering') + tog('dndPresent', 'During presentations (full screen or toggled below)') + tog('dndNight', 'After 23:00') +
                     '<div class="row"><span>I\'m presenting right now</span><input type="checkbox" data-present ' + (presenting ? 'checked' : '') + '></div>' +
                     '<div class="row"><span>Test sound</span><button class="it" data-test style="width:auto;padding:4px 10px">▶ Play</button></div>' +
@@ -421,6 +422,7 @@
             body.querySelectorAll('[data-tog]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-tog')] = c.checked; save(); render(); }); });
             body.querySelectorAll('[data-sel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-sel')] = c.value; save(); render(); }); });
             body.querySelectorAll('[data-num]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-num')] = +c.value; save(); if (c.getAttribute('data-num') === 'freq') { scheduleEvent(); } else { SFX.pet(); } }); });
+            var ly = body.querySelector('[data-layout]'); if (ly) { ly.addEventListener('change', function () { if (window.AkiraLayout) { window.AkiraLayout.set(ly.checked ? 'vertical' : 'horizontal'); } }); }
             var pr = body.querySelector('[data-present]'); if (pr) { pr.addEventListener('change', function () { presenting = pr.checked; }); }
             var ts = body.querySelector('[data-test]'); if (ts) { ts.addEventListener('click', function () { var was = S.set.sounds; S.set.sounds = true; var n = S.set.dndNight; S.set.dndNight = false; SFX.level(); S.set.sounds = was; S.set.dndNight = n; }); }
             var rs = body.querySelector('[data-reset]'); if (rs) { rs.addEventListener('click', function () { if (window.confirm('Reset level, XP, badges and missions? Settings are kept.')) { var keep = S.set; S = merge({ set: keep }, DEF); save(); render(); show('me'); } }); }
