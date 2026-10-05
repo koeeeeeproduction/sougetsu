@@ -10,7 +10,7 @@ class Prop {
   constructor(name, matchName, value, vt) {
     this.name = name; this.matchName = matchName || name; this._v = value === undefined ? 0 : value;
     this.propertyType = PT.PROPERTY; this.propertyValueType = vt || (Array.isArray(value) ? (value.length === 2 ? PVT.TwoD : value.length === 3 ? PVT.ThreeD_SPATIAL : PVT.COLOR) : PVT.OneD);
-    this.expression = ''; this.keys = []; this.enabled = true; this.parentProperty = null; this.dimensionsSeparated = false;
+    this.expression = ''; this.canSetExpression = true; this.keys = []; this.enabled = true; this.parentProperty = null; this.dimensionsSeparated = false;
   }
   get expressionEnabled() { return !!this.expression; }
   get value() { return this.valueAtTime(0, false); }
@@ -79,9 +79,10 @@ class Shape { constructor() { this.vertices = []; this.inTangents = []; this.out
 class KeyframeEase { constructor(s, i) { this.speed = s; this.influence = i; } }
 
 let undoDepth = 0, undoMax = 0;
+let uid = 0;
 class AVLayer {
   constructor(comp, name, kind) {
-    this.containingComp = comp; this.name = name; this.kind = kind; this.comment = ''; this.selected = false; this.enabled = true;
+    this.id = ++uid; this.containingComp = comp; this.name = name; this.kind = kind; this.comment = ''; this.selected = false; this.enabled = true;
     this.label = 0; this.inPoint = 0; this.outPoint = 10; this.startTime = 0; this.threeDLayer = false; this.nullLayer = kind === 'null'; this.adjustmentLayer = false;
     this.guideLayer = false; this.parent = null; this.source = null; this.rect = { left: -50, top: -20, width: 100, height: 40 }; this.blendingMode = 1;
     const tg = group('Transform', 'ADBE Transform Group');
@@ -118,7 +119,7 @@ class FolderItem { constructor(n) { this.name = n; } }
 class FootageItem { constructor(f) { this.file = f; this.width = 640; this.height = 360; this.name = String(f.p).split('/').pop(); } }
 class CompItem {
   constructor(name, w, h, par, dur, fps) {
-    this.name = name; this.width = w || 1920; this.height = h || 1080; this.pixelAspect = par || 1; this.duration = dur || 10; this.frameRate = fps || 25;
+    this.id = ++uid; this.name = name; this.width = w || 1920; this.height = h || 1080; this.pixelAspect = par || 1; this.duration = dur || 10; this.frameRate = fps || 25;
     this.frameDuration = 1 / this.frameRate; this.time = 0; this.comment = ''; this.motionBlur = false; this._l = []; this.renderer = 'ADBE Ernst'; this.workAreaStart = 0; this.workAreaDuration = 2;
     const c = this, put = (L) => { c._l.unshift(L); return L; };
     this.layers = {

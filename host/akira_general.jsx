@@ -190,53 +190,115 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
                Math.abs(t.rotation.valueAtTime(time, false)) < 0.001 && !L.threeDLayer && !L.parent &&
                Math.abs(a[0] - src.width / 2) < 0.001 && Math.abs(a[1] - src.height / 2) < 0.001 && comp.width === src.width && comp.height === src.height;
     }
-    F.unPrecomp = function () {
+    // extract one pre-comp layer; returns { layers, kept, ids[], notes[] }. Caller owns the undo group.
+    function extractOne(comp, pl, time) {
+        var inner = pl.source, copies = [], holder = null, notes = [], ids = [], j, k;
+        if (inner.numLayers > 0 && typeof inner.layer(1).copyToComp !== "function") { throw new Error("This version of After Effects cannot copy layers from a script."); }
+        if (!isIdentity(pl, comp, time)) {                  // carry the pre-comp layer's own transform over with a null
+            holder = comp.layers.addNull();
+            holder.name = pl.name + " (transform)";
+            holder.moveBefore(pl);
+            var ht = holder.transform, pt = pl.transform;
+            ht.anchorPoint.setValue(pt.anchorPoint.valueAtTime(time, false));
+            ht.position.setValue(pt.position.valueAtTime(time, false));
+            ht.scale.setValue(pt.scale.valueAtTime(time, false));
+            ht.rotation.setValue(pt.rotation.valueAtTime(time, false));
+            holder.startTime = pl.startTime;
+            if (pl.parent) { holder.parent = pl.parent; }
+            notes.push(pl.name + ": transform kept on a null");
+        }
+        for (j = 1; j <= inner.numLayers; j += 1) {        // top to bottom, each lands just above the pre-comp layer
+            var src = inner.layer(j);
+            src.copyToComp(comp);
+            var nl = comp.layer(1);
+            nl.moveBefore(pl);
+            nl.startTime = nl.startTime + pl.startTime;
+            if (nl.inPoint < pl.inPoint) { nl.inPoint = pl.inPoint; }
+            if (nl.outPoint > pl.outPoint) { nl.outPoint = pl.outPoint; }
+            copies.push({ from: src, to: nl });
+        }
+        for (j = 0; j < copies.length; j += 1) {            // restore parenting among the copies; free layers follow the transform null
+            var par = copies[j].from.parent, target = null;
+            if (par) { for (k = 0; k < copies.length; k += 1) { if (copies[k].from === par) { target = copies[k].to; } } }
+            else if (holder) { target = holder; }
+            if (target) { copies[j].to.parent = target; }
+            try { if (copies[j].to.id !== undefined) { ids.push(copies[j].to.id); } } catch (e0) { }
+        }
+        var fx = pl.property("ADBE Effect Parade"), mk = pl.property("ADBE Mask Parade"), kept = 0;
+        if (pl.adjustmentLayer || (fx && fx.numProperties > 0) || (mk && mk.numProperties > 0)) { pl.enabled = false; kept = 1; notes.push(pl.name + ": effects/masks kept on the hidden pre-comp layer"); }
+        else { pl.remove(); }
+        return { layers: copies.length, kept: kept, ids: ids, notes: notes };
+    }
+    function riskOf(pl, comp) {
+        var why = [], fx = pl.property("ADBE Effect Parade"), mk = pl.property("ADBE Mask Parade");
+        try { if (pl.timeRemapEnabled) { why.push("time remapping"); } } catch (e) { }
+        if ((fx && fx.numProperties > 0) || (mk && mk.numProperties > 0)) { why.push("effects or masks"); }
+        if (pl.threeDLayer) { why.push("3D"); }
+        try { if (pl.collapseTransformation) { why.push("collapsed transformations"); } } catch (e1) { }
+        try { if (Math.abs(pl.stretch - 100) > 0.01) { why.push("time stretch"); } } catch (e2) { }
+        if (Math.abs(pl.source.frameRate - comp.frameRate) > 0.01) { why.push("a different frame rate"); }
+        return why.length ? pl.name + " has " + why.join(", ") + "; that look cannot move into the layers." : "";
+    }
+    function compById(id) {
+        var items = app.project.items, i;
+        for (i = 1; i <= items.length; i += 1) { if (items[i] instanceof CompItem && String(items[i].id) === String(id)) { return items[i]; } }
+        return null;
+    }
+    // Panel protocol:
+    //   "plan|[force]"                    -> "PLAN:compId|idx:srcId:encName/..." / "ASK:reason" / "ERR:msg"
+    //   "one|[force]|compId|idx|srcId|enc" -> "ONE:layers|precomps|kept|newIds(csv)|encNote%20%C2%B7%20encNote" / "ERR:msg"
+    //   "select||compId|ids"              -> "OK"
+    //   (no argument)                     -> all selected pre-comps in one undo step -> "SUCCESS" / "ERR:"
+    F.unPrecomp = function (arg) {
         var g = H.locked(); if (g) { return g; }
+        var a = String(arg === undefined || arg === null ? "" : arg).split("|"), mode = a[0], force = a[1] === "force", i, j;
+        if (mode === "select") {
+            var sc = compById(a[2]), want = String(a[3] || "").split(",");
+            if (!sc) { return "OK"; }
+            for (i = 1; i <= sc.numLayers; i += 1) {
+                var L = sc.layer(i), hit = false;
+                try { for (j = 0; j < want.length; j += 1) { if (String(L.id) === want[j]) { hit = true; } } } catch (e) { }
+                L.selected = hit;
+            }
+            return "OK";
+        }
+        if (mode === "one") {
+            var c1 = compById(a[2]);
+            if (!c1) { return "ERR:The composition is gone."; }
+            var idx = parseInt(a[3], 10), pl = (idx >= 1 && idx <= c1.numLayers) ? c1.layer(idx) : null;
+            if (!pl || !(pl.source instanceof CompItem) || String(pl.source.id) !== String(a[4])) {   // indices shift as we go: find it by source
+                pl = null;
+                for (i = 1; i <= c1.numLayers; i += 1) { if (c1.layer(i).source instanceof CompItem && String(c1.layer(i).source.id) === String(a[4]) && c1.layer(i).enabled) { pl = c1.layer(i); break; } }
+            }
+            if (!pl) { return "ERR:Layer not found."; }
+            if (!pl.source.numLayers) { return "ERR:The pre-comp is empty."; }
+            if (!force) { var rk = riskOf(pl, c1); if (rk) { return "ASK:" + rk; } }
+            app.beginUndoGroup("Un-precompose " + pl.name);
+            var r;
+            try { r = extractOne(c1, pl, c1.time); } catch (e1) { app.endUndoGroup(); return "ERR:" + (e1.message || e1); }
+            app.endUndoGroup();
+            var enc = [];
+            for (i = 0; i < r.notes.length; i += 1) { enc.push(encodeURIComponent(r.notes[i])); }
+            return "ONE:" + r.layers + "|1|" + r.kept + "|" + r.ids.join(",") + "|" + enc.join("%20%C2%B7%20");
+        }
         var comp = H.activeComp();
         if (!comp) { return "ERR:Open a composition first."; }
-        var sel = H.selectedLayers(comp), todo = [], i, j;
+        var sel = H.selectedLayers(comp), todo = [];
         for (i = 0; i < sel.length; i += 1) { if (sel[i].source instanceof CompItem) { todo.push(sel[i]); } }
         if (!todo.length) { return "ERR:Select a pre-comp layer first."; }
-        var time = comp.time, moved = 0, kept = 0;
-        app.beginUndoGroup("Extract From Pre-comp");
-        try {
+        if (mode === "plan") {
+            var items = [], risks = [];
             for (i = 0; i < todo.length; i += 1) {
-                var pl = todo[i], inner = pl.source, copies = [], holder = null;
-                if (inner.numLayers > 0 && typeof inner.layer(1).copyToComp !== "function") { app.endUndoGroup(); return "ERR:This version of After Effects cannot copy layers from a script."; }
-                if (!isIdentity(pl, comp, time)) {                  // carry the pre-comp layer's own transform over with a null
-                    holder = comp.layers.addNull();
-                    holder.name = pl.name + " (transform)";
-                    holder.moveBefore(pl);
-                    var ht = holder.transform, pt = pl.transform;
-                    ht.anchorPoint.setValue(pt.anchorPoint.valueAtTime(time, false));
-                    ht.position.setValue(pt.position.valueAtTime(time, false));
-                    ht.scale.setValue(pt.scale.valueAtTime(time, false));
-                    ht.rotation.setValue(pt.rotation.valueAtTime(time, false));
-                    holder.startTime = pl.startTime;
-                    if (pl.parent) { holder.parent = pl.parent; }
-                }
-                for (j = 1; j <= inner.numLayers; j += 1) {        // top to bottom, each lands just above the pre-comp layer
-                    var src = inner.layer(j);
-                    src.copyToComp(comp);
-                    var nl = comp.layer(1);
-                    nl.moveBefore(pl);
-                    nl.startTime = nl.startTime + pl.startTime;
-                    if (nl.inPoint < pl.inPoint) { nl.inPoint = pl.inPoint; }
-                    if (nl.outPoint > pl.outPoint) { nl.outPoint = pl.outPoint; }
-                    copies.push({ from: src, to: nl });
-                }
-                for (j = 0; j < copies.length; j += 1) {            // restore parenting among the copies; free layers follow the transform null
-                    var par = copies[j].from.parent, target = null, k;
-                    if (par) { for (k = 0; k < copies.length; k += 1) { if (copies[k].from === par) { target = copies[k].to; } } }
-                    else if (holder) { target = holder; }
-                    if (target) { copies[j].to.parent = target; }
-                }
-                var fx = pl.property("ADBE Effect Parade"), mk = pl.property("ADBE Mask Parade");
-                if (pl.adjustmentLayer || (fx && fx.numProperties > 0) || (mk && mk.numProperties > 0)) { pl.enabled = false; kept += 1; }   // its look cannot move into the layers, so keep it (hidden)
-                else { pl.remove(); }
-                moved += copies.length;
+                items.push(todo[i].index + ":" + todo[i].source.id + ":" + encodeURIComponent(todo[i].name));
+                if (!force) { var rr = riskOf(todo[i], comp); if (rr) { risks.push(rr); } }
             }
-        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
+            if (risks.length) { return "ASK:" + risks.join("\n"); }
+            return "PLAN:" + comp.id + "|" + items.join("/");
+        }
+        var time = comp.time, moved = 0;
+        app.beginUndoGroup("Extract From Pre-comp");
+        try { for (i = 0; i < todo.length; i += 1) { moved += extractOne(comp, todo[i], time).layers; } }
+        catch (e) { app.endUndoGroup(); return "ERR:" + (e.message || e.toString()); }
         app.endUndoGroup();
         return moved ? "SUCCESS" : "ERR:The pre-comp has no layers.";
     };

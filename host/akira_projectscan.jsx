@@ -3,11 +3,11 @@
 //   scanCompStructure() -> JSON tree from the active comp down through precomps
 //   getNullLayers() -> JSON array [{index,name,compName}]
 //   countOfflineMedia() -> JSON {count, items:[{id,name}]}
-//   checkAutoRelinkMatches(encodeURIComponent(folderPath)) -> JSON {matches:[{id,name,newPath}], unmatched:[name,...]}
-//   commitAutoRelink(encodeURIComponent(JSON [{id,newPath}])) -> "OK:"+count or "ERR:"
+//   checkAutoRelinkMatches(folderPath, ignoreExt) -> "DETAIL:"+JSON {matched,total,items:[{name,found,path}]}
+//   commitAutoRelink() -> "SUCCESS:msg" / "ERR:" (applies the last scan)
 //   getLayerData(index|"") -> JSON dump of selected (or given index) layer's key properties
 //   debugLayerData() -> same as getLayerData but for every selected layer, as a JSON array
-//   getProjectSaveInfo() -> JSON {path, file, saved:bool, version}
+//   getProjectSaveInfo() -> "UNSAVED|" / "FILE|path|modifiedMs"
 //   httpPostCurl(url, encodeURIComponent(bodyJSON)) -> response text or "ERR:"
 //   runDiagnostic() -> JSON blob for Settings > Copy Diagnostic Info
 //   scanInstalledPlugins() -> JSON array of plugin file names found in the AE Plug-ins folder
@@ -47,7 +47,8 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         var out = [], i;
         for (i = 1; i <= comp.numLayers; i += 1) {
             var L = comp.layer(i);
-            if (L.nullLayer) { out.push('{"index":' + L.index + ',"name":' + jsonStr(L.name) + ',"compName":' + jsonStr(comp.name) + '}'); }
+            var lid = ""; try { lid = L.id === undefined ? "" : String(L.id); } catch (e) { }
+            if (L.nullLayer) { out.push('{"index":' + L.index + ',"id":' + jsonStr(lid) + ',"compId":' + jsonStr(comp.id) + ',"name":' + jsonStr(L.name) + ',"compName":' + jsonStr(comp.name) + '}'); }
         }
         return "[" + out.join(",") + "]";
     };
@@ -70,33 +71,56 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return '{"count":' + items.length + ',"items":[' + out.join(",") + ']}';
     };
 
-    // ---------- relink: scan a folder for filenames matching offline items (no changes applied) ----------
-    function folderFiles(folderPath) {
-        var fo = new Folder(String(folderPath)), out = {};
-        if (!fo.exists) { return out; }
-        var files = fo.getFiles(), i;
-        for (i = 0; i < files.length; i += 1) { if (files[i] instanceof File) { out[files[i].name.toLowerCase()] = files[i].fsName; } }
+    // ---------- relink: scan a folder tree for files matching offline items (no changes applied) ----------
+    // checkAutoRelinkMatches("C:/path", ignoreExt) -> "DETAIL:"+JSON {matched,total,items:[{name,found,path}]}
+    // commitAutoRelink() relinks what the last scan found -> "SUCCESS:msg" / "ERR:msg"
+    function stem(n) { var d = n.lastIndexOf("."); return (d > 0 ? n.substring(0, d) : n).toLowerCase(); }
+    function folderFiles(folderPath, ignoreExt) {
+        var out = {}, count = 0, queue = [{ f: new Folder(String(folderPath)), d: 0 }];
+        while (queue.length && count < 50000) {
+            var q = queue.shift(), files, i;
+            if (!q.f.exists) { continue; }
+            try { files = q.f.getFiles(); } catch (e) { continue; }
+            for (i = 0; i < files.length; i += 1) {
+                if (files[i] instanceof File) {
+                    var k = ignoreExt ? stem(files[i].name) : files[i].name.toLowerCase();
+                    if (!out.hasOwnProperty(k)) { out[k] = files[i].fsName; }
+                    count += 1;
+                } else if (q.d < 10) { queue.push({ f: files[i], d: q.d + 1 }); }
+            }
+        }
         return out;
     }
-    F.checkAutoRelinkMatches = function (arg) {
-        var folderPath = decodeArg(arg);
-        var items = offlineItems(), map = folderFiles(folderPath), matches = [], unmatched = [], i;
+    function itemKey(it, ignoreExt) {
+        var n = it.name;
+        try { if (it.mainSource && it.mainSource.missingFootagePath) { n = String(it.mainSource.missingFootagePath).replace(/\\/g, "/"); n = n.substring(n.lastIndexOf("/") + 1); } } catch (e) { }
+        return ignoreExt ? stem(n) : n.toLowerCase();
+    }
+    F.checkAutoRelinkMatches = function (arg, ignoreExt) {
+        var folderPath = String(arg || "");
+        if (folderPath.indexOf("%") >= 0) { folderPath = decodeArg(folderPath); }
+        ignoreExt = (ignoreExt === true || ignoreExt === "true");
+        if (!new Folder(folderPath).exists) { return "ERR:Folder not found: " + folderPath; }
+        var items = offlineItems(), map = folderFiles(folderPath, ignoreExt), rows = [], matched = 0, i;
+        F._relinkPending = [];
         for (i = 0; i < items.length; i += 1) {
-            var nameLower = items[i].name.toLowerCase(), found = map[nameLower];
-            if (found) { matches.push('{"id":' + items[i].id + ',"name":' + jsonStr(items[i].name) + ',"newPath":' + jsonStr(found) + '}'); }
-            else { unmatched.push(jsonStr(items[i].name)); }
+            var found = map[itemKey(items[i], ignoreExt)];
+            if (found) { matched += 1; F._relinkPending.push({ id: items[i].id, path: found }); }
+            rows.push('{"name":' + jsonStr(items[i].name) + ',"found":' + (found ? "true" : "false") + ',"path":' + jsonStr(found || "") + '}');
         }
-        return '{"matches":[' + matches.join(",") + '],"unmatched":[' + unmatched.join(",") + ']}';
+        return 'DETAIL:{"matched":' + matched + ',"total":' + items.length + ',"items":[' + rows.join(",") + ']}';
     };
 
-    // ---------- relink: apply a previously-built match list ----------
+    // ---------- relink: apply the last scan (or an explicit [{id,newPath}] list) ----------
     F.commitAutoRelink = function (arg) {
         var g = H.locked(); if (g) { return g; }
-        var s = decodeArg(arg);
-        var re = /"id"\s*:\s*(\d+)\s*,\s*"newPath"\s*:\s*"((?:\\.|[^"\\])*)"/g, m, pairs = [];
-        while ((m = re.exec(s)) !== null) { pairs.push({ id: parseInt(m[1], 10), path: m[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\") }); }
-        if (!pairs.length) { return "ERR:No relink pairs supplied."; }
-        var proj = app.project, done = 0, i, j;
+        var pairs = [], m, i, j;
+        if (arg) {
+            var s = decodeArg(arg), re = /"id"\s*:\s*(\d+)\s*,\s*"newPath"\s*:\s*"((?:\\.|[^"\\])*)"/g;
+            while ((m = re.exec(s)) !== null) { pairs.push({ id: parseInt(m[1], 10), path: m[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\") }); }
+        } else if (F._relinkPending) { pairs = F._relinkPending; }
+        if (!pairs.length) { return "ERR:Nothing to relink. Scan a folder first."; }
+        var proj = app.project, done = 0;
         app.beginUndoGroup("Relink Media");
         try {
             for (i = 0; i < pairs.length; i += 1) {
@@ -104,14 +128,15 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
                     var it = proj.item(j);
                     if (it instanceof FootageItem && it.id === pairs[i].id) {
                         var f = new File(pairs[i].path);
-                        if (f.exists) { it.replace(f); done += 1; }
+                        if (f.exists) { try { it.replace(f); done += 1; } catch (e1) { } }
                         break;
                     }
                 }
             }
         } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return done ? ("OK:" + done) : "ERR:None of the supplied files could be relinked.";
+        F._relinkPending = null;
+        return done ? ("SUCCESS:Relinked " + done + " item" + (done === 1 ? "" : "s") + ".") : "ERR:None of the matched files could be relinked.";
     };
 
     // ---------- single-layer debug dump ----------
@@ -144,11 +169,14 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ---------- project save info ----------
+    // The autosave timer only compares replies: changes when the project file is saved (path or modified time).
     F.getProjectSaveInfo = function () {
-        var proj = app.project, path = "", file = "";
-        try { if (proj.file) { path = proj.file.fsName; file = proj.file.name; } } catch (e) { }
-        return '{"path":' + jsonStr(path) + ',"file":' + jsonStr(file) + ',"saved":' + (!proj.dirty ? "true" : "false") +
-            ',"version":' + jsonStr(app.version) + '}';
+        var f = null;
+        try { f = app.project.file; } catch (e) { }
+        if (!f) { return "UNSAVED|"; }
+        var t = "";
+        try { t = String(f.modified ? f.modified.getTime() : ""); } catch (e1) { }
+        return "FILE|" + f.fsName + "|" + t;
     };
 
     // ---------- HTTP POST via a system curl call (ExtendScript has no native HTTP client) ----------

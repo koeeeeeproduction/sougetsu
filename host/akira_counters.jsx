@@ -59,82 +59,148 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ================= Proximity rig =================
+    // Contract (client/js_flex/main.js applyProximityEffector / resetProximityEffector):
+    //   createProximityNull()             -> JSON {id,index,name} / "ERR:"
+    //   applyProximity(JSON config)       -> "SUCCESS:count" / "SUCCESS_WITH_ERRORS:count:err; err" / "ERR:"
+    //   resetProximityExpressions(JSON {position,scale,rotation,opacity,all}) -> "SUCCESS:removed" / "ERR:"
     var PROX_NULL_NAME = "Proximity Null";
     var PROX_MARK = "// akira-proximity";
-    function findProxNull(comp) {
-        var i; for (i = 1; i <= comp.numLayers; i += 1) { if (comp.layer(i).name === PROX_NULL_NAME) { return comp.layer(i); } } return null;
+    function jstr(v) { return '"' + String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n") + '"'; }
+    function layerId(L) { try { return L.id === undefined ? "" : String(L.id); } catch (e) { return ""; } }
+    function compByIdOrActive(id) {
+        if (id) {
+            var items = app.project.items, i;
+            for (i = 1; i <= items.length; i += 1) { if (items[i] instanceof CompItem && String(items[i].id) === String(id)) { return items[i]; } }
+        }
+        return H.activeComp();
     }
     F.createProximityNull = function () {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp();
         if (!comp) { return "ERR:Open a composition first."; }
-        if (findProxNull(comp)) { return "SUCCESS"; }
         app.beginUndoGroup("Create Proximity Null");
         try {
-            var L = comp.layers.addNull();
-            L.name = PROX_NULL_NAME;
+            var L = comp.layers.addNull(), n = 1, i, taken = {};
+            for (i = 1; i <= comp.numLayers; i += 1) { taken[comp.layer(i).name] = true; }
+            var name = PROX_NULL_NAME;
+            while (taken[name]) { n += 1; name = PROX_NULL_NAME + " " + n; }
+            L.name = name; L.label = 11;
             L.transform.position.setValue([comp.width / 2, comp.height / 2]);
+            app.endUndoGroup();
+            return '{"id":' + jstr(layerId(L)) + ',"index":' + L.index + ',"name":' + jstr(L.name) + '}';
         } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
-        app.endUndoGroup();
-        return "SUCCESS";
     };
-    function proxExpr(property, radius, falloff) {
-        var base = (property === "opacity") ? "100" : "100";
+    // influence f (1 = at the controller, 0 = beyond the max range). pos = expression text for the layer's own position.
+    function proxCore(c, pos) {
+        var dist = (c.distanceMode === "bounds") ?
+            "var r=sourceRectAtTime(time,false),sc=transform.scale.value,ap=transform.anchorPoint.value;\n" +
+            "var cx=me[0]+(r.left+r.width/2-ap[0])*sc[0]/100,cy=me[1]+(r.top+r.height/2-ap[1])*sc[1]/100;\n" +
+            "var dx=Math.max(Math.abs(p[0]-cx)-Math.abs(r.width*sc[0]/200),0),dy=Math.max(Math.abs(p[1]-cy)-Math.abs(r.height*sc[1]/200),0);\n" +
+            "var d=Math.sqrt(dx*dx+dy*dy);\n" :
+            "var d=Math.sqrt((p[0]-me[0])*(p[0]-me[0])+(p[1]-me[1])*(p[1]-me[1]));\n";
+        var mn = Math.max(0, c.minR), mx = Math.max(mn + 0.001, c.maxR);
         return PROX_MARK + "\n" +
-            'nullL = thisComp.layer("' + PROX_NULL_NAME + '");\n' +
-            'd = length(thisLayer.transform.position.valueAtTime(time) - nullL.transform.position.valueAtTime(time));\n' +
-            'radius = ' + radius + '; falloff = ' + falloff + ';\n' +
-            'f = (d < radius) ? 1 : Math.max(0, 1 - (d - radius) / Math.max(falloff, 1));\n' +
-            (property === "opacity" ? 'value * f' : 'value * (0.5 + 0.5 * f)');
+            "var f=0;try{\n" +
+            "var C=thisComp.layer(" + jstr(c.nullName) + "),p=C.toComp(C.transform.anchorPoint.value);\n" +
+            "var P=" + pos + ",me=hasParent?parent.toComp(P):P;\n" + dist +
+            (c.contactOnly ? "f=d<=" + mn + "?1:0;\n" : "f=d<=" + mn + "?1:(d>=" + mx + "?0:1-(d-" + mn + ")/" + (mx - mn) + ");f=f*f*(3-2*f);\n") +
+            (c.invert ? "f=1-f;\n" : "") +
+            "}catch(err){f=0;}\n";
+    }
+    function num(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+    function setExpr(prop, expr, label, errs) {
+        try { prop.expression = expr; if (prop.expressionError) { errs.push(label + ": " + prop.expressionError); return false; } return true; }
+        catch (e) { errs.push(label + ": " + e.toString()); return false; }
     }
     F.applyProximity = function (arg) {
         var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp();
+        var c;
+        try { c = H.parseJSON(String(arg)); } catch (e0) { c = null; }
+        if (!c) { return "ERR:Could not read the proximity settings."; }
+        var comp = compByIdOrActive(c.compId);
         if (!comp) { return "ERR:Open a composition first."; }
-        var layers = H.selectedLayers(comp);
-        if (!layers.length) { return "ERR:Select at least one layer."; }
-        if (!findProxNull(comp)) {
-            app.beginUndoGroup("Create Proximity Null");
-            try { var nl = comp.layers.addNull(); nl.name = PROX_NULL_NAME; nl.transform.position.setValue([comp.width / 2, comp.height / 2]); }
-            catch (e0) { app.endUndoGroup(); return "ERR:" + e0.toString(); }
-            app.endUndoGroup();
+        var ctrl = null, i;
+        if (c.nullId) { for (i = 1; i <= comp.numLayers; i += 1) { if (layerId(comp.layer(i)) === String(c.nullId)) { ctrl = comp.layer(i); break; } } }
+        if (!ctrl) { var ix = parseInt(c.nullIndex, 10); if (ix >= 1 && ix <= comp.numLayers) { ctrl = comp.layer(ix); } }
+        if (!ctrl) { return "ERR:The controller null is gone. Pick or create one."; }
+        c.nullName = ctrl.name;
+        c.minR = num(c.minR, 0); c.maxR = num(c.maxR, 400);
+        var pr = c.properties || {}, ep = c.effectPairing || {}, targets = [], src = c.useSelectedLayers ? H.selectedLayers(comp) : [];
+        if (!c.useSelectedLayers) { for (i = 1; i <= comp.numLayers; i += 1) { src.push(comp.layer(i)); } }
+        for (i = 0; i < src.length; i += 1) {
+            var L = src[i];
+            if (L === ctrl || H.isCamOrLight(L)) { continue; }
+            if (c.ignoreMatte !== false) { try { if (L.isTrackMatte) { continue; } } catch (e1) { } }
+            if (L.nullLayer && !c.useSelectedLayers) { continue; }
+            targets.push(L);
         }
-        var s = decodeArg(arg), prop = strField(s, "property", "scale");
-        var radius = numField(s, "radius", 200), falloff = numField(s, "falloff", 150);
+        if (!targets.length) { return "ERR:" + (c.useSelectedLayers ? "Select the layers to affect." : "No layers to affect in this comp."); }
+        if (!pr.position && !pr.scale && !pr.rotation && !pr.opacity && !ep.enabled) { return "ERR:Tick at least one property (Position, Scale, Rotation, Opacity) or pick an effect."; }
+        var errs = [], done = 0;
         app.beginUndoGroup("Apply Proximity");
         try {
-            var i;
-            for (i = 0; i < layers.length; i += 1) {
-                var L = layers[i];
-                if (L.name === PROX_NULL_NAME) { continue; }
-                var p = (prop === "opacity") ? L.transform.opacity : L.transform.scale;
-                p.expression = proxExpr(prop, radius, falloff);
+            for (i = 0; i < targets.length; i += 1) {
+                var T = targets[i], tr = T.property("ADBE Transform Group"), ok = false, nm = T.name;
+                var core = proxCore(c, "transform.position.value"), coreP = proxCore(c, "value");
+                if (pr.position) { ok = setExpr(tr.property("ADBE Position"), coreP + "var o=[" + num(pr.positionXVal, 0) + "*f," + num(pr.positionYVal, 0) + "*f];value.length==3?[value[0]+o[0],value[1]+o[1],value[2]]:[value[0]+o[0],value[1]+o[1]];", nm + " Position", errs) || ok; }
+                if (pr.scale) { ok = setExpr(tr.property("ADBE Scale"), core + "var a=" + num(pr.scaleVal, 0) + "*f;value.length==3?[value[0]+a,value[1]+a,value[2]+a]:[value[0]+a,value[1]+a];", nm + " Scale", errs) || ok; }
+                if (pr.rotation) { ok = setExpr(tr.property("ADBE Rotate Z"), core + "value+" + num(pr.rotationVal, 0) + "*f;", nm + " Rotation", errs) || ok; }
+                if (pr.opacity) { var o0 = num(pr.opacityMinVal, 0), o1 = num(pr.opacityMaxVal, 100); ok = setExpr(tr.property("ADBE Opacity"), core + o0 + "+(" + (o1 - o0) + ")*f;", nm + " Opacity", errs) || ok; }
+                if (ep.enabled && ep.matchName) {
+                    var par = T.property("ADBE Effect Parade"), fx = null, k;
+                    if (par) {
+                        for (k = 1; k <= par.numProperties; k += 1) { if (par.property(k).matchName === ep.matchName) { fx = par.property(k); break; } }
+                        if (!fx && ep.allowAdd) { try { fx = par.addProperty(ep.matchName); } catch (e2) { fx = null; } }
+                    }
+                    if (!fx) { errs.push(nm + ": no " + (ep.displayName || ep.matchName) + (ep.allowAdd ? " (could not add it)" : " (turn on auto-add)")); }
+                    else {
+                        var fp = null;
+                        try { fp = fx.property(ep.propName); } catch (e3) { fp = null; }
+                        if (!fp || !fp.canSetExpression) { errs.push(nm + ": " + (ep.displayName || "effect") + " has no '" + ep.propName + "'"); }
+                        else { var v0 = num(ep.minVal, 0), v1 = num(ep.maxVal, 100); ok = setExpr(fp, core + v0 + "+(" + (v1 - v0) + ")*f;", nm + " " + ep.propName, errs) || ok; }
+                    }
+                }
+                if (ok) { done += 1; }
             }
         } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return "SUCCESS";
+        if (!done) { return "ERR:" + (errs.length ? errs.slice(0, 6).join("; ") : "Nothing was applied."); }
+        return errs.length ? ("SUCCESS_WITH_ERRORS:" + done + ":" + errs.slice(0, 12).join("; ")) : ("SUCCESS:" + done);
     };
-    F.resetProximityExpressions = function () {
+    function clearMarked(prop) {
+        try { if (prop && prop.canSetExpression && String(prop.expression).indexOf(PROX_MARK) !== -1) { prop.expression = ""; return 1; } } catch (e) { }
+        return 0;
+    }
+    F.resetProximityExpressions = function (arg) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp();
-        if (!comp) { return "OK:0"; }
-        var removed = 0, i;
+        if (!comp) { return "ERR:Open a composition first."; }
+        var c = null;
+        try { c = H.parseJSON(String(arg || "")); } catch (e0) { c = null; }
+        if (!c) { c = { position: true, scale: true, rotation: true, opacity: true, all: true }; }
+        var layers = H.selectedLayers(comp), removed = 0, i, k;
+        if (!layers.length) { for (i = 1; i <= comp.numLayers; i += 1) { layers.push(comp.layer(i)); } }
         app.beginUndoGroup("Reset Proximity");
         try {
-            for (i = 1; i <= comp.numLayers; i += 1) {
-                var L = comp.layer(i), props = [L.transform.opacity, L.transform.scale], j;
-                for (j = 0; j < props.length; j += 1) {
-                    try {
-                        if (props[j].expressionEnabled && String(props[j].expression).indexOf(PROX_MARK) !== -1) {
-                            props[j].expression = ""; removed += 1;
-                        }
-                    } catch (e1) { }
+            for (i = 0; i < layers.length; i += 1) {
+                var tr = layers[i].property("ADBE Transform Group");
+                if (c.position) { removed += clearMarked(tr.property("ADBE Position")); }
+                if (c.scale) { removed += clearMarked(tr.property("ADBE Scale")); }
+                if (c.rotation) { removed += clearMarked(tr.property("ADBE Rotate Z")); }
+                if (c.opacity) { removed += clearMarked(tr.property("ADBE Opacity")); }
+                if (c.all) {
+                    var par = layers[i].property("ADBE Effect Parade");
+                    for (k = 1; par && k <= par.numProperties; k += 1) {
+                        var fx = par.property(k), q;
+                        for (q = 1; q <= fx.numProperties; q += 1) { try { removed += clearMarked(fx.property(q)); } catch (e1) { } }
+                    }
                 }
             }
         } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return "OK:" + removed;
+        return "SUCCESS:" + removed;
     };
+
 
     // ================= Keyframe bezier detection =================
     function targetProperty(comp) {

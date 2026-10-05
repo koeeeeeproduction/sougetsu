@@ -129,4 +129,41 @@ t('Akira Grid builds its own expression-driven shape layer (no plug-in)', () => 
   A.ok(/^ERR:/.test(M.makeEnv({ files: ORDER, noComp: true }).F.akiraGrid('1|1|250|250|3|100|22')));
 });
 
+t('proximity: config JSON in, SUCCESS:count out, reset removes only its own expressions', () => {
+  const e = env(), F = e.F;
+  const made = JSON.parse(F.createProximityNull());
+  A.ok(made.name === 'Proximity Null' && made.index >= 1, JSON.stringify(made));
+  const a = e.comp.layers.addShape(), b = e.comp.layers.addShape(); a.name = 'A'; b.name = 'B';
+  b.transform.rotation.expression = 'wiggle(1,1)';
+  const cfg = { nullIndex: String(e.comp._l.findIndex(l => l.name === 'Proximity Null') + 1), nullId: String(made.id), compId: '', minR: 0, maxR: 400, distanceMode: 'bounds', contactOnly: false, invert: false, useSelectedLayers: false, ignoreMatte: true,
+    properties: { position: true, positionXVal: 10, positionYVal: 0, scale: true, scaleVal: 20, rotation: false, opacity: true, opacityMinVal: 0, opacityMaxVal: 100 }, effectPairing: { enabled: false } };
+  const r = F.applyProximity(JSON.stringify(cfg));
+  A.strictEqual(r, 'SUCCESS:2', r);
+  A.ok(a.transform.scale.expression.indexOf('akira-proximity') >= 0 && a.transform.scale.expression.indexOf('"Proximity Null"') > 0);
+  A.ok(/^ERR:/.test(F.applyProximity(JSON.stringify(Object.assign({}, cfg, { nullId: '', nullIndex: '99' })))));
+  A.strictEqual(F.resetProximityExpressions(JSON.stringify({ position: true, scale: true, rotation: true, opacity: true, all: true })), 'SUCCESS:6');
+  A.strictEqual(b.transform.rotation.expression, 'wiggle(1,1)');
+  A.strictEqual(e.undo(), 0);
+});
+
+t('un-precompose: plan -> PLAN:, one -> ONE:, select, plain call', () => {
+  const e = env(), F = e.F, items = e.items;
+  const inner = items.addComp('Inner', 1920, 1080, 1, 10, 25); inner.layers.addShape().name = 'x'; inner.layers.addShape().name = 'y';
+  const pl = e.comp.layers.add(inner); pl.selected = true; pl.transform.position.setValue([960, 540]); inner.frameRate = 25; e.comp.frameRate = 25;
+  const plan = F.unPrecomp('plan|');
+  A.ok(/^PLAN:\d+\|1:\d+:Inner$/.test(plan), plan);
+  const it = plan.substring(5).split('|')[1].split(':');
+  items.push(e.comp); items.unshift(null); // the AE collection is 1-based
+  const one = F.unPrecomp(['one', '', String(e.comp.id), it[0], it[1], it[2]].join('|'));
+  A.ok(/^ONE:2\|1\|0\|\d+,\d+\|/.test(one), one);
+  A.strictEqual(F.unPrecomp('select||' + e.comp.id + '|' + one.split('|')[3]), 'OK');
+  A.strictEqual(e.comp.selectedLayers.length, 2);
+  A.strictEqual(e.undo(), 0);
+});
+
+t('project save info only changes on save', () => {
+  const e = env();
+  A.strictEqual(e.F.getProjectSaveInfo(), 'UNSAVED|');
+});
+
 console.log(process.exitCode ? 'SOME TESTS FAILED' : 'ALL ' + passed + ' ENGINE TESTS PASSED');
