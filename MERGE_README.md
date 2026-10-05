@@ -4,7 +4,7 @@ This folder is the full clean-room extension base your Code session asked for. D
 CONTENTS into the Code session's project folder/branch.
 
 ## What's here
-- `client/` — the panel UI (index.html, js_flex, css_flex, i18n, etc.)
+- `client/` — the panel UI (index.html, js_akira, css_akira, i18n, etc.)
 - `CSXS/manifest.xml` — extension identity (bundle id com.sougetsu.akirafx)
 - `host/` — all clean-room host files:
   - base: akira_core, akira_tools (defines the shared helper H), akira_tools2, akira_color,
@@ -18,7 +18,7 @@ CONTENTS into the Code session's project folder/branch.
 1. Add `akira_maps.jsx` (and any of akira_shapes2/akira_rigs it made) into `host/` — the
    loader already references akira_maps.jsx.
 2. **Line up reply formats:** for every function in the added files, check how the panel calls
-   it and what it expects back by reading `client/index.html` (and js_flex/*). The added files
+   it and what it expects back by reading `client/index.html` (and js_akira/*). The added files
    guessed "SUCCESS"/"ERR:"/"OK:"+json; confirm each against the panel's reply handler.
 3. Build the install folder `com.sougetsu.akirafx/` and give the install + debug-mode steps.
 
