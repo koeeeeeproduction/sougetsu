@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.sougetsu.akirafx" ExtensionBundleVersion="9.2.2" ExtensionBundleName="Sougetsu Akira FX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.sougetsu.akirafx" ExtensionBundleVersion="1.0.0" ExtensionBundleName="Sougetsu Akira FX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.sougetsu.akirafx" Version="9.2.2" />
-    <Extension Id="com.sougetsu.akirafx.eject1" Version="9.2.2" />
-    <Extension Id="com.sougetsu.akirafx.eject2" Version="9.2.2" />
-    <Extension Id="com.sougetsu.akirafx.eject3" Version="9.2.2" />
-    <Extension Id="com.sougetsu.akirafx.eject4" Version="9.2.2" />
-    <Extension Id="com.sougetsu.akirafx.eject5" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx" Version="1.0.0" />
+    <Extension Id="com.sougetsu.akirafx.eject1" Version="1.0.0" />
+    <Extension Id="com.sougetsu.akirafx.eject2" Version="1.0.0" />
+    <Extension Id="com.sougetsu.akirafx.eject3" Version="1.0.0" />
+    <Extension Id="com.sougetsu.akirafx.eject4" Version="1.0.0" />
+    <Extension Id="com.sougetsu.akirafx.eject5" Version="1.0.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

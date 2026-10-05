@@ -3,7 +3,7 @@
 // Feature functions are added here in later stages. ExtendScript = ES3: no let/const, no arrow functions, no JSON.
 if (typeof $._akira === "undefined") { $._akira = {}; }
 
-$._akira.coreVersion = "9.2.2-stage0";
+$._akira.coreVersion = "1.0.0";
 $._akira.isLocked = true; // the panel calls unlockLicenseJSX after Dodo validates the key
 
 (function () {
