@@ -1,27 +1,27 @@
-// Sougetsu Akira FX - Map Rigs engine (clean-room, own design). Contracts read from client/js_flex/map_rigs.js:
-//   $._flex.flexMapEngineVersion (number property, panel requires >= 20)
-//   flexMap_createFromFile(path)            -> "OK:<rigLayerIndex>:RIG:<rigId>" / "ERR:"
-//   flexMap_replaceViewFromFile(path)       -> "OK" / "ERR:"        (live re-render of imagery, borders, labels)
-//   flexMap_syncRigToView(index, lat, lon, zoom, bearing, rigId) -> "OK" / "ERR:"
-//   flexMap_listRigs()                      -> JSON [{index,id,name,level,baseFrameMerc:"minX,maxX,minY,maxY"}]
-//   flexMap_selectRig(index, rigId)         -> "OK:<resolvedIndex>" / "ERR:"
-//   flexMap_activeRig()                     -> JSON {name,index,id} / "null"
-//   flexMap_bakeRig(index, rigId)           -> "OK" / "ERR:"
-//   flexMap_traceOutlineFromFile(path)      -> "SUCCESS:<rigIndex>:RIG:<rigName>" or "SUCCESS:0:COMP:<layerName>" / "ERR:"
-//   flexMap_createTrackerFromFile(path)     -> "OK:<trackerLayerIndex>" / "ERR:"
+// Sougetsu Akira FX - Map Rigs engine (clean-room, own design). Contracts read from client/js_akira/map_rigs.js:
+//   $._akira.akiraMapEngineVersion (number property, panel requires >= 20)
+//   akiraMap_createFromFile(path)            -> "OK:<rigLayerIndex>:RIG:<rigId>" / "ERR:"
+//   akiraMap_replaceViewFromFile(path)       -> "OK" / "ERR:"        (live re-render of imagery, borders, labels)
+//   akiraMap_syncRigToView(index, lat, lon, zoom, bearing, rigId) -> "OK" / "ERR:"
+//   akiraMap_listRigs()                      -> JSON [{index,id,name,level,baseFrameMerc:"minX,maxX,minY,maxY"}]
+//   akiraMap_selectRig(index, rigId)         -> "OK:<resolvedIndex>" / "ERR:"
+//   akiraMap_activeRig()                     -> JSON {name,index,id} / "null"
+//   akiraMap_bakeRig(index, rigId)           -> "OK" / "ERR:"
+//   akiraMap_traceOutlineFromFile(path)      -> "SUCCESS:<rigIndex>:RIG:<rigName>" or "SUCCESS:0:COMP:<layerName>" / "ERR:"
+//   akiraMap_createTrackerFromFile(path)     -> "OK:<trackerLayerIndex>" / "ERR:"
 // Payloads are JSON files the panel writes to its cache folder. Geometry arrives normalised (0..1) to a Web-Mercator
 // frame {minX,maxX,minY,maxY}; every rig keeps its own base frame (in the rig layer comment) and anything added later
 // is re-projected into it, so imagery, outlines and trackers stay aligned when the view is re-synced.
 // Rig = precomp layer with effects "Akira Map Zoom" (slider, %), "Akira Map Pan" (point, inner-comp px),
 // "Akira Map Bearing" (angle) driving scale / anchor point / rotation by expression.
-// Tags used by the panel's own follow-up scripts: FLEX_MAP_OUTLINE_V1|name, FLEX_MAP_PLACE_VECTOR_V1|name|.
+// Tags used by the panel's own follow-up scripts: AKIRA_MAP_OUTLINE_V1|name, AKIRA_MAP_PLACE_VECTOR_V1|name|.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H || !H.parseJSON) { return; }
-    F.flexMapEngineVersion = 20;
+    F.akiraMapEngineVersion = 20;
 
     var RIG = "AKIRA_MAP_RIG_V1|", FX_ZOOM = "Akira Map Zoom", FX_PAN = "Akira Map Pan", FX_BEAR = "Akira Map Bearing";
     var VIEW_TAGS = ["AKIRA_MAP_BASEMAP_V1", "AKIRA_MAP_BG_V1", "AKIRA_MAP_FEATURE_V1", "AKIRA_MAP_LABEL_V1", "AKIRA_MAP_PATHS_V1"];
@@ -190,7 +190,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     }
 
     // ================= create =================
-    F.flexMap_createFromFile = function (path) {
+    F.akiraMap_createFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
@@ -237,7 +237,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ================= live view refresh / sync =================
-    F.flexMap_replaceViewFromFile = function (path) {
+    F.akiraMap_replaceViewFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
@@ -250,7 +250,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return "OK";
     };
 
-    F.flexMap_syncRigToView = function (index, lat, lon, zoom, bearing, rigId) {
+    F.akiraMap_syncRigToView = function (index, lat, lon, zoom, bearing, rigId) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var rig = resolveRig(comp, index, rigId, false); if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
@@ -265,7 +265,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ================= list / select / active / bake =================
-    F.flexMap_listRigs = function () {
+    F.akiraMap_listRigs = function () {
         var comp = H.activeComp(); if (!comp) { return "[]"; }
         var rigs = allRigs(comp), out = [], i;
         for (i = 0; i < rigs.length; i += 1) {
@@ -275,18 +275,18 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         }
         return H.toJSON(out);
     };
-    F.flexMap_selectRig = function (index, rigId) {
+    F.akiraMap_selectRig = function (index, rigId) {
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var rig = resolveRig(comp, index, rigId, false), i; if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
         try { for (i = 1; i <= comp.numLayers; i += 1) { comp.layer(i).selected = (i === rig.index); } } catch (e) { }
         return "OK:" + rig.index;
     };
-    F.flexMap_activeRig = function () {
+    F.akiraMap_activeRig = function () {
         var comp = H.activeComp(); if (!comp) { return "null"; }
         var rig = resolveRig(comp, 0, "", true);
         return rig ? H.toJSON({ name: rig.name, index: rig.index, id: rig.id }) : "null";
     };
-    F.flexMap_bakeRig = function (index, rigId) {
+    F.akiraMap_bakeRig = function (index, rigId) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var rig = resolveRig(comp, index, rigId, false); if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
@@ -326,7 +326,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         var W = comp.width, Hh = comp.height;
         return { conv: function (q) { return [num(q[0], 0) * W, num(q[1], 0) * Hh]; }, geo: null };
     }
-    F.flexMap_traceOutlineFromFile = function (path) {
+    F.akiraMap_traceOutlineFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
@@ -345,7 +345,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ================= trackers (pins, bubbles, spikes, places) =================
-    F.flexMap_createTrackerFromFile = function (path) {
+    F.akiraMap_createTrackerFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return NO_COMP; }
         var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }

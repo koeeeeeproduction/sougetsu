@@ -1,17 +1,17 @@
-// Sougetsu Akira FX - "SaaS Effects" engine (clean-room, own designs). Contract read from client/js_flex/flex_saasfx.js:
-//   $._flex.saasVersion (number, panel requires >= 9)
-//   $._flexSaaS.<fn>("key=value;key=value") -> "SUCCESS:msg" / "ERR:msg"   (depthPrepare -> "OK:frame\tdepthOut\tready")
+// Sougetsu Akira FX - "SaaS Effects" engine (clean-room, own designs). Contract read from client/js_akira/akira_saasfx.js:
+//   $._akira.saasVersion (number, panel requires >= 9)
+//   $._akiraSaaS.<fn>("key=value;key=value") -> "SUCCESS:msg" / "ERR:msg"   (depthPrepare -> "OK:frame\tdepthOut\tready")
 //   fn: stagger, depthPrepare, depthReveal, cursor, hover, textAnim, codeGlyphs, promptBar, halftoneWave, carousel,
 //       attach, background, wipe.   Option keys/values are the panel's (see each function).
 // Live-tweakable values sit on a named control null per effect, as the panel's hints describe.
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     F.saasVersion = 9;
-    var S = $._flexSaaS = {};
+    var S = $._akiraSaaS = {};
 
     // ---------- helpers ----------
     function parse(s) {

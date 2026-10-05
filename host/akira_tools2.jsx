@@ -1,10 +1,10 @@
 // Sougetsu Akira FX - tools, batch B (clean-room): alignment, stagger, reset, keyframe easing and keyframe utilities.
 // Behaviour here is our own design built from each button's label; it intentionally does not copy any other product.
 // ES3 only: no let/const, arrow functions, JSON, Array.indexOf/forEach.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; } // akira_tools.jsx must load first
 
     // ---------- keyframe helpers ----------
@@ -67,7 +67,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return idx;
     }
 
-    // ---------- alignment (global function, called by the panel as alignLayers_FlexGUI("left|comp")) ----------
+    // ---------- alignment (global function, called by the panel as alignLayers_AkiraGUI("left|comp")) ----------
     function worldBounds(L, time) {
         var r = H.sourceRect(L, time);
         if (!r) { return null; }
@@ -81,7 +81,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         }
         return { left: minX, right: maxX, top: minY, bottom: maxY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
     }
-    $.global.alignLayers_FlexGUI = function (arg) {
+    $.global.alignLayers_AkiraGUI = function (arg) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp();
         if (!comp) { return "ERR:Open a composition first."; }

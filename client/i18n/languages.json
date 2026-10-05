@@ -1,5 +1,5 @@
 {
-"_": "Sougetsu Akira FX UI language registry. c=code (Google Translate compatible), e=English name, n=native name, r=1 when right-to-left, s=script family (drives font fallback in flex_i18n.js).",
+"_": "Sougetsu Akira FX UI language registry. c=code (Google Translate compatible), e=English name, n=native name, r=1 when right-to-left, s=script family (drives font fallback in akira_i18n.js).",
 "languages": [
 {"c":"en","e":"English","n":"English","s":"latn"},
 {"c":"af","e":"Afrikaans","n":"Afrikaans","s":"latn"},

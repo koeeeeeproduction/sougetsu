@@ -1,13 +1,13 @@
 // Sougetsu Akira FX - Akira Grid (own design, replaces the native grid plug-in the panel used to need).
-//   $._flex.akiraGrid("cols|rows|width|height|border|opacity|marker") -> "OK:layerName" / "ERR:msg"
+//   $._akira.akiraGrid("cols|rows|width|height|border|opacity|marker") -> "OK:layerName" / "ERR:msg"
 // Builds a framing-guide shape layer: column/row lines run out to the frame edges, a plus marker on every
 // corner point. Everything is driven by expressions on the layer's own Effect Controls (Columns, Rows, Width,
 // Height, Border, Marker Size, Opacity, Color, Track Layer), so it stays editable after it is applied.
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     var NAME = "Akira Grid";
 

@@ -1,6 +1,6 @@
 // Sougetsu Akira FX - camera shakes. Behaviour matched to the original v1.7.4 engine (reference: decompiled
 // FOR_SOUGETSU_fixed_2.js, BasicShake_001_JF ... WhiteFlickerShake_001_JF), rewritten as one data-driven builder.
-// Contract (client/js_flex/shake_logic.js):
+// Contract (client/js_akira/shake_logic.js):
 //   <Preset>_001_JF(atCompTime 0/1, speed%, strength%, labelColor 1-16, flashFrames, flashOpacity, flashLabel, flashOverlay 0/1, flashOn 0/1)
 //   -> "true" on success / "ERROR: msg"
 // Per selected layer: an adjustment layer above it spanning its in/out, label = labelColor, Motion Tile (mirror edges,
@@ -8,10 +8,10 @@
 // layer is time-stretched by (200 - speed)% so the speed slider changes the shake speed. Basic Shake makes a single
 // "akira_shake" layer over the whole selection. Keyframe timing uses a fixed 1/30 s step like the original.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var G = $.global, F = $._flex, H = F._h;
+    var G = $.global, F = $._akira, H = F._h;
     if (!H) { return; }
     var BLUR = 55, FD = 1 / 30;
     var LABEL_RGB = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0.7, 1, 1], [1, 0.7, 1], [0.7, 0.7, 0.7], [1, 0.7, 0.3], [0.729, 1, 0.702], [0.075, 0.604, 1],

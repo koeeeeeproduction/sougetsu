@@ -15,10 +15,10 @@
 //     spec: {name,width,height,duration,frameRate,bgColor,elements:[
 //       {type:"text",text,x,y,size,color} | {type:"solid",x,y,w,h,color,name} ]}
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     function jsonStr(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n") + '"'; }
@@ -59,7 +59,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     };
 
     // ================= Proximity rig =================
-    // Contract (client/js_flex/main.js applyProximityEffector / resetProximityEffector):
+    // Contract (client/js_akira/main.js applyProximityEffector / resetProximityEffector):
     //   createProximityNull()             -> JSON {id,index,name} / "ERR:"
     //   applyProximity(JSON config)       -> "SUCCESS:count" / "SUCCESS_WITH_ERRORS:count:err; err" / "ERR:"
     //   resetProximityExpressions(JSON {position,scale,rotation,opacity,all}) -> "SUCCESS:removed" / "ERR:"

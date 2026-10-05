@@ -1,10 +1,10 @@
 // Sougetsu Akira FX - tools, batch A (clean-room). Everyday layout, layer and project tools.
 // Conventions used by the panel: return "SUCCESS" / "OK" on success, "ERR:message" for a user-facing error.
 // ExtendScript is ES3: no let/const, no arrow functions, no JSON, no Array.indexOf/forEach.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex;
+    var F = $._akira;
 
     // ---------- shared helpers ----------
     function locked() { return F.isLocked ? "ERR:Extension is locked. Enter your license key." : null; }
@@ -66,7 +66,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
 
     // ---------- startup + undo ----------
     F.loadCore = function (extPath) {
-        try { if (typeof extPath === "string" && extPath.length) { $._flex_extension_path = extPath; } } catch (e) { }
+        try { if (typeof extPath === "string" && extPath.length) { $._akira_extension_path = extPath; } } catch (e) { }
         return "OK";
     };
     F.startUndoGroup = function (name) {

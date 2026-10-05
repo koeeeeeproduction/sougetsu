@@ -1,13 +1,13 @@
 // Sougetsu Akira FX - Project Organizer (clean-room). Batch I2.
-// Contract (read from the panel): flexProjectAnalyze(), flexProjectOrganize(enc), flexProjectBoardLayout(enc), flexProjectBoardRestore().
+// Contract (read from the panel): akiraProjectAnalyze(), akiraProjectOrganize(enc), akiraProjectBoardLayout(enc), akiraProjectBoardRestore().
 // Reply: "OK:" + encodeURIComponent(JSON) on success, "ERR:msg" on failure.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var G = $.global, F = $._flex, H = F._h;
+    var G = $.global, F = $._akira, H = F._h;
     if (!H) { return; }
-    G.flexProjectOrganizerVersion = "akira-1.0";   // the panel checks this to know the engine is loaded
+    G.akiraProjectOrganizerVersion = "akira-1.0";   // the panel checks this to know the engine is loaded
 
     // ---------- tiny JSON + URI ----------
     function J(v) {
@@ -81,7 +81,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         }
         return c;
     }
-    G.flexProjectAnalyze = function () {
+    G.akiraProjectAnalyze = function () {
         if (!app.project) { return fail("No project is open."); }
         try { return ok(analyze()); } catch (e) { return fail(e.toString()); }
     };
@@ -96,7 +96,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         cache[name] = proj.items.addFolder(name); return cache[name];
     }
     var BUCKET = { video: "Footage", image: "Images", audio: "Audio", solid: "Solids", missing: "Missing", data: "Data", other: "Misc" };
-    G.flexProjectOrganize = function (arg) {
+    G.akiraProjectOrganize = function (arg) {
         var g = F.isLocked ? fail("Extension is locked.") : null; if (g) { return g; }
         if (!app.project) { return fail("No project is open."); }
         var opt = parseOpts(arg), proj = app.project, used = usedComps(), cache = {}, moved = 0, i;
@@ -121,7 +121,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
 
     // ---------- board layout: arrange the selected comp's pre-comp layers on a grid, remembering their original positions ----------
     function encodePos(p) { return "AKIRA_BOARD|" + Math.round(p[0] * 100) / 100 + "|" + Math.round(p[1] * 100) / 100 + (p.length > 2 ? "|" + Math.round(p[2] * 100) / 100 : ""); }
-    G.flexProjectBoardLayout = function (arg) {
+    G.akiraProjectBoardLayout = function (arg) {
         var g = F.isLocked ? fail("Extension is locked.") : null; if (g) { return g; }
         var comp = H.activeComp();
         if (!comp) { return fail("Open the composition you want to arrange."); }
@@ -150,7 +150,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         app.endUndoGroup();
         return ok({ arranged: arranged });
     };
-    G.flexProjectBoardRestore = function () {
+    G.akiraProjectBoardRestore = function () {
         var g = F.isLocked ? fail("Extension is locked.") : null; if (g) { return g; }
         var comp = H.activeComp();
         if (!comp) { return fail("Open the composition to restore."); }
@@ -172,8 +172,8 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return ok({ restored: restored });
     };
 
-    // The panel (js_flex/flex_project_tools.js) calls these as $._flex.* and checks $._flex.flexProjectOrganizerVersion.
-    F.flexProjectOrganizerVersion = G.flexProjectOrganizerVersion;
-    F.flexProjectAnalyze = G.flexProjectAnalyze; F.flexProjectOrganize = G.flexProjectOrganize;
-    F.flexProjectBoardLayout = G.flexProjectBoardLayout; F.flexProjectBoardRestore = G.flexProjectBoardRestore;
+    // The panel (js_akira/akira_project_tools.js) calls these as $._akira.* and checks $._akira.akiraProjectOrganizerVersion.
+    F.akiraProjectOrganizerVersion = G.akiraProjectOrganizerVersion;
+    F.akiraProjectAnalyze = G.akiraProjectAnalyze; F.akiraProjectOrganize = G.akiraProjectOrganize;
+    F.akiraProjectBoardLayout = G.akiraProjectBoardLayout; F.akiraProjectBoardRestore = G.akiraProjectBoardRestore;
 })();

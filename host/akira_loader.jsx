@@ -14,8 +14,8 @@
         }
     } catch (e1) { }
 
-    if (!here && typeof $._flex_extension_path === "string" && $._flex_extension_path.length) {
-        var viaPanel = new Folder($._flex_extension_path + "/host");
+    if (!here && typeof $._akira_extension_path === "string" && $._akira_extension_path.length) {
+        var viaPanel = new Folder($._akira_extension_path + "/host");
         if (ok(viaPanel)) { here = viaPanel; }
     }
 
@@ -36,8 +36,8 @@
 
     if (!here) { return; } // not found: stay quiet; the panel will load us with an explicit path
 
-    if (typeof $._flex === "undefined") { $._flex = {}; }
-    try { $._flex_extension_path = here.parent.fullName; } catch (e5) { }
+    if (typeof $._akira === "undefined") { $._akira = {}; }
+    try { $._akira_extension_path = here.parent.fullName; } catch (e5) { }
 
     function load(name, required) {
         var f = new File(here.fullName + "/" + name);
@@ -45,9 +45,9 @@
         try { $.evalFile(f); return true; }
         catch (err) { alert("Akira FX: error loading " + name + ": " + err.toString()); return false; }
     }
-    var wasLocked = (typeof $._flex.isLocked === "boolean") ? $._flex.isLocked : true;
+    var wasLocked = (typeof $._akira.isLocked === "boolean") ? $._akira.isLocked : true;
     load("akira_core.jsx", true);
-    $._flex.isLocked = wasLocked; // keep the license state across a reload
+    $._akira.isLocked = wasLocked; // keep the license state across a reload
     load("akira_tools.jsx", false);
     load("akira_json.jsx", false);
     load("akira_tools2.jsx", false);
@@ -77,6 +77,6 @@
     load("akira_showcase.jsx", false);
     load("akira_saas.jsx", false);
     load("akira_templates2.jsx", false);
-    $._flex.isLocked = wasLocked;
+    $._akira.isLocked = wasLocked;
     load("paste_feature.jsx", false);
 })();

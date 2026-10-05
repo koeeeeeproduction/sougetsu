@@ -7,10 +7,10 @@
 //   rectDetectState() -> "type|left|right|top|bottom|width|height|centerX|centerY" or "none"
 //   rectModifySide("left"|"right"|"top"|"bottom"|"width"|"height", value) -> "SUCCESS" / "ERR:"
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     function selShapes(comp) {

@@ -1,9 +1,9 @@
 // Sougetsu Akira FX - General tab tools: shape/transform value setter, fill/stroke toggle, true duplicate, extract from pre-comp (clean-room). Batch H.
 // Behaviour is our own design built from each button's label. ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     // ---------- helpers ----------

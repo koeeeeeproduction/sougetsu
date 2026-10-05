@@ -1,9 +1,9 @@
 // Sougetsu Akira FX - text tools (clean-room). Batch C2.
 // Behaviour is our own design built from each button's label. ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     // ---------- helpers ----------

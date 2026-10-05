@@ -6,10 +6,10 @@
 //     JSON shape: {hue:Number, lightness:Number, saturation:Number} degrees/percent deltas,
 //     computed client-side by sampling source/target thumbnails and sent here to apply.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     function jsonStr(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n") + '"'; }

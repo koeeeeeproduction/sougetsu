@@ -1,19 +1,19 @@
-// Sougetsu Akira FX - Motion Showcase engine (clean-room, own design). Contract read from client/js_flex/motion_showcase.js:
-//   $.global._flexMotionShowcaseHostVersion = "1.0.1"
-//   getMotionShowcaseSelection_FlexGUI(enc(""))  -> "index|encName\n..." (visual layers, max 20) / "ERR:"
-//   buildMotionShowcase_FlexGUI(enc(cfg))        -> "SUCCESS:msg" / "ERR:"
-//   updateMotionShowcase_FlexGUI(enc(cfg))       -> "SUCCESS:msg" / "ERR:"   (live: only touches controls)
-//   queueMotionShowcase_FlexGUI(enc(""))         -> "SUCCESS:msg" / "ERR:"
+// Sougetsu Akira FX - Motion Showcase engine (clean-room, own design). Contract read from client/js_akira/motion_showcase.js:
+//   $.global._akiraMotionShowcaseHostVersion = "1.0.1"
+//   getMotionShowcaseSelection_AkiraGUI(enc(""))  -> "index|encName\n..." (visual layers, max 20) / "ERR:"
+//   buildMotionShowcase_AkiraGUI(enc(cfg))        -> "SUCCESS:msg" / "ERR:"
+//   updateMotionShowcase_AkiraGUI(enc(cfg))       -> "SUCCESS:msg" / "ERR:"   (live: only touches controls)
+//   queueMotionShowcase_AkiraGUI(enc(""))         -> "SUCCESS:msg" / "ERR:"
 //   cfg = "template|ratio|duration|radius%|cardScale%|vertical%|perspective%|pulse%|corner px|#bg|motionBlur 1/0|faceCamera 1/0|i,j,k"
 //   template orbit (3D ring) | helix (spiral) | depth (camera-space flow). All layouts are expressions on a
 //   "Showcase Control" null, so a live update just sets its sliders.
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var G = $.global, F = $._flex, H = F._h;
+    var G = $.global, F = $._akira, H = F._h;
     if (!H) { return; }
-    G._flexMotionShowcaseHostVersion = "1.0.1";
+    G._akiraMotionShowcaseHostVersion = "1.0.1";
     var TAG = "AKIRA_SHOWCASE|", CTRL = "Showcase Control";
     var SIZES = { "16:9": [1920, 1080], "4:3": [1440, 1080], "1:1": [1080, 1080], "4:5": [1080, 1350], "9:16": [1080, 1920] };
 
@@ -97,14 +97,14 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         sc.motionBlur = c.motionBlur;
     }
 
-    G.getMotionShowcaseSelection_FlexGUI = function () {
+    G.getMotionShowcaseSelection_AkiraGUI = function () {
         var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition and select 2-20 visual layers."; }
         var sel = H.selectedLayers(comp), out = [], i;
         for (i = 0; i < sel.length && out.length < 20; i += 1) { if (isVisual(sel[i])) { out.push(sel[i].index + "|" + encodeURIComponent(sel[i].name)); } }
         return out.length ? out.join("\n") : "ERR:Select visual layers in the active composition.";
     };
 
-    G.buildMotionShowcase_FlexGUI = function (arg) {
+    G.buildMotionShowcase_AkiraGUI = function (arg) {
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp(); if (!comp) { return "ERR:Open the composition that holds your layers."; }
         var c = cfg(arg), sources = [], i;
@@ -134,7 +134,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return "SUCCESS:Built a " + sources.length + "-card " + c.template + " showcase (" + c.ratio + ", " + c.duration + "s loop).";
     };
 
-    G.updateMotionShowcase_FlexGUI = function (arg) {
+    G.updateMotionShowcase_AkiraGUI = function (arg) {
         var g = H.locked(); if (g) { return g; }
         var sc = showcaseComp(); if (!sc) { return "ERR:No active Akira showcase."; }
         var c = cfg(arg);
@@ -145,7 +145,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return "SUCCESS:Showcase updated.";
     };
 
-    G.queueMotionShowcase_FlexGUI = function () {
+    G.queueMotionShowcase_AkiraGUI = function () {
         var g = H.locked(); if (g) { return g; }
         var sc = showcaseComp(); if (!sc) { return "ERR:Build a showcase first."; }
         try { app.project.renderQueue.items.add(sc); } catch (e) { return "ERR:" + e.toString(); }

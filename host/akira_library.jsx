@@ -5,10 +5,10 @@
 //                                   comp.png   still thumbnail      preview/frame_0001.png...  frames the panel turns into preview.gif
 //   <ffxFolder>/<folders>/<name>.ffx           animation presets
 // ES3 only: no let/const, arrow functions, JSON, Array.indexOf/forEach.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     var FFX_DIR = "FFX PRESETS";
 
@@ -385,5 +385,5 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         try { targets[0].saveAnimationPreset(dest); } catch (e) { return "ERR: " + e.toString(); }
         return dest.exists ? "SUCCESS" : "ERR: The preset was not written.";
     };
-    F.flexSendCompToPremiere = function () { return "ERR:Sending to Premiere is not available in this version."; };
+    F.akiraSendCompToPremiere = function () { return "ERR:Sending to Premiere is not available in this version."; };
 })();

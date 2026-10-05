@@ -2,10 +2,10 @@
 // These are GLOBAL functions: the panel calls them directly, e.g. evalScript('applyExpressionToTargets("...", "animator", "Name", {...})').
 // They answer with a JSON string, {"success":true,...} or {"success":false,"error":"..."}.
 // ES3 only: no let/const, arrow functions, JSON, Array.indexOf/forEach.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var G = $.global, F = $._flex, H = F._h;
+    var G = $.global, F = $._akira, H = F._h;
     if (!H) { return; }
 
     // ---------- tiny JSON helpers (ExtendScript has none) ----------
@@ -450,7 +450,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return ok({ count: n });
     };
 
-    // ---------- glow helpers (host-side $._flex functions) ----------
+    // ---------- glow helpers (host-side $._akira functions) ----------
     function setFx(effect, names, value) {
         var i;
         for (i = 0; i < names.length; i += 1) { try { var p = effect.property(names[i]); if (p) { p.setValue(value); return true; } } catch (e) { } }

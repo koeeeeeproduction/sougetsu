@@ -1,6 +1,6 @@
 // Sougetsu Akira FX - Flow curve engine (clean-room). Batch I.
 // Applies an easing curve to the selected keyframes of the selected properties.
-// Contract (read from the panel): $._flex.curve20Apply("model|graphMode|invert|params|pts"), $._flex.curve20Read("1").
+// Contract (read from the panel): $._akira.curve20Apply("model|graphMode|invert|params|pts"), $._akira.curve20Read("1").
 //   model     : bezier | custom | elastic | bounce | wave | steps
 //   graphMode : ease (two bezier handles) | expr (procedural) | bake (stepped) | "custom" model carries its own point list
 //   invert    : 0 | 1  (mirror the curve)
@@ -8,10 +8,10 @@
 //   pts       : for custom, "x,y,cx1,cy1,cx2,cy2;..." normalised points (x,y in 0..1)
 // Reply: "SUCCESS:<msg>" / "ERR:<msg>" for apply; "OK|x,y,cx1,cy1,cx2,cy2;..." for read.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     function num(s, d) { var v = parseFloat(s); return isNaN(v) ? d : v; }

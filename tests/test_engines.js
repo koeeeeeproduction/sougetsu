@@ -11,13 +11,13 @@ const SHAKES = 'Shake_001_JF BasicShake_001_JF QuickShake_001_JF WaveV1_Shake_00
 
 t('every engine flag the panel checks', () => {
   const e = env();
-  A.ok(e.F.saasVersion >= 9); A.ok(e.F.highlighterVersion >= 7); A.ok(e.F.flexMapEngineVersion >= 20); A.ok(e.F.uiTemplateXVersion >= 8);
-  A.strictEqual(e.ctx._flexMotionShowcaseHostVersion, '1.0.1'); A.strictEqual(e.ctx._flexReferenceWorkspaceHostVersion, '2.0.0');
-  A.strictEqual(typeof e.F.flexProjectOrganizerVersion !== 'undefined', true); A.strictEqual(typeof e.F.flexTypeReAlignVersion !== 'undefined', true);
+  A.ok(e.F.saasVersion >= 9); A.ok(e.F.highlighterVersion >= 7); A.ok(e.F.akiraMapEngineVersion >= 20); A.ok(e.F.uiTemplateXVersion >= 8);
+  A.strictEqual(e.ctx._akiraMotionShowcaseHostVersion, '1.0.1'); A.strictEqual(e.ctx._akiraReferenceWorkspaceHostVersion, '2.0.0');
+  A.strictEqual(typeof e.F.akiraProjectOrganizerVersion !== 'undefined', true); A.strictEqual(typeof e.F.akiraTypeReAlignVersion !== 'undefined', true);
   SHAKES.forEach(n => A.strictEqual(typeof e.ctx[n], 'function', n));
-  ['getMotionShowcaseSelection_FlexGUI', 'buildMotionShowcase_FlexGUI', 'updateMotionShowcase_FlexGUI', 'queueMotionShowcase_FlexGUI'].forEach(n => A.strictEqual(typeof e.ctx[n], 'function', n));
-  ['list', 'create', 'apply', 'animate', 'remove', 'toEGP'].forEach(n => A.strictEqual(typeof e.ctx.$._flexHL[n], 'function', n));
-  ['stagger', 'depthPrepare', 'depthReveal', 'cursor', 'hover', 'textAnim', 'codeGlyphs', 'promptBar', 'halftoneWave', 'carousel', 'attach', 'background', 'wipe'].forEach(n => A.strictEqual(typeof e.ctx.$._flexSaaS[n], 'function', n));
+  ['getMotionShowcaseSelection_AkiraGUI', 'buildMotionShowcase_AkiraGUI', 'updateMotionShowcase_AkiraGUI', 'queueMotionShowcase_AkiraGUI'].forEach(n => A.strictEqual(typeof e.ctx[n], 'function', n));
+  ['list', 'create', 'apply', 'animate', 'remove', 'toEGP'].forEach(n => A.strictEqual(typeof e.ctx.$._akiraHL[n], 'function', n));
+  ['stagger', 'depthPrepare', 'depthReveal', 'cursor', 'hover', 'textAnim', 'codeGlyphs', 'promptBar', 'halftoneWave', 'carousel', 'attach', 'background', 'wipe'].forEach(n => A.strictEqual(typeof e.ctx.$._akiraSaaS[n], 'function', n));
 });
 
 t('every shake preset builds its adjustment layer like the original engine', () => {
@@ -46,7 +46,7 @@ t('shake speed becomes layer stretch (200 - speed)', () => {
 });
 
 t('highlighter: create / list / apply / animate / toEGP / remove', () => {
-  const e = env(), HL = e.ctx.$._flexHL, T = e.comp.layers.addText('Hello'), U = e.comp.layers.addText('World');
+  const e = env(), HL = e.ctx.$._akiraHL, T = e.comp.layers.addText('Hello'), U = e.comp.layers.addText('World');
   A.strictEqual(HL.list(), 'OK:'); A.ok(/^ERR:/.test(HL.create('style=box')));
   T.selected = U.selected = true;
   const r = HL.create('style=underline;colorMode=fill;fill=#ff0000;stroke=#00ff00;dot=#0000ff;strokeW=3;round=8;padX=12;padY=4;multiply=true;cursor=true;dir=smart;perLayer=false');
@@ -65,29 +65,29 @@ t('highlighter: create / list / apply / animate / toEGP / remove', () => {
   A.ok(/^OK:\d+$/.test(HL.toEGP('id=' + id)));
   A.strictEqual(HL.create('style=box;perLayer=true').split(':')[1], '2'); A.strictEqual(HL.list().substring(3).split('\n').length, 3);
   A.strictEqual(HL.remove('id=' + id), 'OK:1'); A.strictEqual(HL.list().substring(3).split('\n').length, 2);
-  A.strictEqual(env({ noComp: true }).ctx.$._flexHL.list(), 'ERR:NO_COMP'); A.strictEqual(e.undo(), 0);
+  A.strictEqual(env({ noComp: true }).ctx.$._akiraHL.list(), 'ERR:NO_COMP'); A.strictEqual(e.undo(), 0);
 });
 
 t('motion showcase: selection / build / update / queue', () => {
   const e = env(), a = e.comp.layers.add(new M.FootageItem({ p: '/x/a.png' })), b = e.comp.layers.add(new M.FootageItem({ p: '/x/b.png' })), c = e.comp.layers.addText('Title');
   a.selected = b.selected = c.selected = true;
-  const sel = e.ctx.getMotionShowcaseSelection_FlexGUI(encodeURIComponent('')).split('\n'); A.strictEqual(sel.length, 3); A.ok(/^\d+\|/.test(sel[0]));
+  const sel = e.ctx.getMotionShowcaseSelection_AkiraGUI(encodeURIComponent('')).split('\n'); A.strictEqual(sel.length, 3); A.ok(/^\d+\|/.test(sel[0]));
   const idx = sel.map(s => s.split('|')[0]).join(',');
   const cfg = ['orbit', '9:16', 15, 58, 70, 10, 55, 4, 36, '#101010', '1', '1', idx].join('|');
-  const r = e.ctx.buildMotionShowcase_FlexGUI(encodeURIComponent(cfg)); A.ok(/^SUCCESS:Built a 3-card orbit/.test(r), r);
+  const r = e.ctx.buildMotionShowcase_AkiraGUI(encodeURIComponent(cfg)); A.ok(/^SUCCESS:Built a 3-card orbit/.test(r), r);
   const sc = e.items.find(i => i instanceof M.CompItem && /^Motion Showcase/.test(i.name));
   A.deepStrictEqual([sc.width, sc.height], [1080, 1920]); A.ok(/^AKIRA_SHOWCASE\|/.test(sc.comment));
   const cards = sc._l.filter(l => /^AKIRA_SHOWCASE_CARD/.test(l.comment)); A.strictEqual(cards.length, 3); A.ok(/akira-showcase/.test(cards[0].transform.position.expression));
   const upd = ['orbit', '9:16', 20, 80, 60, 20, 40, 0, 36, '#101010', '0', '0', idx].join('|');
-  A.strictEqual(e.ctx.updateMotionShowcase_FlexGUI(encodeURIComponent(upd)), 'SUCCESS:Showcase updated.');
+  A.strictEqual(e.ctx.updateMotionShowcase_AkiraGUI(encodeURIComponent(upd)), 'SUCCESS:Showcase updated.');
   const C = sc._l.find(l => l.name === 'Showcase Control'); A.strictEqual(C.property('ADBE Effect Parade').property('Radius').property(1).value, 80); A.strictEqual(sc.duration, 20);
-  A.ok(/^SUCCESS:Added/.test(e.ctx.queueMotionShowcase_FlexGUI(''))); A.strictEqual(e.ctx.queued, sc);
-  A.ok(/^ERR:/.test(e.ctx.buildMotionShowcase_FlexGUI(encodeURIComponent('orbit|1:1|15|58|70|10|55|4|36|#000|1|1|' + sel[0].split('|')[0]))));
+  A.ok(/^SUCCESS:Added/.test(e.ctx.queueMotionShowcase_AkiraGUI(''))); A.strictEqual(e.ctx.queued, sc);
+  A.ok(/^ERR:/.test(e.ctx.buildMotionShowcase_AkiraGUI(encodeURIComponent('orbit|1:1|15|58|70|10|55|4|36|#000|1|1|' + sel[0].split('|')[0]))));
   A.strictEqual(e.undo(), 0);
 });
 
 t('SaaS effects: every generator replies SUCCESS on a sensible selection', () => {
-  const e = env(), X = e.ctx.$._flexSaaS;
+  const e = env(), X = e.ctx.$._akiraSaaS;
   const mk = () => { e.comp._l.forEach(l => l.selected = false); const a = e.comp.layers.addShape(), b = e.comp.layers.addShape(); a.name = 'A'; b.name = 'B'; a.transform.position.setValue([300, 200]); b.transform.position.setValue([900, 600]); a.selected = b.selected = true; return [a, b]; };
   const ok = (r, what) => A.ok(/^SUCCESS:/.test(r), what + ': ' + r);
   mk(); ok(X.stagger('order=top;style=rise;delay=0.08;duration=0.6;rise=40;controller=true'), 'stagger live');

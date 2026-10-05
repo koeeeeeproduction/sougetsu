@@ -1,22 +1,22 @@
 // Sougetsu Akira FX - dispatcher, engine version flags, layer-effects inspector, text re-align,
 // extrusion, trim-to-below, follow-system-labels (clean-room). Contracts read from the panel:
-//   $._flex.run(name, a, b, c)                    -> result of $._flex[name] (or a global of that name)
-//   $._flex.saasVersion        (number property)   -> 0: SaaS Effects engine is not shipped in this build
-//   $._flex.flexTypeReAlignVersion (property)      -> checked by js_flex/flex_project_tools.js before calling flexType*
+//   $._akira.run(name, a, b, c)                    -> result of $._akira[name] (or a global of that name)
+//   $._akira.saasVersion        (number property)   -> 0: SaaS Effects engine is not shipped in this build
+//   $._akira.akiraTypeReAlignVersion (property)      -> checked by js_akira/akira_project_tools.js before calling akiraType*
 //   getSelectedLayerEffects()   -> JSON [{fxIndex,fxName,matchName,propName,fxActive}] (one row per effect property) / "ERR:"
 //   toggleLayerEffectActive(i)  -> "Enabled" / "Disabled" / "ERR:"
 //   deleteLayerEffect(i) / deleteAllLayerEffects() -> "SUCCESS" / "ERR:"   (first selected layer)
 //   applySystemLabelsToSelected() -> "SUCCESS"  (called silently on every selection change while "follow system labels" is on)
 //   trimToBelowLayer() / createExtrusion(depth) -> "SUCCESS" / "ERR:"
-//   flexTypeSelection()          -> "OK:"+enc(JSON {textCount, justification, risk})
-//   flexTypeAlign(name, mode)    -> "OK:"+enc(JSON {changed, skipped})   name left|center|right, mode visual|anchor
-//   flexTypeCenter(axis)         -> "OK:"+enc(JSON {changed, skipped})   axis x|y|both
-//   flexTypeResetAnchor()        -> "OK:"+enc(JSON {changed, skipped})
+//   akiraTypeSelection()          -> "OK:"+enc(JSON {textCount, justification, risk})
+//   akiraTypeAlign(name, mode)    -> "OK:"+enc(JSON {changed, skipped})   name left|center|right, mode visual|anchor
+//   akiraTypeCenter(axis)         -> "OK:"+enc(JSON {changed, skipped})   axis x|y|both
+//   akiraTypeResetAnchor()        -> "OK:"+enc(JSON {changed, skipped})
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     function J(v) {
@@ -39,11 +39,11 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         try { return fn.call(F, a, b, c); } catch (e) { return "ERR:" + e.toString(); }
     };
     F.saasVersion = 0; // akira_saas.jsx raises this to 9 when it loads
-    F.flexTypeReAlignVersion = 1;
+    F.akiraTypeReAlignVersion = 1;
     if (typeof F.buildUITemplate === "function") { F.uiTemplateXVersion = 8; }
-    // Settings > Keybinds writes a file for the separate FlexSwitcher app, then pings the host; nothing to reload here.
+    // Settings > Keybinds writes a file for the separate AkiraSwitcher app, then pings the host; nothing to reload here.
     F.reloadKeybinds = function () { return "OK"; };
-    try { if (typeof $.global.getReferenceWorkspaceContext_FlexGUI === "function") { $.global._flexReferenceWorkspaceHostVersion = "2.0.0"; } } catch (eRW) { }
+    try { if (typeof $.global.getReferenceWorkspaceContext_AkiraGUI === "function") { $.global._akiraReferenceWorkspaceHostVersion = "2.0.0"; } } catch (eRW) { }
 
     // ================= layer-effects inspector =================
     function firstSel(comp) { var s = H.selectedLayers(comp); return s.length ? s[0] : null; }
@@ -233,7 +233,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return okJ({ changed: changed, skipped: skipped });
     }
 
-    F.flexTypeSelection = function () {
+    F.akiraTypeSelection = function () {
         var comp = H.activeComp(); if (!comp) { return okJ({ textCount: 0, justification: "", risk: 0 }); }
         var ls = selText(comp), i, just = "", risk = 0;
         for (i = 0; i < ls.length; i += 1) {
@@ -244,7 +244,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return okJ({ textCount: ls.length, justification: just, risk: risk });
     };
 
-    F.flexTypeAlign = function (name, mode) {
+    F.akiraTypeAlign = function (name, mode) {
         var target = String(name || "left"), keepAnchorEdge = String(mode) === "anchor";
         if (target !== "left" && target !== "center" && target !== "right") { return "ERR:Unknown alignment: " + target; }
         return typeRun("Text Re-Align", function (L, comp, t) {
@@ -265,7 +265,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         });
     };
 
-    F.flexTypeCenter = function (axis) {
+    F.akiraTypeCenter = function (axis) {
         var ax = String(axis || "both"), doX = ax !== "y", doY = ax !== "x";
         return typeRun("Center Text", function (L, comp, t) {
             var r = H.sourceRect(L, t); if (!r) { return false; }
@@ -277,7 +277,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         });
     };
 
-    F.flexTypeResetAnchor = function () {
+    F.akiraTypeResetAnchor = function () {
         return typeRun("Reset Text Anchor", function (L, comp, t) {
             var doc = docOf(L).value, r = H.sourceRect(L, t); if (!r) { return false; }
             var na;

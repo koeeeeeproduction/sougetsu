@@ -1,9 +1,9 @@
 // Sougetsu Akira FX - main layer tools, imports, transform sliders and project helpers (clean-room). Batch D2.
 // Behaviour is our own design built from each button's label. ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
 
     // ---------- helpers ----------

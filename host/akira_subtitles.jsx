@@ -1,10 +1,10 @@
 // Sougetsu Akira FX - subtitle editor + clipboard-image fallback (clean-room). Batch F.
 // Subtitles = the text layers of the active composition (created by SRT import or auto captions), ordered by start time.
 // ES3 only.
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var G = $.global, F = $._flex, H = F._h;
+    var G = $.global, F = $._akira, H = F._h;
     if (!H) { return; }
 
     function J(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n").replace(/\t/g, "\\t") + '"'; }
@@ -33,7 +33,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     }
     function oneLine(s, n) { var t = String(s).replace(/[\r\n]+/g, " "); return t.length > n ? t.substring(0, n - 1) + "\u2026" : t; }
 
-    G.flex_getSubtitles = function () {
+    G.akira_getSubtitles = function () {
         var comp = H.activeComp();
         if (!comp) { return '{"error":"Open a composition first."}'; }
         var ls = textLayers(comp), out = [], i;
@@ -43,7 +43,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         }
         return '{"layers":[' + out.join(",") + "]}";
     };
-    G.flex_updateSubtitle = function (index, newText, inStr, outStr) {
+    G.akira_updateSubtitle = function (index, newText, inStr, outStr) {
         if (F.isLocked) { return "Extension is locked. Enter your license key."; }
         var comp = H.activeComp();
         if (!comp) { return "Open a composition first."; }
@@ -62,7 +62,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return "SUCCESS";
     };
     function escRx(s) { return String(s).replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); }
-    G.flex_replaceWordInComp = function (search, replacement) {
+    G.akira_replaceWordInComp = function (search, replacement) {
         if (F.isLocked) { return "Extension is locked. Enter your license key."; }
         var comp = H.activeComp();
         if (!comp) { return "Open a composition first."; }
@@ -86,7 +86,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         if (mode === "sentence") { return t.toLowerCase().replace(/(^|[.!?]\s+|[\r\n]+)([a-z\u00e0-\u00ff])/g, function (m, p, c) { return p + c.toUpperCase(); }); }
         return null;
     }
-    G.flex_transformSubtitlesInComp = function (mode) {
+    G.akira_transformSubtitlesInComp = function (mode) {
         if (F.isLocked) { return "Extension is locked. Enter your license key."; }
         var comp = H.activeComp();
         if (!comp) { return "Open a composition first."; }
@@ -116,10 +116,10 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return out.join("");
     }
     G.b64ToBinary_Akira = b64ToBinary; // exposed for testing
-    G.pasteImage_FlexGUI = function (base64, appName) {
+    G.pasteImage_AkiraGUI = function (base64, appName) {
         if (F.isLocked) { return "Extension is locked."; }
-        if (typeof G.getPasteImagePath_FlexGUI !== "function" || typeof G.pasteImageFromFile_FlexGUI !== "function") { return "The paste helper is not loaded."; }
-        var path = G.getPasteImagePath_FlexGUI();
+        if (typeof G.getPasteImagePath_AkiraGUI !== "function" || typeof G.pasteImageFromFile_AkiraGUI !== "function") { return "The paste helper is not loaded."; }
+        var path = G.getPasteImagePath_AkiraGUI();
         if (String(path).indexOf("ERR") === 0) { return path; }
         try {
             var f = new File(path);
@@ -128,6 +128,6 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
             if (!f.open("w")) { return "Could not write the temporary image."; }
             f.write(b64ToBinary(base64)); f.close();
         } catch (e) { return e.toString(); }
-        return G.pasteImageFromFile_FlexGUI(path, appName, false);
+        return G.pasteImageFromFile_AkiraGUI(path, appName, false);
     };
 })();

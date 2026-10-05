@@ -2,10 +2,10 @@
 //   H.parseJSON(text) -> value (throws Error on malformed input; never evals the text)
 //   H.toJSON(value)   -> string
 //   H.readJSONFile(path) -> value or null
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var H = $._flex._h;
+    var H = $._akira._h;
     if (!H) { return; }
 
     function parseJSON(src) {

@@ -1,15 +1,15 @@
-// Sougetsu Akira FX - Templates 2.0 builder (own design). Contract read from client/js_flex/flex_templates2.js:
-//   $._flexT2.kernelVersion >= 1
-//   $._flexT2.build("id", enc(JSON data)) -> "SUCCESS:msg" / "ERR:msg"
-// data.__ops is the template's finished frame recorded by client/js_flex/akira_t2_record.js (comp pixels):
+// Sougetsu Akira FX - Templates 2.0 builder (own design). Contract read from client/js_akira/akira_templates2.js:
+//   $._akiraT2.kernelVersion >= 1
+//   $._akiraT2.build("id", enc(JSON data)) -> "SUCCESS:msg" / "ERR:msg"
+// data.__ops is the template's finished frame recorded by client/js_akira/akira_t2_record.js (comp pixels):
 //   rect/ellipse -> native shapes, path -> bezier shapes, text -> editable text layers.
 // Every op carries its entrance group (g = order, pv = pivot); a "Template Controls" null drives the entrance
 // with the same maths as the panel preview, so motion settings stay editable in AE.
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     var CTRL = "Template Controls";
     var STYLES = { none: 0, pop: 1, scale: 2, slideUp: 3, slideDown: 4, slideLeft: 5, slideRight: 6, fade: 7 };
@@ -33,7 +33,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         return list[list.length - 1];
     }
 
-    // ---------- entrance expressions (same maths as FlexT2Preview.enter) ----------
+    // ---------- entrance expressions (same maths as AkiraT2Preview.enter) ----------
     function pre(order) {
         return "var c=thisComp.layer(\"" + CTRL + "\"),o=" + order + ";\n" +
             "var st=Math.round(c.effect(\"Style\")(1)),on=c.effect(\"Animate\")(1)>0;\n" +
@@ -191,5 +191,5 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         }
     }
 
-    $._flexT2 = { kernelVersion: 1, version: "1.0.0", build: build };
+    $._akiraT2 = { kernelVersion: 1, version: "1.0.0", build: build };
 })();

@@ -1,4 +1,4 @@
-// Sougetsu Akira FX - shape layer tools (clean-room). Contracts read from client/index.html + js_flex/commands.js:
+// Sougetsu Akira FX - shape layer tools (clean-room). Contracts read from client/index.html + js_akira/commands.js:
 //   addShapeLayer()                         -> "SUCCESS" / "ERR:"   (empty shape layer)
 //   createPrimitive(type)                   -> "SUCCESS" / "ERR:"   type circle|rect|cross|line, sized to the comp
 //   applyShapePreset(name)                  -> "SUCCESS" / "ERR:"   dashes|waveWarp|roughenEdges|trimStart|trimEnd|exclusion
@@ -10,10 +10,10 @@
 //   shapeMorpher(dur, easing, return, linearPath, pairs, optionsJSON) -> "SUCCESS" / "ERROR:msg"
 //   removeMorph()                           -> "SUCCESS" / "ERROR:msg"
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     var NO_COMP = "ERR:Open a composition first.";
 

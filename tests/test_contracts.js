@@ -16,23 +16,23 @@ function shape(e, name) { const L = e.comp.layers.addShape(); L.name = name || '
 // ---------- engine flags / guards ----------
 t('engine flags are properties the panel compares', () => {
   const e = env();
-  A.strictEqual(e.F.flexMapEngineVersion >= 20, true);
-  A.strictEqual(typeof e.F.flexTypeReAlignVersion !== 'undefined', true);
-  A.strictEqual(typeof e.F.flexProjectOrganizerVersion !== 'undefined', true);
+  A.strictEqual(e.F.akiraMapEngineVersion >= 20, true);
+  A.strictEqual(typeof e.F.akiraTypeReAlignVersion !== 'undefined', true);
+  A.strictEqual(typeof e.F.akiraProjectOrganizerVersion !== 'undefined', true);
   A.strictEqual(e.F.saasVersion >= 9, false);
-  ['flexProjectAnalyze', 'flexProjectOrganize', 'flexProjectBoardLayout', 'flexProjectBoardRestore'].forEach(n => A.strictEqual(typeof e.F[n], 'function', n));
+  ['akiraProjectAnalyze', 'akiraProjectOrganize', 'akiraProjectBoardLayout', 'akiraProjectBoardRestore'].forEach(n => A.strictEqual(typeof e.F[n], 'function', n));
   A.strictEqual(e.F.isLocked, false);
 });
 t('locked engine refuses writes', () => {
   const e = env({ locked: true });
   A.ok(/^ERR:/.test(e.F.createPrimitive('rect')));
-  A.ok(/^ERR:/.test(e.F.flexMap_createFromFile('x')));
+  A.ok(/^ERR:/.test(e.F.akiraMap_createFromFile('x')));
   A.ok(/^ERROR:/.test(e.F.shapeMorpher(1, 'linear', false, false, false, '{}')));
 });
 t('no comp -> clean errors', () => {
   const e = env({ noComp: true });
   A.ok(/^ERR:/.test(e.F.addShapeLayer())); A.strictEqual(e.F.getCarouselDetails(), 'none');
-  A.strictEqual(e.F.getExtraShapeData(), 'none'); A.strictEqual(e.F.flexMap_listRigs(), '[]'); A.strictEqual(e.F.flexMap_activeRig(), 'null');
+  A.strictEqual(e.F.getExtraShapeData(), 'none'); A.strictEqual(e.F.akiraMap_listRigs(), '[]'); A.strictEqual(e.F.akiraMap_activeRig(), 'null');
 });
 t('run dispatcher', () => {
   const e = env();
@@ -65,19 +65,19 @@ t('trimToBelowLayer + createExtrusion', () => {
 });
 t('text re-align contracts', () => {
   const e = env(), T = e.comp.layers.addText('Hello'); T.selected = true; T.transform.position.setValue([500, 300]);
-  let s = dec(e.F.flexTypeSelection()); A.strictEqual(s.textCount, 1); A.strictEqual(s.justification, 'left'); A.strictEqual(s.risk, 0);
+  let s = dec(e.F.akiraTypeSelection()); A.strictEqual(s.textCount, 1); A.strictEqual(s.justification, 'left'); A.strictEqual(s.risk, 0);
   // simulate AE reflow: centre justification moves the text box left by half its width
   const td = T.property('ADBE Text Properties').property('ADBE Text Document');
   const orig = td.setValue.bind(td); td.setValue = (d) => { orig(d); T.rect = d.justification === 7415 ? { left: -100, top: -20, width: 100, height: 40 } : { left: -50, top: -20, width: 100, height: 40 }; };
-  let r = dec(e.F.flexTypeAlign('center', 'visual')); deq(r, { changed: 1, skipped: 0 });
+  let r = dec(e.F.akiraTypeAlign('center', 'visual')); deq(r, { changed: 1, skipped: 0 });
   deq(T.transform.anchorPoint.value, [-50, 0]); // anchor followed the reflow -> no visual jump
-  r = dec(e.F.flexTypeCenter('both')); A.strictEqual(r.changed, 1);
+  r = dec(e.F.akiraTypeCenter('both')); A.strictEqual(r.changed, 1);
   const p = T.transform.position.value, a = T.transform.anchorPoint.value;
   deq([p[0] + (-100 + 50 - a[0]), p[1] + (-20 + 20 - a[1])], [960, 540]);
-  r = dec(e.F.flexTypeResetAnchor()); A.strictEqual(r.changed, 1); deq(T.transform.anchorPoint.value, [0, 0]);
-  T.transform.position.setValueAtTime(1, [0, 0]); r = dec(e.F.flexTypeAlign('right', 'anchor')); deq(r, { changed: 0, skipped: 1 });
-  A.strictEqual(dec(e.F.flexTypeSelection()).risk, 1);
-  A.ok(/^ERR:/.test(e.F.flexTypeAlign('diagonal', 'visual')));
+  r = dec(e.F.akiraTypeResetAnchor()); A.strictEqual(r.changed, 1); deq(T.transform.anchorPoint.value, [0, 0]);
+  T.transform.position.setValueAtTime(1, [0, 0]); r = dec(e.F.akiraTypeAlign('right', 'anchor')); deq(r, { changed: 0, skipped: 1 });
+  A.strictEqual(dec(e.F.akiraTypeSelection()).risk, 1);
+  A.ok(/^ERR:/.test(e.F.akiraTypeAlign('diagonal', 'visual')));
 });
 
 // ---------- Shapes ----------
@@ -194,55 +194,55 @@ t('maps: create, list, select, active, sync, refresh, trace, tracker, bake', () 
   const img = tmpJSON({}); // any existing file stands in for the basemap png
   const cp = tmpJSON({ version: 19, level: 'VIEW', locationName: 'Test', aspect: 1.7778, fill: [0.1, 0.1, 0.1], baseFrameMerc: frame, basemapPath: img,
     labels: [{ name: 'City', x: 0.5, y: 0.5, rank: 1 }], features: [{ name: 'Country Borders', paths: [[[0, 0], [1, 0], [1, 1]]], stroke: [1, 1, 1], strokeWidth: 2, isClosed: true }], paths: [] });
-  const r = e.F.flexMap_createFromFile(cp); A.ok(/^OK:\d+:RIG:m\d+$/.test(r), r);
+  const r = e.F.akiraMap_createFromFile(cp); A.ok(/^OK:\d+:RIG:m\d+$/.test(r), r);
   const parts = r.split(':'), idx = +parts[1], id = parts[3];
   const rig = e.comp.layer(idx), mc = rig.source;
   A.strictEqual(mc.width, 1920); A.strictEqual(mc.height, 1080);
   deq(mc._l.map(l => l.comment.split('|')[0]), ['AKIRA_MAP_LABEL_V1', 'AKIRA_MAP_FEATURE_V1', 'AKIRA_MAP_BASEMAP_V1', 'AKIRA_MAP_BG_V1']);
   A.ok(/Akira Map Zoom/.test(rig.transform.scale.expression));
-  const list = JSON.parse(e.F.flexMap_listRigs()); A.strictEqual(list.length, 1); A.strictEqual(list[0].id, id); A.strictEqual(list[0].baseFrameMerc, '0.5,0.6,0.3,0.35625');
-  A.strictEqual(e.F.flexMap_selectRig(99, id), 'OK:' + idx); A.strictEqual(rig.selected, true);
-  A.strictEqual(JSON.parse(e.F.flexMap_activeRig()).name, rig.name);
+  const list = JSON.parse(e.F.akiraMap_listRigs()); A.strictEqual(list.length, 1); A.strictEqual(list[0].id, id); A.strictEqual(list[0].baseFrameMerc, '0.5,0.6,0.3,0.35625');
+  A.strictEqual(e.F.akiraMap_selectRig(99, id), 'OK:' + idx); A.strictEqual(rig.selected, true);
+  A.strictEqual(JSON.parse(e.F.akiraMap_activeRig()).name, rig.name);
   // centre of the frame at the same zoom -> 100% and centred pan
   const zoom = 1 + Math.log2(1 / 0.1), cMerc = [0.55, 0.328125];
   const lon = cMerc[0] * 360 - 180, lat = 180 / Math.PI * Math.atan(Math.sinh(Math.PI - 2 * Math.PI * cMerc[1]));
-  A.strictEqual(e.F.flexMap_syncRigToView(idx, lat, lon, zoom, 0, id), 'OK');
+  A.strictEqual(e.F.akiraMap_syncRigToView(idx, lat, lon, zoom, 0, id), 'OK');
   const fx = rig.property('ADBE Effect Parade');
   A.ok(Math.abs(fx.property('Akira Map Zoom').property(1).value - 100) < 1e-6);
   const pan = fx.property('Akira Map Pan').property(1).value; A.ok(Math.abs(pan[0] - 960) < 1e-6 && Math.abs(pan[1] - 540) < 1e-3, pan);
   // live refresh for a frame shifted right by half a frame: imagery lands at x=960
   const up = tmpJSON({ version: 19, layerIndex: idx, rigId: id, baseFrameMerc: { minX: 0.55, maxX: 0.65, minY: 0.3, maxY: 0.35625 }, basemapPath: img, labels: [], features: [] });
-  A.strictEqual(e.F.flexMap_replaceViewFromFile(up), 'OK');
+  A.strictEqual(e.F.akiraMap_replaceViewFromFile(up), 'OK');
   const bm = mc._l.find(l => /^AKIRA_MAP_BASEMAP/.test(l.comment)); A.ok(Math.abs(bm.transform.position.value[0] - 960) < 1e-6);
   A.strictEqual(mc._l.filter(l => /^AKIRA_MAP_LABEL/.test(l.comment)).length, 0);
   // outline into the rig
   const ol = tmpJSON({ version: 20, name: 'Spain', paths: [[[0, 0], [0.5, 0.5], [1, 0]]], geo: [], isClosed: true, layerIndex: idx, rigId: id, autoRig: true, replaceExisting: true, baseFrameMerc: frame, stroke: [1, 0, 0], strokeWidth: 3 });
-  A.strictEqual(e.F.flexMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
-  A.strictEqual(e.F.flexMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
+  A.strictEqual(e.F.akiraMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
+  A.strictEqual(e.F.akiraMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
   const outl = mc._l.filter(l => l.comment === 'AKIRA_MAP_OUTLINE_V1|Spain'); A.strictEqual(outl.length, 1); A.strictEqual(outl[0].name, 'Spain Outline');
   const root = outl[0].property('ADBE Root Vectors Group'); A.strictEqual(root.property(1).matchName, 'ADBE Vector Shape - Group');
   deq(root.property(1).property(1).value.vertices[1].map(v => Math.round(v * 1e6) / 1e6), [960, 540]);
   // tracker
   const tr = tmpJSON({ version: 20, layerIndex: idx, rigId: id, autoRig: true, name: 'Madrid', x: 0.25, y: 0.5, baseFrameMerc: frame, vectorPaths: [[[0, 0], [1, 1]]], stroke: [1, 1, 1], strokeWidth: 2 });
-  const tres = e.F.flexMap_createTrackerFromFile(tr); A.ok(/^OK:\d+$/.test(tres), tres);
+  const tres = e.F.akiraMap_createTrackerFromFile(tr); A.ok(/^OK:\d+$/.test(tres), tres);
   const T = e.comp.layer(+tres.split(':')[1]); A.strictEqual(T.name, 'Track · Madrid'); A.ok(/R\.toComp\(\[480,540\]\)/.test(T.transform.position.expression), T.transform.position.expression);
   A.ok(mc._l.some(l => l.comment.indexOf('AKIRA_MAP_PLACE_VECTOR_V1|Madrid|') === 0));
   // bake
-  const rigNow = JSON.parse(e.F.flexMap_listRigs())[0];
-  A.strictEqual(e.F.flexMap_bakeRig(rigNow.index, id), 'OK'); A.strictEqual(rig.transform.scale.expression, ''); deq(rig.transform.scale.value.map(Math.round), [100, 100]);
-  A.strictEqual(e.F.flexMap_listRigs(), '[]'); A.ok(/^ERR:/.test(e.F.flexMap_syncRigToView(rigNow.index, 0, 0, 3, 0, id)));
+  const rigNow = JSON.parse(e.F.akiraMap_listRigs())[0];
+  A.strictEqual(e.F.akiraMap_bakeRig(rigNow.index, id), 'OK'); A.strictEqual(rig.transform.scale.expression, ''); deq(rig.transform.scale.value.map(Math.round), [100, 100]);
+  A.strictEqual(e.F.akiraMap_listRigs(), '[]'); A.ok(/^ERR:/.test(e.F.akiraMap_syncRigToView(rigNow.index, 0, 0, 3, 0, id)));
   A.strictEqual(e.undo(), 0);
 });
 t('maps: animated rig keys + standalone outline', () => {
   const e = env(), frame = { minX: 0.4, maxX: 0.6, minY: 0.3, maxY: 0.4125 };
   const p = tmpJSON({ version: 19, level: 'ANIM', locationName: 'Fly', aspect: 1.7778, baseFrameMerc: frame, labels: [], features: [], paths: [],
     animation: { duration: 4, easing: 'smooth', waypoints: [{ lat: 10, lon: 10, zoom: 4, bearing: 0, timeFraction: 0 }, { lat: 20, lon: 30, zoom: 6, bearing: 30, timeFraction: 1 }] } });
-  const r = e.F.flexMap_createFromFile(p); A.ok(/^OK:/.test(r), r);
+  const r = e.F.akiraMap_createFromFile(p); A.ok(/^OK:/.test(r), r);
   const rig = e.comp.layer(+r.split(':')[1]), z = rig.property('ADBE Effect Parade').property('Akira Map Zoom').property(1);
-  A.strictEqual(z.numKeys, 2); A.ok(z.keyValue(2) > z.keyValue(1)); A.strictEqual(JSON.parse(e.F.flexMap_listRigs())[0].level, 'ANIM');
+  A.strictEqual(z.numKeys, 2); A.ok(z.keyValue(2) > z.keyValue(1)); A.strictEqual(JSON.parse(e.F.akiraMap_listRigs())[0].level, 'ANIM');
   const e2 = env(), ol = tmpJSON({ version: 20, name: 'Loose', paths: [[[0, 0], [1, 1]]], geo: [], isClosed: false, layerIndex: 0, rigId: '', autoRig: true, baseFrameMerc: frame });
-  A.strictEqual(e2.F.flexMap_traceOutlineFromFile(ol), 'SUCCESS:0:COMP:Loose Outline');
-  A.ok(/^ERR:/.test(e2.F.flexMap_createFromFile('/nope.json')));
+  A.strictEqual(e2.F.akiraMap_traceOutlineFromFile(ol), 'SUCCESS:0:COMP:Loose Outline');
+  A.ok(/^ERR:/.test(e2.F.akiraMap_createFromFile('/nope.json')));
 });
 t('JSON helper', () => {
   const e = env(), H = e.F._h;

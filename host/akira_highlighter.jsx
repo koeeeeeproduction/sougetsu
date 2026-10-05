@@ -1,21 +1,21 @@
 // Sougetsu Akira FX - Highlighter engine (clean-room, own design). Contract read from client/index.html (#highlighter-modal):
-//   $._flex.highlighterVersion (number, panel requires >= 7)
-//   $._flexHL.list()               -> "OK:" + rows "id\tname" joined by "\n" (empty after "OK:" = none) / "ERR:NO_COMP"
-//   $._flexHL.create(opts)         -> "OK:<count>:<id>"   opts "style=box|underline|strike;colorMode=both|fill|stroke|none;
+//   $._akira.highlighterVersion (number, panel requires >= 7)
+//   $._akiraHL.list()               -> "OK:" + rows "id\tname" joined by "\n" (empty after "OK:" = none) / "ERR:NO_COMP"
+//   $._akiraHL.create(opts)         -> "OK:<count>:<id>"   opts "style=box|underline|strike;colorMode=both|fill|stroke|none;
 //                                     fill=#hex;stroke=#hex;dot=#hex;strokeW;round;padX;padY;multiply;cursor;dir;perLayer"
-//   $._flexHL.apply(opts)          -> "OK:1" / "ERR:NO_SUCH_RIG"  (id + live style fields)
-//   $._flexHL.animate("id=;dur=;from=0..8") -> "OK:1"    from = 3x3 grid cell the box grows out of (4 = centre)
-//   $._flexHL.remove("id=") / $._flexHL.toEGP("id=") -> "OK:<count>"
+//   $._akiraHL.apply(opts)          -> "OK:1" / "ERR:NO_SUCH_RIG"  (id + live style fields)
+//   $._akiraHL.animate("id=;dur=;from=0..8") -> "OK:1"    from = 3x3 grid cell the box grows out of (4 = centre)
+//   $._akiraHL.remove("id=") / $._akiraHL.toEGP("id=") -> "OK:<count>"
 // A rig is one shape layer behind the selected text layer(s). Its box follows the text bounds by expression, and every
 // style value lives on its own effect controls so apply/animate only change controls.
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     F.highlighterVersion = 7;
-    var HL = $._flexHL = {};
+    var HL = $._akiraHL = {};
     var TAG = "AKIRA_HL|";
 
     function esc(s) { return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"'); }

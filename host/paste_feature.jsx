@@ -2,7 +2,7 @@
 
 
 
-$.global.getPasteImagePath_FlexGUI = function() {
+$.global.getPasteImagePath_AkiraGUI = function() {
     try {
         var proj = app.project;
         var targetFolder = null;
@@ -49,14 +49,14 @@ $.global.getPasteImagePath_FlexGUI = function() {
         }
 
         var randomNumber = Math.floor(100 + Math.random() * 9000);
-        var targetPath = targetFolder.fsName + "/flex_img_" + randomNumber + ".png";
+        var targetPath = targetFolder.fsName + "/akira_img_" + randomNumber + ".png";
         return targetPath.replace(new RegExp("\\\\", "g"), "/");
     } catch (e) {
         return "ERR:getPasteImagePath failed: " + e.toString();
     }
 }
 
-$.global.getDownloadFolder_FlexGUI = function() {
+$.global.getDownloadFolder_AkiraGUI = function() {
     var proj = app.project;
     var targetFolder;
     if (proj && proj.file) {
@@ -71,7 +71,7 @@ $.global.getDownloadFolder_FlexGUI = function() {
     return targetFolder.fsName.replace(new RegExp("\\\\", "g"), "/");
 }
 
-$.global.selectDownloadFolder_FlexGUI = function() {
+$.global.selectDownloadFolder_AkiraGUI = function() {
     var picked = Folder.selectDialog("Choose Download Folder");
     if (picked) {
         return picked.fsName.replace(new RegExp("\\\\", "g"), "/");
@@ -79,8 +79,8 @@ $.global.selectDownloadFolder_FlexGUI = function() {
     return "";
 }
 
-$.global.pasteImageFromFile_FlexGUI = function(filePath, appName, toShapes) {
-    if ($._flex && $._flex.isLocked) return "Extension is locked.";
+$.global.pasteImageFromFile_AkiraGUI = function(filePath, appName, toShapes) {
+    if ($._akira && $._akira.isLocked) return "Extension is locked.";
     if (appName === "AEFT") {
         var item;
         var xfile = File(filePath);
@@ -137,8 +137,8 @@ $.global.pasteImageFromFile_FlexGUI = function(filePath, appName, toShapes) {
     return "Not AEFT";
 }
 
-$.global.alignLayers_FlexGUI = function(directionModeStr) {
-    if ($._flex && $._flex.isLocked) return "Extension is locked.";
+$.global.alignLayers_AkiraGUI = function(directionModeStr) {
+    if ($._akira && $._akira.isLocked) return "Extension is locked.";
     var c = app.project.activeItem;
     if (!c || !(c instanceof CompItem) || c.selectedLayers.length < 1) return;
 
@@ -391,8 +391,8 @@ $.global.alignLayers_FlexGUI = function(directionModeStr) {
 
 
 
-$.global.alignLayers_FlexGUI_v2_disabled = function (directionModeStr) {
-    if ($._flex && $._flex.isLocked) return "ERR:Extension is locked.";
+$.global.alignLayers_AkiraGUI_v2_disabled = function (directionModeStr) {
+    if ($._akira && $._akira.isLocked) return "ERR:Extension is locked.";
 
     var comp = app.project.activeItem;
     if (!comp || !(comp instanceof CompItem)) return "ERR:Open a composition first.";

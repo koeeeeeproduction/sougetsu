@@ -1,5 +1,5 @@
 // Sougetsu Akira FX - shape rigs (clean-room, own design). Contracts read from client/index.html,
-// js_flex/carousel_3d.js and js_flex/flex_saasfx.js:
+// js_akira/carousel_3d.js and js_akira/akira_saasfx.js:
 //   createCarousel("format|faceCam|livePath|guideCircle|radius")     -> "SUCCESS" / "ERR:"
 //        format auto|2d|3d|3d-sphere|2d-path|3d-path; livePath = a layer name or "none"
 //   getCarouselDetails()  -> JSON {format,influence,radius,arc,startAngle,tiltX,tiltY,spacing,offset,rotation,orient,
@@ -14,10 +14,10 @@
 //        (these drive the separate third-party Liquid Glass effect plugin; ERR "...not installed" when it is absent)
 //   fxLightSweepLock(lockState) -> "LOCKED" / "UNLOCKED" / ""      applyShatterEffect() -> "SUCCESS" / "ERR:"
 // ES3 only (code inside expression strings may use modern JS).
-if (typeof $._flex === "undefined") { $._flex = {}; }
+if (typeof $._akira === "undefined") { $._akira = {}; }
 
 (function () {
-    var F = $._flex, H = F._h;
+    var F = $._akira, H = F._h;
     if (!H) { return; }
     var NO_COMP = "ERR:Open a composition first.";
 

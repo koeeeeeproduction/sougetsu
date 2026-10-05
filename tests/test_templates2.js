@@ -9,9 +9,9 @@ const doc = any(); doc.createElement = () => { const e = any(); e.getContext = (
 const win = { document: doc, setTimeout: () => 0, clearTimeout() { }, localStorage: null, console, JSON, Math, Object, Array, String, Number, Date, RegExp, Error, parseFloat, parseInt, isFinite, isNaN, encodeURIComponent, decodeURIComponent, escape, unescape, atob: (b) => Buffer.from(b, 'base64').toString('binary') };
 win.addEventListener = () => { }; win.removeEventListener = () => { }; win.window = win; win.self = win;
 vm.createContext(win);
-vm.runInContext(unwrap('client/js_flex/flex_templates2.js'), win, { filename: 'flex_templates2.js' });
-vm.runInContext(fs.readFileSync(path.join(ROOT, 'client/js_flex/akira_t2_record.js'), 'utf8'), win, { filename: 'akira_t2_record.js' });
-const T = win.FlexT2, ids = T.list();
+vm.runInContext(unwrap('client/js_akira/akira_templates2.js'), win, { filename: 'akira_templates2.js' });
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'client/js_akira/akira_t2_record.js'), 'utf8'), win, { filename: 'akira_t2_record.js' });
+const T = win.AkiraT2, ids = T.list();
 A.ok(ids.length > 50, 'templates registered: ' + ids.length);
 // capture the exact command build() would send
 let sent = null;
@@ -22,7 +22,7 @@ const ORDER = [...fs.readFileSync(path.join(ROOT, 'host', 'akira_loader.jsx'), '
 let ok = 0, bad = [];
 for (const id of ids) {
   try {
-    const spec = T.get(id), mk = () => { const d = { content: defaults(spec.fields), style: { fontScale: 100, depth3D: false }, motion: {}, theme: {} }; if (spec.prepare) { spec.prepare(d, win.FlexT2Preview(mctx, d, spec, 0)); } return d; };
+    const spec = T.get(id), mk = () => { const d = { content: defaults(spec.fields), style: { fontScale: 100, depth3D: false }, motion: {}, theme: {} }; if (spec.prepare) { spec.prepare(d, win.AkiraT2Preview(mctx, d, spec, 0)); } return d; };
     const data = mk(); data.__ops = win.AkiraT2Record(spec, mk()); data.__size = spec.size; data.__title = spec.title || id; data.__dur = 5;
     A.ok(data.__ops.length > 0, 'ops recorded');
     const env = makeEnv({ files: ORDER });
@@ -39,7 +39,7 @@ console.log('templates2: ' + ok + '/' + ids.length + ' built');
 process.exitCode = bad.length ? 1 : 0;
 if (process.env.T2DUMP) {
   const spec = T.get(process.env.T2DUMP), d = { content: defaults(spec.fields), style: { fontScale: 100 }, motion: {}, theme: {} };
-  if (spec.prepare) spec.prepare(d, win.FlexT2Preview(mctx, d, spec, 0));
+  if (spec.prepare) spec.prepare(d, win.AkiraT2Preview(mctx, d, spec, 0));
   const ops = win.AkiraT2Record(spec, d);
   console.log(spec.size, ops.length); ops.slice(0, 25).forEach(o => console.log(JSON.stringify(o).slice(0, 220)));
 }

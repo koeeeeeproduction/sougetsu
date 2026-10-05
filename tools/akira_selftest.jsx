@@ -58,11 +58,11 @@
     log("");
     try { app.beginSuppressDialogs(); } catch (eS) { }
     try { $.evalFile(new File(ext + "/host/akira_loader.jsx")); } catch (eL) { rec("FAIL", "load akira_loader.jsx", where(eL)); }
-    if (typeof $._flex === "undefined" || !$._flex._h) { rec("FAIL", "host engine loaded", "$._flex._h missing - stopping"); return finish(); }
-    var F = $._flex, H = F._h, G = $.global, wasLocked = F.isLocked;
+    if (typeof $._akira === "undefined" || !$._akira._h) { rec("FAIL", "host engine loaded", "$._akira._h missing - stopping"); return finish(); }
+    var F = $._akira, H = F._h, G = $.global, wasLocked = F.isLocked;
     F.isLocked = false; // test only; restored at the end
     var nF = 0, k; for (k in F) { if (F.hasOwnProperty(k) && typeof F[k] === "function") { nF += 1; } }
-    log("$._flex functions loaded: " + nF + "   saasVersion=" + F.saasVersion + " highlighterVersion=" + F.highlighterVersion + " flexMapEngineVersion=" + F.flexMapEngineVersion);
+    log("$._akira functions loaded: " + nF + "   saasVersion=" + F.saasVersion + " highlighterVersion=" + F.highlighterVersion + " akiraMapEngineVersion=" + F.akiraMapEngineVersion);
     log("");
 
     // ---------- helpers ----------
@@ -144,12 +144,12 @@
     t("trimToBelowLayer", function () { return F.trimToBelowLayer(); }, function () { return Math.abs(A.inPoint - 2) < 0.01 ? "" : "inPoint not trimmed"; });
     t("createExtrusion('20')", function () { return F.createExtrusion("20"); });
     var T1 = text(c, "Hello Akira"); sel(c, [T1]);
-    t("flexTypeSelection", function () { return F.flexTypeSelection(); });
-    t("flexTypeAlign(center,visual)", function () { return F.flexTypeAlign("center", "visual"); });
-    t("flexTypeCenter(both)", function () { return F.flexTypeCenter("both"); });
-    t("flexTypeResetAnchor", function () { return F.flexTypeResetAnchor(); });
+    t("akiraTypeSelection", function () { return F.akiraTypeSelection(); });
+    t("akiraTypeAlign(center,visual)", function () { return F.akiraTypeAlign("center", "visual"); });
+    t("akiraTypeCenter(both)", function () { return F.akiraTypeCenter("both"); });
+    t("akiraTypeResetAnchor", function () { return F.akiraTypeResetAnchor(); });
     t("run('addShapeLayer')", function () { return F.run("addShapeLayer"); });
-    t("flexProjectAnalyze", function () { return F.flexProjectAnalyze(); });
+    t("akiraProjectAnalyze", function () { return F.akiraProjectAnalyze(); });
 
     // ---------- 3. Shapes ----------
     });
@@ -239,32 +239,32 @@
     sec("Highlighter", function () {
     c = newComp("highlighter");
     var hT = text(c, "Highlight me"); sel(c, [hT]);
-    var HL = $._flexHL;
-    var hr = t("$._flexHL.create", function () { return HL.create("style=box;colorMode=both;fill=#00ff55;stroke=#00b23c;dot=#00ff55;strokeW=2;round=5;padX=10;padY=6;multiply=false;cursor=true;dir=smart;perLayer=false"); });
+    var HL = $._akiraHL;
+    var hr = t("$._akiraHL.create", function () { return HL.create("style=box;colorMode=both;fill=#00ff55;stroke=#00b23c;dot=#00ff55;strokeW=2;round=5;padX=10;padY=6;multiply=false;cursor=true;dir=smart;perLayer=false"); });
     var hid = hr ? String(hr).split(":")[2] : "";
-    t("$._flexHL.list", function () { return HL.list(); }, function (r) { return r.indexOf(hid) > 0 ? "" : "created rig not listed"; });
-    t("$._flexHL.apply", function () { return HL.apply("id=" + hid + ";fill=#ff0055;stroke=#ffffff;dot=#ffffff;strokeW=3;round=10;padX=20;padY=8;multiply=true"); });
-    t("$._flexHL.animate", function () { return HL.animate("id=" + hid + ";dur=0.6;from=3"); });
-    t("$._flexHL.toEGP", function () { return HL.toEGP("id=" + hid); });
-    t("$._flexHL.remove", function () { return HL.remove("id=" + hid); });
+    t("$._akiraHL.list", function () { return HL.list(); }, function (r) { return r.indexOf(hid) > 0 ? "" : "created rig not listed"; });
+    t("$._akiraHL.apply", function () { return HL.apply("id=" + hid + ";fill=#ff0055;stroke=#ffffff;dot=#ffffff;strokeW=3;round=10;padX=20;padY=8;multiply=true"); });
+    t("$._akiraHL.animate", function () { return HL.animate("id=" + hid + ";dur=0.6;from=3"); });
+    t("$._akiraHL.toEGP", function () { return HL.toEGP("id=" + hid); });
+    t("$._akiraHL.remove", function () { return HL.remove("id=" + hid); });
 
     // ---------- 7. Motion Showcase ----------
     });
     sec("Motion Showcase", function () {
     c = newComp("showcase");
     var scA = c.layers.add(imgComp), scB = c.layers.add(imgComp), scT = text(c, "Card text"); sel(c, [scA, scB, scT]);
-    var selRes = t("getMotionShowcaseSelection_FlexGUI", function () { return G.getMotionShowcaseSelection_FlexGUI(encodeURIComponent("")); });
+    var selRes = t("getMotionShowcaseSelection_AkiraGUI", function () { return G.getMotionShowcaseSelection_AkiraGUI(encodeURIComponent("")); });
     var idxs = []; if (selRes && !bad(selRes)) { var rows = String(selRes).split("\n"); for (i = 0; i < rows.length; i += 1) { idxs.push(rows[i].split("|")[0]); } }
     var cfg = ["orbit", "16:9", 10, 58, 70, 10, 55, 4, 36, "#080808", "1", "1", idxs.join(",")].join("|");
-    t("buildMotionShowcase_FlexGUI", function () { return G.buildMotionShowcase_FlexGUI(encodeURIComponent(cfg)); });
-    t("updateMotionShowcase_FlexGUI", function () { return G.updateMotionShowcase_FlexGUI(encodeURIComponent(cfg.replace("|58|", "|70|"))); });
-    t("queueMotionShowcase_FlexGUI", function () { return G.queueMotionShowcase_FlexGUI(encodeURIComponent("")); });
+    t("buildMotionShowcase_AkiraGUI", function () { return G.buildMotionShowcase_AkiraGUI(encodeURIComponent(cfg)); });
+    t("updateMotionShowcase_AkiraGUI", function () { return G.updateMotionShowcase_AkiraGUI(encodeURIComponent(cfg.replace("|58|", "|70|"))); });
+    t("queueMotionShowcase_AkiraGUI", function () { return G.queueMotionShowcase_AkiraGUI(encodeURIComponent("")); });
     try { while (app.project.renderQueue.numItems) { app.project.renderQueue.item(1).remove(); } } catch (eRQ) { }
 
     // ---------- 8. SaaS Effects ----------
     });
     sec("SaaS Effects", function () {
-    var X = $._flexSaaS;
+    var X = $._akiraSaaS;
     function pair(cc) { var a = rect(cc, "UI A", [500, 400], [260, 120]), b = rect(cc, "UI B", [1300, 700], [260, 120]); sel(cc, [a, b]); return [a, b]; }
     c = newComp("saas stagger"); pair(c);
     t("stagger (live controller)", function () { return X.stagger("order=top;style=rise;delay=0.08;duration=0.6;rise=40;controller=true"); });
@@ -305,21 +305,21 @@
     sec("Map Rigs", function () {
     c = newComp("maps");
     var tmp = Folder.temp.fullName, frame = { minX: 0.48, maxX: 0.56, minY: 0.30, maxY: 0.345 };
-    var rigRes = t("flexMap_createFromFile", function () {
-        return F.flexMap_createFromFile(writeFile(tmp + "/akira_st_map.json", J({ version: 19, level: "VIEW", locationName: "Self-test", aspect: 1.7778, fill: [0.1, 0.12, 0.15], stroke: [1, 1, 1], strokeWidth: 2,
+    var rigRes = t("akiraMap_createFromFile", function () {
+        return F.akiraMap_createFromFile(writeFile(tmp + "/akira_st_map.json", J({ version: 19, level: "VIEW", locationName: "Self-test", aspect: 1.7778, fill: [0.1, 0.12, 0.15], stroke: [1, 1, 1], strokeWidth: 2,
             baseFrameMerc: frame, basemapPath: PNG || "", labels: [{ name: "Test City", x: 0.5, y: 0.5, rank: 1 }],
             features: [{ name: "Country Borders", paths: [[[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]]], stroke: [1, 1, 1], strokeWidth: 2, isClosed: true }], paths: [] })));
     }, function (r) { return /^OK:\d+:RIG:/.test(r) ? "" : "bad reply format"; });
     var rIdx = rigRes ? String(rigRes).split(":")[1] : "0", rId = rigRes ? String(rigRes).split(":")[3] : "";
-    t("flexMap_listRigs", function () { return F.flexMap_listRigs(); }, function (r) { return r.indexOf(rId) > 0 ? "" : "rig not listed"; });
-    t("flexMap_selectRig", function () { return F.flexMap_selectRig(rIdx, rId); }, function (r) { return r.indexOf("OK:") === 0 ? "" : "expected OK:index"; });
-    t("flexMap_activeRig", function () { return F.flexMap_activeRig(); }, function (r) { return r.indexOf("{") === 0 ? "" : "no active rig"; });
-    t("flexMap_syncRigToView", function () { return F.flexMap_syncRigToView(rIdx, 48.5, 2.3, 6, 0, rId); });
-    t("flexMap_replaceViewFromFile", function () { return F.flexMap_replaceViewFromFile(writeFile(tmp + "/akira_st_view.json", J({ version: 19, layerIndex: Number(rIdx), rigId: rId, baseFrameMerc: frame, basemapPath: PNG || "", removeBasemap: !PNG, fill: [0.1, 0.1, 0.1], labels: [], features: [] }))); });
-    t("flexMap_traceOutlineFromFile", function () { return F.flexMap_traceOutlineFromFile(writeFile(tmp + "/akira_st_outline.json", J({ version: 20, name: "Test Region", paths: [[[0.2, 0.2], [0.5, 0.1], [0.8, 0.4], [0.4, 0.8]]], geo: [], isClosed: true, layerIndex: Number(rIdx), rigId: rId, autoRig: true, replaceExisting: true, baseFrameMerc: frame, fill: [1, 0, 0], stroke: [1, 1, 1], strokeWidth: 3 }))); }, function (r) { return r.indexOf("SUCCESS:") === 0 ? "" : "expected SUCCESS:"; });
-    t("flexMap_createTrackerFromFile", function () { return F.flexMap_createTrackerFromFile(writeFile(tmp + "/akira_st_tracker.json", J({ version: 20, layerIndex: Number(rIdx), rigId: rId, autoRig: true, name: "Pin", displayName: "Pin", lat: 48.85, lon: 2.35, x: 0.5, y: 0.5, baseFrameMerc: frame, vectorPaths: [], stroke: [1, 1, 1], strokeWidth: 2 }))); });
-    var listNow = F.flexMap_listRigs(), m = /"index":(\d+)/.exec(listNow);
-    t("flexMap_bakeRig", function () { return F.flexMap_bakeRig(m ? m[1] : rIdx, rId); });
+    t("akiraMap_listRigs", function () { return F.akiraMap_listRigs(); }, function (r) { return r.indexOf(rId) > 0 ? "" : "rig not listed"; });
+    t("akiraMap_selectRig", function () { return F.akiraMap_selectRig(rIdx, rId); }, function (r) { return r.indexOf("OK:") === 0 ? "" : "expected OK:index"; });
+    t("akiraMap_activeRig", function () { return F.akiraMap_activeRig(); }, function (r) { return r.indexOf("{") === 0 ? "" : "no active rig"; });
+    t("akiraMap_syncRigToView", function () { return F.akiraMap_syncRigToView(rIdx, 48.5, 2.3, 6, 0, rId); });
+    t("akiraMap_replaceViewFromFile", function () { return F.akiraMap_replaceViewFromFile(writeFile(tmp + "/akira_st_view.json", J({ version: 19, layerIndex: Number(rIdx), rigId: rId, baseFrameMerc: frame, basemapPath: PNG || "", removeBasemap: !PNG, fill: [0.1, 0.1, 0.1], labels: [], features: [] }))); });
+    t("akiraMap_traceOutlineFromFile", function () { return F.akiraMap_traceOutlineFromFile(writeFile(tmp + "/akira_st_outline.json", J({ version: 20, name: "Test Region", paths: [[[0.2, 0.2], [0.5, 0.1], [0.8, 0.4], [0.4, 0.8]]], geo: [], isClosed: true, layerIndex: Number(rIdx), rigId: rId, autoRig: true, replaceExisting: true, baseFrameMerc: frame, fill: [1, 0, 0], stroke: [1, 1, 1], strokeWidth: 3 }))); }, function (r) { return r.indexOf("SUCCESS:") === 0 ? "" : "expected SUCCESS:"; });
+    t("akiraMap_createTrackerFromFile", function () { return F.akiraMap_createTrackerFromFile(writeFile(tmp + "/akira_st_tracker.json", J({ version: 20, layerIndex: Number(rIdx), rigId: rId, autoRig: true, name: "Pin", displayName: "Pin", lat: 48.85, lon: 2.35, x: 0.5, y: 0.5, baseFrameMerc: frame, vectorPaths: [], stroke: [1, 1, 1], strokeWidth: 2 }))); });
+    var listNow = F.akiraMap_listRigs(), m = /"index":(\d+)/.exec(listNow);
+    t("akiraMap_bakeRig", function () { return F.akiraMap_bakeRig(m ? m[1] : rIdx, rId); });
 
     // ---------- 10. expression errors across everything built ----------
     });

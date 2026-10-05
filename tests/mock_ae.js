@@ -160,12 +160,12 @@ function makeEnv(opts) {
       project: { activeItem: comp, items, renderQueue: { items: { add: (c) => { ctx.queued = c; return {}; } } }, importFile: (o) => { const it = new FootageItem(o.file); items.push(it); return it; } },
     },
   };
-  ctx.$ = { global: ctx, _flex: { isLocked: !!opts.locked } };
+  ctx.$ = { global: ctx, _akira: { isLocked: !!opts.locked } };
   vm.createContext(ctx);
   const host = path.join(__dirname, '..', 'host');
   (opts.files || []).forEach(f => vm.runInContext(fs.readFileSync(path.join(host, f), 'utf8'), ctx, { filename: f }));
-  ctx.$._flex.isLocked = !!opts.locked;
-  return { ctx, F: ctx.$._flex, comp, items, undo: () => undoDepth };
+  ctx.$._akira.isLocked = !!opts.locked;
+  return { ctx, F: ctx.$._akira, comp, items, undo: () => undoDepth };
 }
 
 module.exports = { makeEnv, Shape, Prop, Group, AVLayer, ShapeLayer, TextLayer, CompItem, FootageItem };
