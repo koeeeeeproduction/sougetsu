@@ -1,272 +1,379 @@
-// Sougetsu Akira FX - Map rigs: 4-corner screen-replace / tracking rig (clean-room, own design). Batch N.
-// A rig = 4 null layers (tl/tr/bl/br) + a content layer whose Corner Pin effect is expression-linked to them.
-// Layers are tagged in .comment as "akira-map-rig:<id>:<role>".
-// Contract (path args may be encodeURIComponent'd; empty path = file dialog):
-//   flexMapEngineVersion() -> "1.0.0"
-//   flexMap_createFromFile(path) -> "OK:"+rigId / "ERR:"
-//   flexMap_traceOutlineFromFile(arg) -> "OK:"+rigId / "ERR:"   arg: JSON {points:[[x,y],...], closed?, rigId?} or a path to such a .json file
-//   flexMap_createTrackerFromFile(path, rigId?) -> "OK:"+frameCount / "ERR:"
-//        file JSON: {"fps":30,"frames":[{"t":0,"tl":[x,y],"tr":[x,y],"bl":[x,y],"br":[x,y]}, ...]}  (t in seconds; or "f" = frame)
-//   flexMap_listRigs() -> JSON [{id,content,layers}]
-//   flexMap_activeRig() -> JSON {found,id}
-//   flexMap_selectRig(id) -> "SUCCESS" / "ERR:"
-//   flexMap_syncRigToView(id?) -> "SUCCESS" / "ERR:"
-//   flexMap_bakeRig(id?) -> "OK:"+frames / "ERR:"
-//   flexMap_replaceViewFromFile(path, id?) -> "SUCCESS" / "ERR:"
+// Sougetsu Akira FX - Map Rigs engine (clean-room, own design). Contracts read from client/js_flex/map_rigs.js:
+//   $._flex.flexMapEngineVersion (number property, panel requires >= 20)
+//   flexMap_createFromFile(path)            -> "OK:<rigLayerIndex>:RIG:<rigId>" / "ERR:"
+//   flexMap_replaceViewFromFile(path)       -> "OK" / "ERR:"        (live re-render of imagery, borders, labels)
+//   flexMap_syncRigToView(index, lat, lon, zoom, bearing, rigId) -> "OK" / "ERR:"
+//   flexMap_listRigs()                      -> JSON [{index,id,name,level,baseFrameMerc:"minX,maxX,minY,maxY"}]
+//   flexMap_selectRig(index, rigId)         -> "OK:<resolvedIndex>" / "ERR:"
+//   flexMap_activeRig()                     -> JSON {name,index,id} / "null"
+//   flexMap_bakeRig(index, rigId)           -> "OK" / "ERR:"
+//   flexMap_traceOutlineFromFile(path)      -> "SUCCESS:<rigIndex>:RIG:<rigName>" or "SUCCESS:0:COMP:<layerName>" / "ERR:"
+//   flexMap_createTrackerFromFile(path)     -> "OK:<trackerLayerIndex>" / "ERR:"
+// Payloads are JSON files the panel writes to its cache folder. Geometry arrives normalised (0..1) to a Web-Mercator
+// frame {minX,maxX,minY,maxY}; every rig keeps its own base frame (in the rig layer comment) and anything added later
+// is re-projected into it, so imagery, outlines and trackers stay aligned when the view is re-synced.
+// Rig = precomp layer with effects "Akira Map Zoom" (slider, %), "Akira Map Pan" (point, inner-comp px),
+// "Akira Map Bearing" (angle) driving scale / anchor point / rotation by expression.
+// Tags used by the panel's own follow-up scripts: FLEX_MAP_OUTLINE_V1|name, FLEX_MAP_PLACE_VECTOR_V1|name|.
 // ES3 only.
 if (typeof $._flex === "undefined") { $._flex = {}; }
 
 (function () {
     var F = $._flex, H = F._h;
-    if (!H) { return; }
+    if (!H || !H.parseJSON) { return; }
+    F.flexMapEngineVersion = 20;
 
-    var MARK = "akira-map-rig:", ROLES = ["tl", "tr", "bl", "br"];
-    var CP = { tl: "ADBE Corner Pin-0001", tr: "ADBE Corner Pin-0002", bl: "ADBE Corner Pin-0003", br: "ADBE Corner Pin-0004" };
+    var RIG = "FLEX_MAP_RIG_V1|", FX_ZOOM = "Akira Map Zoom", FX_PAN = "Akira Map Pan", FX_BEAR = "Akira Map Bearing";
+    var VIEW_TAGS = ["FLEX_MAP_BASEMAP_V1", "FLEX_MAP_BG_V1", "FLEX_MAP_FEATURE_V1", "FLEX_MAP_LABEL_V1", "FLEX_MAP_PATHS_V1"];
+    var NO_COMP = "ERR:Open a composition first.";
 
-    function jsonStr(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"'; }
-    function decodeArg(arg) { var s; try { s = decodeURIComponent(String(arg)); } catch (e) { s = String(arg); } return s; }
-    function blank(a) { return a === undefined || a === null || String(a) === "" || String(a) === "undefined"; }
-    function pickFile(arg, prompt) {
-        var f = blank(arg) ? File.openDialog(prompt) : new File(decodeArg(arg));
-        return (f && f.exists) ? f : null;
+    function esc(s) { return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"'); }
+    function num(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+    function rgb(c, d) { return (c instanceof Array && c.length >= 3) ? [num(c[0], 0), num(c[1], 0), num(c[2], 0)] : d; }
+    function readPayload(path) {
+        var p;
+        try { p = H.readJSONFile(path); } catch (e) { throw new Error("Could not read the map payload: " + e.message); }
+        if (!p) { throw new Error("Map payload file not found."); }
+        return p;
     }
-    function readText(f) { f.encoding = "UTF-8"; if (!f.open("r")) { return null; } var s = f.read(); f.close(); return s; }
-    function pointField(s, key) {
-        var m = new RegExp('"' + key + '"\\s*:\\s*\\[\\s*(-?[0-9.eE+-]+)\\s*,\\s*(-?[0-9.eE+-]+)').exec(s);
-        return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
+    function frameOf(o) {
+        if (!o) { return null; }
+        var f = { minX: num(o.minX, NaN), maxX: num(o.maxX, NaN), minY: num(o.minY, NaN), maxY: num(o.maxY, NaN) };
+        if (isNaN(f.minX) || isNaN(f.maxX) || isNaN(f.minY) || isNaN(f.maxY) || f.maxX <= f.minX || f.maxY <= f.minY) { return null; }
+        return f;
     }
-    function numField(s, key, def) { var m = new RegExp('"' + key + '"\\s*:\\s*(-?[0-9.eE+-]+)').exec(s); return m ? parseFloat(m[1]) : def; }
-    function strField(s, key, def) { var m = new RegExp('"' + key + '"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)"').exec(s); return m ? m[1] : def; }
-    function splitObjects(s, from) {
-        var out = [], d = 0, st = -1, i;
-        for (i = from || 0; i < s.length; i += 1) {
-            var c = s.charAt(i);
-            if (c === "{") { if (d === 0) { st = i; } d += 1; }
-            else if (c === "}") { d -= 1; if (d === 0 && st >= 0) { out.push(s.substring(st, i + 1)); st = -1; } }
+    function latLonToMerc(lat, lon) {
+        var l = Math.max(-85, Math.min(85, num(lat, 0))), r = l * Math.PI / 180;
+        return [(num(lon, 0) + 180) / 360, (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2];
+    }
+    // Mercator -> inner-comp pixels for a rig frame; x is wrapped to the copy of the world nearest the frame.
+    function mapper(f, W, Hh) {
+        var sx = f.maxX - f.minX, sy = f.maxY - f.minY, cx = (f.minX + f.maxX) / 2;
+        return function (mx, my) {
+            while (mx < cx - 0.5) { mx += 1; }
+            while (mx > cx + 0.5) { mx -= 1; }
+            return [(mx - f.minX) / sx * W, (my - f.minY) / sy * Hh];
+        };
+    }
+    // Normalised point in payload frame pf -> inner-comp pixels of the rig.
+    function fromNorm(pf, toPx) { return function (p) { return toPx(pf.minX + num(p[0], 0) * (pf.maxX - pf.minX), pf.minY + num(p[1], 0) * (pf.maxY - pf.minY)); }; }
+
+    // ---------- rig bookkeeping ----------
+    function parseRig(L, index) {
+        var c = String(L.comment || "");
+        if (c.indexOf(RIG) !== 0) { return null; }
+        var p = c.split("|"), fr = String(p[3] || "").split(",");
+        var f = frameOf({ minX: fr[0], maxX: fr[1], minY: fr[2], maxY: fr[3] });
+        if (!f || !(L.source instanceof CompItem)) { return null; }
+        return { layer: L, index: index, id: p[1], level: p[2] || "VIEW", frame: f, name: L.name };
+    }
+    function writeRigTag(L, id, level, f) { L.comment = RIG + id + "|" + level + "|" + [f.minX, f.maxX, f.minY, f.maxY].join(","); }
+    function allRigs(comp) {
+        var out = [], i;
+        for (i = 1; i <= comp.numLayers; i += 1) { var r = parseRig(comp.layer(i), i); if (r) { out.push(r); } }
+        return out;
+    }
+    // id wins (layer indexes shift as layers are added); then a valid index; then the selected rig; then the first one.
+    function resolveRig(comp, index, id, auto) {
+        var rigs = allRigs(comp), i, n = parseInt(index, 10);
+        if (id) { for (i = 0; i < rigs.length; i += 1) { if (rigs[i].id === String(id)) { return rigs[i]; } } }
+        if (n > 0) { for (i = 0; i < rigs.length; i += 1) { if (rigs[i].index === n) { return rigs[i]; } } }
+        if (auto === false) { return null; }
+        for (i = 0; i < rigs.length; i += 1) { if (rigs[i].layer.selected) { return rigs[i]; } }
+        return rigs.length ? rigs[0] : null;
+    }
+    function rigFx(rig, name) { try { return rig.layer.property("ADBE Effect Parade").property(name).property(1); } catch (e) { return null; } }
+    function toPxFor(rig) { return mapper(rig.frame, rig.layer.source.width, rig.layer.source.height); }
+    function assetFolder() {
+        var i, items = app.project.items;
+        for (i = 1; i <= items.length; i += 1) { if (items[i] instanceof FolderItem && items[i].name === "Akira Map Assets") { return items[i]; } }
+        return items.addFolder("Akira Map Assets");
+    }
+    function importImage(path) {
+        var f = new File(String(path)); if (!f.exists) { return null; }
+        var it = app.project.importFile(new ImportOptions(f));
+        try { it.parentFolder = assetFolder(); } catch (e) { }
+        return it;
+    }
+
+    // ---------- inner content builders ----------
+    function shapeLayer(mc, name, comment, rings, closed, strokeRgb, strokeW, fillRgb) {
+        var L = mc.layers.addShape(), c = L.property("ADBE Root Vectors Group"), i, j;
+        L.name = name; L.comment = comment;
+        for (i = 0; i < rings.length; i += 1) {
+            var pts = rings[i]; if (!pts || pts.length < 2) { continue; }
+            var sh = new Shape(), z = [];
+            for (j = 0; j < pts.length; j += 1) { z.push([0, 0]); }
+            sh.vertices = pts; sh.inTangents = z; sh.outTangents = z; sh.closed = !!closed;
+            var pg = c.addProperty("ADBE Vector Shape - Group"); pg.name = "Path " + (i + 1);
+            pg.property("ADBE Vector Shape").setValue(sh);
+        }
+        if (fillRgb) { c.addProperty("ADBE Vector Graphic - Fill").property("ADBE Vector Fill Color").setValue(fillRgb); }
+        var st = c.addProperty("ADBE Vector Graphic - Stroke");
+        st.property("ADBE Vector Stroke Color").setValue(strokeRgb || [1, 1, 1]);
+        st.property("ADBE Vector Stroke Width").setValue(Math.max(0.5, num(strokeW, 2)));
+        try { st.property("ADBE Vector Stroke Line Join").setValue(2); } catch (e) { }
+        L.transform.anchorPoint.setValue([0, 0]); L.transform.position.setValue([0, 0]);
+        return L;
+    }
+    function ringsFrom(list, conv) {
+        var out = [], i, j;
+        for (i = 0; i < (list || []).length; i += 1) {
+            var r = list[i], pts = [];
+            for (j = 0; j < r.length; j += 1) { pts.push(conv(r[j])); }
+            if (pts.length >= 2) { out.push(pts); }
         }
         return out;
     }
-    function pointsArray(s) {
-        var k = s.indexOf('"points"'); if (k < 0) { return []; }
-        var st = s.indexOf("[", k), d = 0, i, en = -1, pts = [], m;
-        for (i = st; i < s.length && st >= 0; i += 1) { var c = s.charAt(i); if (c === "[") { d += 1; } else if (c === "]") { d -= 1; if (d === 0) { en = i; break; } } }
-        if (en < 0) { return pts; }
-        var re = /\[\s*(-?[0-9.eE+-]+)\s*,\s*(-?[0-9.eE+-]+)\s*\]/g, inner = s.substring(st, en + 1);
-        while ((m = re.exec(inner)) !== null) { pts.push([parseFloat(m[1]), parseFloat(m[2])]); }
-        return pts;
+    function placeImage(mc, item, rect, comment, name) {
+        var L = mc.layers.add(item);
+        L.name = name; L.comment = comment;
+        L.transform.anchorPoint.setValue([0, 0]);
+        L.transform.position.setValue([rect[0], rect[1]]);
+        L.transform.scale.setValue([rect[2] / item.width * 100, rect[3] / item.height * 100]);
+        return L;
     }
-
-    // ---------- rig lookup ----------
-    function tagOf(L) { var m = /^akira-map-rig:([^:]+):([a-z]+)/.exec(String(L.comment || "")); return m ? { id: m[1], role: m[2] } : null; }
-    function rigLayers(comp, id) {
-        var r = { id: id, count: 0 }, i;
-        for (i = 1; i <= comp.numLayers; i += 1) { var t = tagOf(comp.layer(i)); if (t && t.id === id) { r[t.role] = comp.layer(i); r.count += 1; } }
-        return r.count ? r : null;
-    }
-    function rigIds(comp) {
-        var ids = [], seen = {}, i;
-        for (i = 1; i <= comp.numLayers; i += 1) { var t = tagOf(comp.layer(i)); if (t && !seen[t.id]) { seen[t.id] = true; ids.push(t.id); } }
-        return ids;
-    }
-    function resolveRig(comp, id) {
-        if (!blank(id)) { return rigLayers(comp, String(id)); }
-        var sel = H.selectedLayers(comp), i;
-        for (i = 0; i < sel.length; i += 1) { var t = tagOf(sel[i]); if (t) { return rigLayers(comp, t.id); } }
-        if (F._mapActive) { var r = rigLayers(comp, F._mapActive); if (r) { return r; } }
-        var ids = rigIds(comp);
-        return ids.length ? rigLayers(comp, ids[ids.length - 1]) : null;
-    }
-    function newId() { return "map" + Math.floor(new Date().getTime() % 1000000); }
-    function cornerExpr(nullName) { return 'var L = thisComp.layer(' + jsonStr(nullName) + ');\nfromComp(L.toComp(L.anchorPoint));'; }
-
-    function addNulls(comp, id, corners) {
-        var r = { id: id }, i;
-        for (i = 0; i < 4; i += 1) {
-            var n = comp.layers.addNull(), role = ROLES[i];
-            n.name = "Map " + id + " " + role.toUpperCase();
-            n.comment = MARK + id + ":" + role;
-            n.transform.position.setValue(corners[i]);
-            r[role] = n;
+    function frameRect(fr, toPx) { var a = toPx(fr.minX, fr.minY), b = toPx(fr.maxX, fr.maxY); return [a[0], a[1], b[0] - a[0], b[1] - a[1]]; }
+    // Imagery, borders and labels for a view frame `vf`, drawn into inner comp `mc` through `toPx`.
+    function buildView(mc, p, vf, toPx) {
+        var i, conv = fromNorm(vf, toPx), r = frameRect(vf, toPx), made = [];
+        var bg = mc.layers.addSolid(rgb(p.fill, [0.09, 0.14, 0.17]), "Map Background", Math.max(4, Math.round(Math.abs(r[2]))), Math.max(4, Math.round(Math.abs(r[3]))), 1);
+        bg.comment = "FLEX_MAP_BG_V1"; bg.transform.anchorPoint.setValue([0, 0]); bg.transform.position.setValue([r[0], r[1]]);
+        made.push(bg);
+        var layers = p.basemapLayers || [];
+        if (!layers.length && p.basemapPath && !p.removeBasemap) { layers = [{ path: p.basemapPath, frame: vf, label: "Basemap" }]; }
+        for (i = 0; i < layers.length; i += 1) {
+            var bf = frameOf(layers[i].frame) || vf, it = importImage(layers[i].path);
+            if (!it) { continue; }
+            var im = placeImage(mc, it, frameRect(bf, toPx), "FLEX_MAP_BASEMAP_V1|" + (layers[i].label || ""), "Basemap" + (layers[i].label ? " · " + layers[i].label : ""));
+            made.push(im);
         }
-        return r;
+        var feats = p.features || [];
+        for (i = 0; i < feats.length; i += 1) {
+            var ft = feats[i], rings = ringsFrom(ft.paths, conv);
+            if (rings.length) { made.push(shapeLayer(mc, ft.name || "Borders", "FLEX_MAP_FEATURE_V1|" + (ft.name || ""), rings, ft.isClosed !== false, rgb(ft.stroke, [1, 1, 1]), ft.strokeWidth, null)); }
+        }
+        if (p.paths && p.paths.length) {
+            var pr = ringsFrom(p.paths, conv);
+            if (pr.length) { made.push(shapeLayer(mc, "Map Paths", "FLEX_MAP_PATHS_V1", pr, true, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, null)); }
+        }
+        var labels = p.labels || [], fs = Math.max(10, Math.round(mc.width * 0.014));
+        for (i = 0; i < labels.length; i += 1) {
+            var lb = labels[i], pos = conv([lb.x, lb.y]);
+            var tx = mc.layers.addText(String(lb.name || ""));
+            tx.name = String(lb.name || "Label"); tx.comment = "FLEX_MAP_LABEL_V1|" + tx.name;
+            try {
+                var td = tx.property("ADBE Text Properties").property("ADBE Text Document"), doc = td.value;
+                doc.fontSize = num(lb.rank, 2) <= 1 ? Math.round(fs * 1.35) : fs; doc.fillColor = [1, 1, 1];
+                doc.applyStroke = true; doc.strokeColor = [0, 0, 0]; doc.strokeWidth = Math.max(1, Math.round(fs / 8));
+                doc.justification = ParagraphJustification.CENTER_JUSTIFY; td.setValue(doc);
+            } catch (eT) { }
+            tx.transform.position.setValue(pos);
+            made.push(tx);
+        }
+        // stacking: background at the bottom, then imagery, borders, labels on top
+        for (i = made.length - 1; i >= 0; i -= 1) { made[i].moveToEnd(); } // last moved ends lowest: background
+        return made;
     }
-    function linkCornerPin(rig) {
-        var L = rig.content, fx = L.property("ADBE Effect Parade"), cp = null, i;
-        for (i = 1; i <= fx.numProperties; i += 1) { if (fx.property(i).matchName === "ADBE Corner Pin") { cp = fx.property(i); break; } }
-        if (!cp) { cp = fx.addProperty("ADBE Corner Pin"); }
-        for (i = 0; i < 4; i += 1) { var role = ROLES[i]; if (rig[role]) { cp.property(CP[role]).expression = cornerExpr(rig[role].name); } }
-        return cp;
+    function clearView(mc) {
+        var i, j;
+        for (i = mc.numLayers; i >= 1; i -= 1) {
+            var c = String(mc.layer(i).comment || "");
+            for (j = 0; j < VIEW_TAGS.length; j += 1) { if (c.indexOf(VIEW_TAGS[j]) === 0) { mc.layer(i).remove(); break; } }
+        }
     }
-    function layerCorners(comp, L) {
-        var w = L.source ? L.source.width : comp.width, h = L.source ? L.source.height : comp.height;
-        var p = L.transform.position.value, a = L.transform.anchorPoint.value, s = L.transform.scale.value;
-        var x0 = p[0] - a[0] * s[0] / 100, y0 = p[1] - a[1] * s[1] / 100, x1 = x0 + w * s[0] / 100, y1 = y0 + h * s[1] / 100;
-        return [[x0, y0], [x1, y0], [x0, y1], [x1, y1]];
+    function wpView(rig, lat, lon, zoom) {
+        var mc = rig.layer.source, toPx = toPxFor(rig), m = latLonToMerc(lat, lon);
+        var spanX = 1 / Math.pow(2, Math.max(0, num(zoom, 1)) - 1), rigSpan = rig.frame.maxX - rig.frame.minX;
+        var outerW = rig.layer.containingComp.width;
+        return { pan: toPx(m[0], m[1]), zoom: outerW / mc.width * (rigSpan / spanX) * 100 };
     }
 
-    F.flexMapEngineVersion = function () { return "1.0.0"; };
-
+    // ================= create =================
     F.flexMap_createFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var f = pickFile(path, "Choose the image or video to map"); if (!f) { return "ERR:No file chosen."; }
-        var id = newId();
-        app.beginUndoGroup("Create Map Rig");
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
+        var f = frameOf(p.baseFrameMerc); if (!f) { return "ERR:The map payload has no frame."; }
+        var aspect = num(p.aspect, (f.maxX - f.minX) / (f.maxY - f.minY)), W = comp.width, Hh = Math.max(16, Math.min(30000, Math.round(W / Math.max(0.05, aspect))));
+        var id = "m" + (new Date().getTime() % 100000000), level = String(p.level || "VIEW"), label = String(p.locationName || p.country || "Map");
+        app.beginUndoGroup("Akira Map Rig");
         try {
-            var item = app.project.importFile(new ImportOptions(f));
-            var L = comp.layers.add(item);
-            L.name = "Map " + id + " View";
-            L.comment = MARK + id + ":content";
+            var mc = app.project.items.addComp("Akira Map · " + label, W, Hh, comp.pixelAspect, comp.duration, comp.frameRate);
+            try { mc.parentFolder = assetFolder(); } catch (eF) { }
+            buildView(mc, p, f, mapper(f, W, Hh));
+            var L = comp.layers.add(mc); L.name = "Akira Map · " + label;
+            writeRigTag(L, id, level, f);
+            var fx = L.property("ADBE Effect Parade");
+            var z = fx.addProperty("ADBE Slider Control"); z.name = FX_ZOOM; z.property(1).setValue(100);
+            var pn = fx.addProperty("ADBE Point Control"); pn.name = FX_PAN; pn.property(1).setValue([W / 2, Hh / 2]);
+            var br = fx.addProperty("ADBE Angle Control"); br.name = FX_BEAR; br.property(1).setValue(0);
+            L.transform.anchorPoint.expression = "effect(\"" + FX_PAN + "\")(1)";
+            L.transform.scale.expression = "const z=effect(\"" + FX_ZOOM + "\")(1);[z,z]";
+            L.transform.rotation.expression = "-effect(\"" + FX_BEAR + "\")(1)";
             L.transform.position.setValue([comp.width / 2, comp.height / 2]);
-            var rig = addNulls(comp, id, layerCorners(comp, L));
-            rig.content = L;
-            L.moveAfter(rig.br);
-            linkCornerPin(rig);
-            F._mapActive = id;
-        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
-        app.endUndoGroup();
-        return "OK:" + id;
-    };
-
-    F.flexMap_traceOutlineFromFile = function (arg) {
-        var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var s = decodeArg(arg);
-        if (s.indexOf('"points"') < 0) { var f = pickFile(arg, "Choose a traced-outline JSON file"); if (!f) { return "ERR:No outline data."; } s = readText(f) || ""; }
-        var pts = pointsArray(s); if (pts.length < 3) { return "ERR:Outline needs at least 3 points."; }
-        var id = strField(s, "rigId", "") || F._mapActive || newId(), closed = !/"closed"\s*:\s*false/.test(s);
-        app.beginUndoGroup("Trace Map Outline");
-        try {
-            var L = comp.layers.addShape(), i, it = [], ot = [];
-            L.name = "Map " + id + " Outline";
-            L.comment = MARK + id + ":outline";
-            var grp = L.property("ADBE Root Vectors Group").addProperty("ADBE Vector Group");
-            grp.name = "Outline";
-            var c = grp.property("ADBE Vectors Group"), pg = c.addProperty("ADBE Vector Shape - Group"), sh = new Shape();
-            for (i = 0; i < pts.length; i += 1) { it.push([0, 0]); ot.push([0, 0]); }
-            sh.vertices = pts; sh.inTangents = it; sh.outTangents = ot; sh.closed = closed;
-            pg.property("ADBE Vector Shape").setValue(sh);
-            var st = c.addProperty("ADBE Vector Graphic - Stroke");
-            try { st.property("ADBE Vector Stroke Color").setValue([0, 1, 0.6, 1]); st.property("ADBE Vector Stroke Width").setValue(3); } catch (e1) { }
-            L.transform.anchorPoint.setValue([0, 0]);
-            L.transform.position.setValue([0, 0]);
-        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
-        app.endUndoGroup();
-        return "OK:" + id;
-    };
-
-    F.flexMap_createTrackerFromFile = function (path, rigId) {
-        var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var f = pickFile(path, "Choose a corner-track JSON file"); if (!f) { return "ERR:No file chosen."; }
-        var s = readText(f); if (!s) { return "ERR:Could not read file."; }
-        var fps = numField(s, "fps", comp.frameRate), fi = s.indexOf('"frames"');
-        if (fi < 0) { return "ERR:Track file has no \"frames\" list."; }
-        var chunks = splitObjects(s, fi), times = [], vals = { tl: [], tr: [], bl: [], br: [] }, i, k;
-        for (i = 0; i < chunks.length; i += 1) {
-            var c = chunks[i], t = numField(c, "t", NaN), ok = true, row = {};
-            if (isNaN(t)) { var fr = numField(c, "f", NaN); if (isNaN(fr)) { continue; } t = fr / fps; }
-            for (k = 0; k < 4; k += 1) { row[ROLES[k]] = pointField(c, ROLES[k]); if (!row[ROLES[k]]) { ok = false; } }
-            if (!ok) { continue; }
-            times.push(t);
-            for (k = 0; k < 4; k += 1) { vals[ROLES[k]].push(row[ROLES[k]]); }
-        }
-        if (!times.length) { return "ERR:No valid frames in track file."; }
-        app.beginUndoGroup("Import Corner Track");
-        try {
-            var rig = resolveRig(comp, rigId);
-            if (!rig || !rig.tl) {
-                var id = rig ? rig.id : newId(), made = addNulls(comp, id, [vals.tl[0], vals.tr[0], vals.bl[0], vals.br[0]]);
-                if (rig && rig.content) { made.content = rig.content; linkCornerPin(made); }
-                rig = made; F._mapActive = id;
-            }
-            for (k = 0; k < 4; k += 1) {
-                var pos = rig[ROLES[k]].transform.position;
-                while (pos.numKeys > 0) { pos.removeKey(pos.numKeys); }
-                pos.setValuesAtTimes(times, vals[ROLES[k]]);
+            var an = p.animation;
+            if (an && an.waypoints && an.waypoints.length) {
+                var rig = parseRig(L, L.index), dur = Math.max(0.5, num(an.duration, 6)), t0 = comp.time, i, zp = z.property(1), pp = pn.property(1), bp = br.property(1);
+                for (i = 0; i < an.waypoints.length; i += 1) {
+                    var wp = an.waypoints[i], t = t0 + num(wp.timeFraction, i / Math.max(1, an.waypoints.length - 1)) * dur, v = wpView(rig, wp.lat, wp.lon, wp.zoom);
+                    zp.setValueAtTime(t, v.zoom); pp.setValueAtTime(t, v.pan); bp.setValueAtTime(t, num(wp.bearing, 0));
+                }
+                if (String(an.easing || "") !== "linear") {
+                    var props = [zp, pp, bp], k, q;
+                    for (q = 0; q < props.length; q += 1) {
+                        for (k = 1; k <= props[q].numKeys; k += 1) {
+                            var dims = q === 1 ? 2 : 1, ez = [], d;
+                            for (d = 0; d < dims; d += 1) { ez.push(new KeyframeEase(0, 40)); }
+                            try { props[q].setTemporalEaseAtKey(k, ez, ez); } catch (eE) { }
+                        }
+                    }
+                }
+                if (comp.duration < t0 + dur) { try { comp.duration = t0 + dur; mc.duration = t0 + dur; } catch (eD) { } }
             }
         } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return "OK:" + times.length;
+        return "OK:" + L.index + ":RIG:" + id;
     };
 
-    F.flexMap_listRigs = function () {
-        var comp = H.activeComp(); if (!comp) { return "[]"; }
-        var ids = rigIds(comp), out = [], i;
-        for (i = 0; i < ids.length; i += 1) {
-            var r = rigLayers(comp, ids[i]);
-            out.push('{"id":' + jsonStr(ids[i]) + ',"content":' + (r.content ? jsonStr(r.content.name) : "null") + ',"layers":' + r.count + '}');
-        }
-        return "[" + out.join(",") + "]";
-    };
-
-    F.flexMap_activeRig = function () {
-        var comp = H.activeComp(); if (!comp) { return '{"found":false}'; }
-        var r = resolveRig(comp, "");
-        return r ? '{"found":true,"id":' + jsonStr(r.id) + '}' : '{"found":false}';
-    };
-
-    F.flexMap_selectRig = function (id) {
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var r = rigLayers(comp, String(id)), i; if (!r) { return "ERR:Rig not found."; }
-        for (i = 1; i <= comp.numLayers; i += 1) { var t = tagOf(comp.layer(i)); comp.layer(i).selected = !!(t && t.id === r.id); }
-        F._mapActive = r.id;
-        return "SUCCESS";
-    };
-
-    F.flexMap_syncRigToView = function (id) {
+    // ================= live view refresh / sync =================
+    F.flexMap_replaceViewFromFile = function (path) {
         var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var r = resolveRig(comp, id); if (!r) { return "ERR:No map rig found."; }
-        if (!r.content) { return "ERR:Rig has no view layer."; }
-        app.beginUndoGroup("Sync Map Rig");
-        try {
-            var k;
-            for (k = 0; k < 4; k += 1) { if (!r[ROLES[k]]) { break; } }
-            if (k < 4) {
-                var cs = layerCorners(comp, r.content), made = addNulls(comp, r.id, cs), j;
-                for (j = 0; j < 4; j += 1) { if (r[ROLES[j]]) { made[ROLES[j]].remove(); made[ROLES[j]] = r[ROLES[j]]; } }
-                made.content = r.content; r = made;
-            }
-            linkCornerPin(r);
-        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
-        app.endUndoGroup();
-        return "SUCCESS";
-    };
-
-    F.flexMap_bakeRig = function (id) {
-        var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var r = resolveRig(comp, id); if (!r || !r.content) { return "ERR:No map rig found."; }
-        var fx = r.content.property("ADBE Effect Parade"), cp = null, i, k;
-        for (i = 1; i <= fx.numProperties; i += 1) { if (fx.property(i).matchName === "ADBE Corner Pin") { cp = fx.property(i); break; } }
-        if (!cp) { return "ERR:Rig view has no Corner Pin."; }
-        var fd = comp.frameDuration, t0 = comp.workAreaStart, t1 = t0 + comp.workAreaDuration, times = [], t;
-        for (t = t0; t < t1 - fd / 2; t += fd) { times.push(t); }
-        if (!times.length) { return "ERR:Work area is empty."; }
-        app.beginUndoGroup("Bake Map Rig");
-        try {
-            for (k = 0; k < 4; k += 1) {
-                var p = cp.property(CP[ROLES[k]]), vals = [];
-                for (i = 0; i < times.length; i += 1) { vals.push(p.valueAtTime(times[i], false)); }
-                p.expression = "";
-                while (p.numKeys > 0) { p.removeKey(p.numKeys); }
-                p.setValuesAtTimes(times, vals);
-            }
-        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
-        app.endUndoGroup();
-        return "OK:" + times.length;
-    };
-
-    F.flexMap_replaceViewFromFile = function (path, id) {
-        var g = H.locked(); if (g) { return g; }
-        var comp = H.activeComp(); if (!comp) { return "ERR:Open a composition first."; }
-        var r = resolveRig(comp, id); if (!r || !r.content) { return "ERR:No map rig found."; }
-        var f = pickFile(path, "Choose the replacement image or video"); if (!f) { return "ERR:No file chosen."; }
-        app.beginUndoGroup("Replace Map View");
-        try { r.content.replaceSource(app.project.importFile(new ImportOptions(f)), false); }
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
+        var rig = resolveRig(comp, p.layerIndex, p.rigId, true); if (!rig) { return "ERR:No map rig in the active comp."; }
+        var vf = frameOf(p.baseFrameMerc) || rig.frame;
+        app.beginUndoGroup("Akira Map View");
+        try { var mc = rig.layer.source; clearView(mc); buildView(mc, p, vf, toPxFor(rig)); }
         catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return "SUCCESS";
+        return "OK";
+    };
+
+    F.flexMap_syncRigToView = function (index, lat, lon, zoom, bearing, rigId) {
+        var g = H.locked(); if (g) { return g; }
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var rig = resolveRig(comp, index, rigId, false); if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
+        var zp = rigFx(rig, FX_ZOOM), pp = rigFx(rig, FX_PAN), bp = rigFx(rig, FX_BEAR);
+        if (!zp || !pp) { return "ERR:This map rig was baked and can no longer follow the panel."; }
+        var v = wpView(rig, lat, lon, zoom), t = comp.time;
+        app.beginUndoGroup("Akira Map Sync");
+        try { H.setProp(zp, v.zoom, t); H.setProp(pp, v.pan, t); if (bp) { H.setProp(bp, num(bearing, 0), t); } }
+        catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
+        app.endUndoGroup();
+        return "OK";
+    };
+
+    // ================= list / select / active / bake =================
+    F.flexMap_listRigs = function () {
+        var comp = H.activeComp(); if (!comp) { return "[]"; }
+        var rigs = allRigs(comp), out = [], i;
+        for (i = 0; i < rigs.length; i += 1) {
+            if (rigs[i].level === "BAKED") { continue; }
+            var f = rigs[i].frame;
+            out.push({ index: rigs[i].index, id: rigs[i].id, name: rigs[i].name, level: rigs[i].level, baseFrameMerc: [f.minX, f.maxX, f.minY, f.maxY].join(",") });
+        }
+        return H.toJSON(out);
+    };
+    F.flexMap_selectRig = function (index, rigId) {
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var rig = resolveRig(comp, index, rigId, false), i; if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
+        try { for (i = 1; i <= comp.numLayers; i += 1) { comp.layer(i).selected = (i === rig.index); } } catch (e) { }
+        return "OK:" + rig.index;
+    };
+    F.flexMap_activeRig = function () {
+        var comp = H.activeComp(); if (!comp) { return "null"; }
+        var rig = resolveRig(comp, 0, "", true);
+        return rig ? H.toJSON({ name: rig.name, index: rig.index, id: rig.id }) : "null";
+    };
+    F.flexMap_bakeRig = function (index, rigId) {
+        var g = H.locked(); if (g) { return g; }
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var rig = resolveRig(comp, index, rigId, false); if (!rig) { return "ERR:That map rig is no longer in the active comp."; }
+        var zp = rigFx(rig, FX_ZOOM), pp = rigFx(rig, FX_PAN), bp = rigFx(rig, FX_BEAR), tr = rig.layer.transform;
+        if (!zp || !pp) { return "ERR:This map rig is already baked."; }
+        app.beginUndoGroup("Bake Map Rig");
+        try {
+            var pairs = [[pp, tr.anchorPoint, function (v) { return v; }], [zp, tr.scale, function (v) { return [v, v]; }], [bp, tr.rotation, function (v) { return -v; }]], i, k;
+            for (i = 0; i < pairs.length; i += 1) {
+                var src = pairs[i][0], dst = pairs[i][1], fn = pairs[i][2];
+                if (!src) { continue; }
+                dst.expression = "";
+                while (dst.numKeys) { dst.removeKey(dst.numKeys); }
+                if (src.numKeys) {
+                    for (k = 1; k <= src.numKeys; k += 1) {
+                        dst.setValueAtTime(src.keyTime(k), fn(src.keyValue(k)));
+                        try { if (dst.isInterpolationTypeValid(src.keyOutInterpolationType(k))) { dst.setInterpolationTypeAtKey(k, src.keyInInterpolationType(k), src.keyOutInterpolationType(k)); } } catch (eI) { }
+                    }
+                } else { dst.setValue(fn(src.value)); }
+            }
+            var fx = rig.layer.property("ADBE Effect Parade"), names = [FX_ZOOM, FX_PAN, FX_BEAR];
+            for (i = 0; i < names.length; i += 1) { try { fx.property(names[i]).remove(); } catch (eR) { } }
+            writeRigTag(rig.layer, rig.id, "BAKED", rig.frame);
+        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
+        app.endUndoGroup();
+        return "OK";
+    };
+
+    // ================= outlines / routes / data shapes =================
+    function convForPayload(rig, p, comp) {
+        var pf = frameOf(p.baseFrameMerc);
+        if (rig) {
+            var toPx = toPxFor(rig);
+            if (pf) { return { conv: fromNorm(pf, toPx), geo: null }; }
+            return { conv: null, geo: function (ll) { var m = latLonToMerc(ll[1], ll[0]); return toPx(m[0], m[1]); } };
+        }
+        var W = comp.width, Hh = comp.height;
+        return { conv: function (q) { return [num(q[0], 0) * W, num(q[1], 0) * Hh]; }, geo: null };
+    }
+    F.flexMap_traceOutlineFromFile = function (path) {
+        var g = H.locked(); if (g) { return g; }
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
+        var name = String(p.name || "Outline"), rig = resolveRig(comp, p.layerIndex, p.rigId, p.autoRig !== false);
+        var cv = convForPayload(rig, p, comp), rings = cv.conv ? ringsFrom(p.paths, cv.conv) : ringsFrom(p.geo, cv.geo);
+        if (!rings.length && p.geo && p.geo.length && rig) { var toPx = toPxFor(rig); rings = ringsFrom(p.geo, function (ll) { var m = latLonToMerc(ll[1], ll[0]); return toPx(m[0], m[1]); }); }
+        if (!rings.length) { return "ERR:Nothing to draw for " + name + "."; }
+        var tag = "FLEX_MAP_OUTLINE_V1|" + name, target = rig ? rig.layer.source : comp, i, L;
+        app.beginUndoGroup("Akira Map Outline");
+        try {
+            if (p.replaceExisting) { for (i = target.numLayers; i >= 1; i -= 1) { if (String(target.layer(i).comment || "") === tag) { target.layer(i).remove(); } } }
+            L = shapeLayer(target, name + " Outline", tag, rings, !!p.isClosed, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, p.fill ? rgb(p.fill, null) : null);
+        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
+        app.endUndoGroup();
+        return rig ? "SUCCESS:" + rig.index + ":RIG:" + rig.name : "SUCCESS:0:COMP:" + L.name;
+    };
+
+    // ================= trackers (pins, bubbles, spikes, places) =================
+    F.flexMap_createTrackerFromFile = function (path) {
+        var g = H.locked(); if (g) { return g; }
+        var comp = H.activeComp(); if (!comp) { return NO_COMP; }
+        var p; try { p = readPayload(path); } catch (e0) { return "ERR:" + e0.message; }
+        var name = String(p.name || "Place"), rig = resolveRig(comp, p.layerIndex, p.rigId, p.autoRig !== false), pt, i;
+        if (rig) {
+            var toPx = toPxFor(rig), pf = frameOf(p.baseFrameMerc);
+            if (isFinite(num(p.lat, NaN)) && isFinite(num(p.lon, NaN))) { var m = latLonToMerc(p.lat, p.lon); pt = toPx(m[0], m[1]); }
+            else if (pf) { pt = fromNorm(pf, toPx)([p.x, p.y]); }
+            else { pt = [rig.layer.source.width * num(p.x, 0.5), rig.layer.source.height * num(p.y, 0.5)]; }
+        } else { pt = [comp.width * num(p.x, 0.5), comp.height * num(p.y, 0.5)]; }
+        var T;
+        app.beginUndoGroup("Akira Map Tracker");
+        try {
+            T = comp.layers.addNull(); T.name = "Track · " + name; T.comment = "FLEX_MAP_TRACKER_V1|" + name;
+            T.transform.anchorPoint.setValue([0, 0]);
+            if (rig) {
+                T.transform.position.expression = "const R=thisComp.layer(\"" + esc(rig.name) + "\");R.toComp([" + Math.round(pt[0] * 1000) / 1000 + "," + Math.round(pt[1] * 1000) / 1000 + "])";
+                if (p.vectorPaths && p.vectorPaths.length) {
+                    var pf2 = frameOf(p.baseFrameMerc), mc = rig.layer.source;
+                    var rings = pf2 ? ringsFrom(p.vectorPaths, fromNorm(pf2, toPxFor(rig))) : [];
+                    var tag = "FLEX_MAP_PLACE_VECTOR_V1|" + name + "|";
+                    for (i = mc.numLayers; i >= 1; i -= 1) { if (String(mc.layer(i).comment || "").indexOf(tag) === 0) { mc.layer(i).remove(); } }
+                    if (rings.length) { shapeLayer(mc, name + " Boundary", tag + (p.osmId || ""), rings, p.vectorClosed !== false, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, null); }
+                }
+                T.moveBefore(rig.layer);
+            } else { T.transform.position.setValue(pt); }
+        } catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
+        app.endUndoGroup();
+        return "OK:" + T.index;
     };
 })();

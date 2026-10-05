@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.sougetsu.akirafx" ExtensionBundleVersion="9.2.2" ExtensionBundleName="Sougetsu Akira FX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.sougetsu.akirafx" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx.eject1" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx.eject2" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx.eject3" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx.eject4" Version="9.2.2" />
+    <Extension Id="com.sougetsu.akirafx.eject5" Version="9.2.2" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="AEFT" Version="[15.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="7.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.sougetsu.akirafx">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Sougetsu Akira FX</Menu>
+          <Geometry>
+            <Size>
+              <Height>600</Height>
+              <Width>280</Width>
+            </Size>
+            <MinSize>
+              <Height>300</Height>
+              <Width>220</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+      <Extension Id="com.sougetsu.akirafx.eject1">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Akira FX: Ejected Tab 1</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>760</Width>
+            </Size>
+            <MinSize>
+              <Height>260</Height>
+              <Width>300</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <Extension Id="com.sougetsu.akirafx.eject2">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Akira FX: Ejected Tab 2</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>760</Width>
+            </Size>
+            <MinSize>
+              <Height>260</Height>
+              <Width>300</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <Extension Id="com.sougetsu.akirafx.eject3">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Akira FX: Ejected Tab 3</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>760</Width>
+            </Size>
+            <MinSize>
+              <Height>260</Height>
+              <Width>300</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <Extension Id="com.sougetsu.akirafx.eject4">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Akira FX: Ejected Tab 4</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>760</Width>
+            </Size>
+            <MinSize>
+              <Height>260</Height>
+              <Width>300</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <Extension Id="com.sougetsu.akirafx.eject5">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/akira_loader.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Akira FX: Ejected Tab 5</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>760</Width>
+            </Size>
+            <MinSize>
+              <Height>260</Height>
+              <Width>300</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+  <AccessList>
+    <Access href="http://*"/>
+    <Access href="https://*"/>
+  </AccessList>
+</ExtensionManifest>

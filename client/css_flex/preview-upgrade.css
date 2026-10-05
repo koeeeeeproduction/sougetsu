@@ -1,0 +1,503 @@
+.preview-panel {
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    background: #141414 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 24px 80px rgba(0, 0, 0, 0.6),
+        0 0 120px var(--primary-dim) !important;
+    margin-bottom: 12px;
+    animation: none !important;
+}
+
+.preview-panel:hover {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.preview-panel.open {
+    animation: none !important;
+}
+
+.preview-canvas {
+    position: relative;
+    cursor: pointer;
+}
+
+.preview-panel-content {
+    position: relative !important;
+    height: 160px;
+    background:
+        radial-gradient(ellipse at 50% 40%, var(--primary-dim) 0%, transparent 55%),
+        radial-gradient(ellipse at 78% 72%, var(--primary-dim) 0%, transparent 45%),
+        #111111 !important;
+    background-size: 100% 100%, 100% 100%, auto !important;
+    background-position: center center !important;
+    background-repeat: no-repeat, no-repeat, repeat !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden !important;
+    max-height: none !important;
+    padding: 0 !important;
+    transition: none !important;
+}
+
+.preview-panel.open .preview-panel-content {
+    max-height: none !important;
+    padding: 0 !important;
+}
+
+.preview-grid {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--primary-dim) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse at center, black 15%, transparent 58%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 58%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.preview-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 28%, rgba(0, 0, 0, 0.5) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.preview-live-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.preview-live-dot {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background: var(--primary) !important;
+    box-shadow: 0 0 10px var(--primary-dim) !important;
+    animation: livePulse 2.5s ease-in-out infinite !important;
+    flex-shrink: 0;
+}
+
+@keyframes livePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 10px var(--primary-dim);
+    }
+
+    50% {
+        opacity: 0.35;
+        box-shadow: 0 0 4px var(--primary-dim);
+    }
+}
+
+.preview-live-text {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.3px;
+}
+
+.preview-exp-name {
+    font-size: 10px !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+    opacity: 1 !important;
+    font-weight: 400 !important;
+}
+
+.preview-exp-name.active {
+    opacity: 1 !important;
+}
+
+.preview-stage {
+    position: relative !important;
+    z-index: 2;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.preview-panel.open .preview-stage {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.preview-stage canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: #0d0d14 !important;
+}
+
+.preview-info {
+    position: absolute !important;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px !important;
+    color: rgba(255, 255, 255, 0.18) !important;
+    z-index: 3;
+    letter-spacing: 0.2px;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    pointer-events: none;
+}
+
+.preview-bottom-bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 44px;
+    padding: 0 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(10, 10, 16, 0.65);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.preview-speed-btns {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 1px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    padding: 3px !important;
+    border-radius: 8px !important;
+    justify-self: start;
+}
+
+.speed-btn {
+    font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    font-variant-numeric: tabular-nums !important;
+    padding: 4px 8px !important;
+    border-radius: 5px !important;
+    border: none !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    line-height: 1.2 !important;
+    position: relative;
+}
+
+.speed-btn:hover {
+    color: rgba(255, 255, 255, 0.6) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.speed-btn:active {
+    transform: scale(0.95);
+}
+
+.speed-btn.active {
+    background: var(--primary-dim) !important;
+    color: var(--primary) !important;
+}
+
+.preview-playback {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-self: center;
+}
+
+.pb-btn {
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    position: relative;
+    transition:
+        background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pb-btn.play {
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary-dim) !important;
+    padding-left: 2px !important;
+}
+
+.pb-btn.play:hover {
+    border-color: var(--primary-dim) !important;
+    background: var(--primary-dim);
+    transform: scale(1.08);
+}
+
+.pb-btn.play:active {
+    transform: scale(0.95);
+}
+
+.pb-btn.play.active {
+    background: var(--primary-dim);
+    border-color: var(--primary-dim) !important;
+    color: var(--primary);
+}
+
+.pb-btn.pause {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 7px;
+    letter-spacing: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.pb-btn.pause:hover {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.55);
+    transform: scale(1.08);
+}
+
+.pb-btn.pause:active {
+    transform: scale(0.95);
+}
+
+.pb-btn.pause.active {
+    background: var(--primary-dim);
+    border-color: var(--primary-dim) !important;
+    color: var(--primary);
+}
+
+.preview-toggles {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    justify-self: end;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px;
+    border-radius: 8px;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 5px 9px;
+    border-radius: 5px;
+    border: none !important;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition:
+        color 0.15s ease,
+        background-color 0.15s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.toggle-btn:active {
+    transform: scale(0.93);
+}
+
+.toggle-btn.active,
+.toggle-btn:has(input:checked) {
+    color: var(--primary);
+    background: var(--primary-dim);
+}
+
+.toggle-btn input[type="checkbox"] {
+    display: none;
+}
+
+.t-dot {
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.preview-close-x {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 5px;
+    border-radius: 4px;
+    margin-left: 1px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.preview-close-x:hover {
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.preview-panel:not(.open) {
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.preview-panel:not(.open) .preview-canvas {
+    display: none;
+}
+
+.preview-panel:not(.open) .preview-bottom-bar {
+    display: flex;
+    border-top: none;
+    justify-content: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    background: rgba(20, 20, 26, 0.95) !important;
+    border-radius: 14px !important;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.preview-panel:not(.open) .preview-bottom-bar:hover {
+    background: var(--primary-dim) !important;
+}
+
+.preview-panel:not(.open) .preview-bottom-bar::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+    margin-right: 8px;
+    animation: livePulse 2.5s ease-in-out infinite;
+}
+
+.preview-panel:not(.open) .preview-bottom-bar::after {
+    content: 'Text Preview';
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.5px;
+}
+
+.preview-panel:not(.open) .preview-speed-btns,
+.preview-panel:not(.open) .preview-playback,
+.preview-panel:not(.open) .preview-toggles {
+    display: none !important;
+}
+
+.preview-panel {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preview-canvas {
+    transition: opacity 0.2s ease;
+}
+
+.trail-toggle-btn {
+    margin-left: 2px !important;
+    padding: 4px 8px !important;
+    border-radius: 5px !important;
+    border: none !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.trail-toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.6) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.trail-toggle-btn.active {
+    color: var(--primary) !important;
+    background: var(--primary-dim) !important;
+}
+
+.preview-toggles .toggle-btn {
+    min-width: 28px;
+    justify-content: center;
+}
+
+.preview-toggles .toggle-btn svg {
+    flex-shrink: 0;
+}
+
+.preview-toggles.text-mode .shape-opt {
+    display: none !important;
+}
+
+.preview-resize-handle {
+    height: 14px !important;
+    background: transparent !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: ns-resize;
+}
+
+.preview-panel.open .preview-resize-handle {
+    display: flex !important;
+}
+
+.preview-resize-bar {
+    width: 32px !important;
+    height: 3px !important;
+    border-radius: 99px !important;
+    background: var(--primary-dim) !important;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease !important;
+}
+
+.preview-resize-handle:hover .preview-resize-bar {
+    width: 48px !important;
+    background: var(--primary) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 128, 0.4), 0 0 15px var(--primary-color, #0f0);
+}
+
+.preview-resize-handle:active .preview-resize-bar,
+.preview-resize-handle.dragging .preview-resize-bar {
+    width: 48px !important;
+    background: var(--primary) !important;
+    box-shadow: 0 0 14px rgba(0, 255, 128, 0.6), 0 0 20px var(--primary-color, #0f0);
+}
+
+.preview-panel-content::-webkit-scrollbar {
+    display: none;
+}

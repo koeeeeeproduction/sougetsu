@@ -1,0 +1,44 @@
+{
+ "ArchivoBlack-Regular.ttf": {
+  "ps": "ArchivoBlack-Regular",
+  "family": "Archivo Black",
+  "style": "Regular",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "BebasNeue-Regular.ttf": {
+  "ps": "BebasNeue-Regular",
+  "family": "Bebas Neue",
+  "style": "Regular",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "GreatVibes-Regular.ttf": {
+  "ps": "GreatVibes-Regular",
+  "family": "Great Vibes",
+  "style": "Regular",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "InstrumentSerif-Italic.ttf": {
+  "ps": "InstrumentSerif-Italic",
+  "family": "Instrument Serif",
+  "style": "Italic",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "Parisienne-Regular.ttf": {
+  "ps": "Parisienne-Regular",
+  "family": "Parisienne",
+  "style": "Regular",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "PlayfairDisplay-Italic[wght].ttf": {
+  "ps": "PlayfairDisplay-Italic",
+  "family": "Playfair Display",
+  "style": "Italic",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ },
+ "PlayfairDisplay[wght].ttf": {
+  "ps": "PlayfairDisplay-Regular",
+  "family": "Playfair Display",
+  "style": "Regular",
+  "license": "This Font Software is licensed under the SIL Open Font Licen"
+ }
+}

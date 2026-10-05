@@ -104,7 +104,26 @@ Every function above has passed `node --check` (syntax only) and is logically co
 ## Still only in the vendor's compiled core (can be rebuilt the same way, one at a time)
 motion showcase, SaaS effects, type realign, map rigs, extra UI templates, Liquid Glass / Glass / Shatter / Carousel / Morph shape rigs, and the social-media Templates engine (left out on purpose for trademark reasons).
 
-## Repo status (2026-10-05)
-- `host/akira_other.jsx` (15) and `host/akira_maps.jsx` (10) are now in the repo, alongside shapes2 (9) and rigs (17). Together they cover all 56 previously missing functions. `isLocked` is deliberately not a function (see Batch M).
-- Mock-AE tests: `node tests/test_other_maps.js` exercises every function in other + maps, including undo-group balance.
-- Still not in this repo: the client panel, `CSXS/manifest.xml`, `akira_loader.jsx`, and the core host files (core, tools, tools2, color, text, library, layers, expressions, subtitles, reference, general, curve, organizer, shapes, colormatch, fonts, counters, paste_feature).
+## Round P (2026-10-05): the 56 rebuilt against the real panel contracts
+The earlier drafts of `akira_shapes2.jsx`, `akira_rigs.jsx`, `akira_maps.jsx` and `akira_other.jsx` were written from function
+names only. With `client/` now in the repo, every call site and reply handler was read and all four files were rewritten to match:
+- **Shapes** (`akira_shapes2.jsx`): `createPrimitive(circle|rect|cross|line)`, `applyShapePreset(dashes|waveWarp|roughenEdges|trimStart|trimEnd|exclusion)`,
+  taper read-out for `getExtraShapeData`, La Path = corner-rounding rig (null per vertex + Radius/Left/Right sliders, pipe-string state),
+  `shapeMorpher(dur, easing, return, linearPath, pairs, options)` with `ERROR:` replies, console `createCustomShapes`.
+- **Rigs** (`akira_rigs.jsx`): carousel with the panel's 20 named controls (format auto/2d/3d/3d-sphere/2d-path/3d-path), orb cloner + effectors,
+  `buildCarousel3D` mirroring the builder preview maths, glass morph, Liquid Glass hooks (`SUCCESS:msg`; needs the separate plugin),
+  `fxLightSweepLock` -> `LOCKED`/`UNLOCKED`, Shatter from the playhead.
+- **Maps** (`akira_maps.jsx`): real geographic map rigs. Precomp + Zoom/Pan/Bearing effects, Web-Mercator frames, basemap/borders/labels,
+  fly-through keyframes, outlines/routes/data shapes, trackers for pins/bubbles/spikes, live sync, bake. `flexMapEngineVersion = 20` (property).
+- **Other** (`akira_other.jsx`): effects inspector rows `{fxIndex,fxName,matchName,propName,fxActive}`, follow-system-labels, text re-align
+  (`OK:`+enc(JSON) replies), trim-to-below, extrusion, `run` dispatcher. `saasVersion = 0` (property).
+- **Fixes in existing files**: `akira_organizer.jsx` now also exposes its functions on `$._flex` (the panel calls `$._flex.flexProject*` and
+  checks `$._flex.flexProjectOrganizerVersion`; before, Organizer + Text Re-Align could not load). `client/js_flex/commands.js`: the console
+  "make N shapes" command now URI-encodes its JSON (the raw JSON broke the `run()` quoting).
+- New: `host/akira_json.jsx` (ES3 JSON parser on `H`, no eval), `host/map_rigs.jsx` (shim the Maps panel falls back to), `tools/wraptool.py`,
+  `tools/build_cep.sh`, `tests/mock_ae.js` + `tests/test_contracts.js` (23 contract tests, all passing).
+
+## Still not in this build (separate engines the panel loads from their own host files)
+`saas_effects.jsx` (`$._flexSaaS.*`: stagger, cursor, hover, textAnim, codeGlyphs, promptBar, halftoneWave, carousel, attach, background,
+wipe, depthPrepare, depthReveal), the Highlighter (`$._flexHL`, `highlighterVersion`), `ui_templates_extra.jsx` (`uiTemplateXVersion >= 8`),
+and FlexSwitcher keybinds (`run('reloadKeybinds')`). Those panels report the engine as missing; nothing else breaks.
