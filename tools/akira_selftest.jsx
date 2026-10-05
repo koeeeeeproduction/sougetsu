@@ -13,23 +13,38 @@
     }
 
     // ---------- 1. find + load the extension ----------
-    var ext = null, cands = [], i;
-    try { cands.push(Folder.userData.fullName + "/Adobe/CEP/extensions/com.sougetsu.akirafx"); } catch (e0) { }
-    cands.push("C:/Program Files (x86)/Common Files/Adobe/CEP/extensions/com.sougetsu.akirafx");
-    cands.push("C:/Program Files/Common Files/Adobe/CEP/extensions/com.sougetsu.akirafx");
-    try { cands.push(Folder("~/Library/Application Support/Adobe/CEP/extensions/com.sougetsu.akirafx").fullName); } catch (e1) { }
-    for (i = 0; i < cands.length; i += 1) { if (new File(cands[i] + "/host/akira_loader.jsx").exists) { ext = cands[i]; break; } }
-    if (!ext) {
-        var pick = Folder.selectDialog("Akira FX self-test: select the com.sougetsu.akirafx folder");
-        if (pick && new File(pick.fullName + "/host/akira_loader.jsx").exists) { ext = pick.fullName; }
+    var ext = null, found = [], roots = [], i;
+    // Look in every CEP extensions folder, up to 3 levels deep (Windows "Extract All" often nests the folder twice).
+    function hasLoader(f) { return new File(f.fullName + "/host/akira_loader.jsx").exists; }
+    function search(folder, depth) {
+        if (!folder || !folder.exists || depth < 0) { return; }
+        if (hasLoader(folder)) { found.push(folder.fsName); return; }
+        var kids = folder.getFiles(), j;
+        for (j = 0; j < kids.length; j += 1) { if (kids[j] instanceof Folder) { search(kids[j], depth - 1); } }
     }
-    if (!ext) { alert("Akira FX self-test: could not find the extension folder (host/akira_loader.jsx)."); return; }
+    try { roots.push(new Folder(Folder.userData.fullName + "/Adobe/CEP/extensions")); } catch (e0) { }
+    roots.push(new Folder("C:/Program Files (x86)/Common Files/Adobe/CEP/extensions"));
+    roots.push(new Folder("C:/Program Files/Common Files/Adobe/CEP/extensions"));
+    roots.push(new Folder("~/Library/Application Support/Adobe/CEP/extensions"));
+    roots.push(new Folder("/Library/Application Support/Adobe/CEP/extensions"));
+    for (i = 0; i < roots.length; i += 1) { try { search(roots[i], 3); } catch (eR) { } }
+    if (!found.length) {
+        alert("Akira FX self-test: the extension wasn't found in the CEP extensions folders.\n\nIn the next window, pick the folder you installed (any folder that contains it is fine).");
+        var pick = Folder.selectDialog("Akira FX self-test: pick the com.sougetsu.akirafx folder (or a folder containing it)");
+        if (pick) { search(pick, 4); }
+    }
+    if (!found.length) {
+        alert("Akira FX self-test: still no host/akira_loader.jsx found.\n\nOpen %APPDATA%\\Adobe\\CEP\\extensions and check that\ncom.sougetsu.akirafx\\host\\akira_loader.jsx exists there.");
+        return;
+    }
+    ext = new Folder(found[0]).fullName;
     if (app.project && app.project.numItems > 0 && !confirm("The self-test opens a NEW empty project.\nSave your current project first if needed.\n\nContinue?")) { return; }
     app.newProject();
 
     log("Sougetsu Akira FX self-test");
     log("After Effects " + app.version + " (build " + app.buildName + ")   OS: " + $.os + "   ExtendScript " + $.version);
     log("Extension: " + ext);
+    if (found.length > 1) { log("WARNING: " + found.length + " copies installed - After Effects may load the wrong one. Keep only one:"); for (i = 0; i < found.length; i += 1) { log("   " + found[i]); } }
     log("Date: " + new Date().toString());
     log("");
     try { app.beginSuppressDialogs(); } catch (eS) { }
