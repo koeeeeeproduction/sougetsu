@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ID=com.sougetsu.akirafx
 OUT=dist/$ID
-rm -rf "$OUT" "dist/$ID.zip"
+rm -rf "$OUT" "dist/$ID.zip" dist/SougetsuAkiraFX*.zxp
 mkdir -p "$OUT"
 cp -R CSXS client host assets "$OUT"/
 # Chrome DevTools for the panel at http://localhost:8088 while PlayerDebugMode is on
@@ -16,6 +16,7 @@ cat > "$OUT/.debug" <<'XML'
 </ExtensionList>
 XML
 find "$OUT" \( -name '.DS_Store' -o -name '*.pyc' -o -name '__pycache__' \) -prune -exec rm -rf {} +
+python3 tools/make_zxp.py "$OUT" "dist/SougetsuAkiraFX_$(sed -n 's/.*ExtensionBundleVersion="\([^"]*\)".*/\1/p' CSXS/manifest.xml | head -1).zxp"
 cp tools/package/INSTALL_WINDOWS.bat tools/package/INSTALL_MAC.command tools/package/README.txt tools/akira_selftest.jsx dist/
-(cd dist && zip -qr "$ID.zip" "$ID" INSTALL_WINDOWS.bat INSTALL_MAC.command README.txt akira_selftest.jsx)
+(cd dist && zip -qr "$ID.zip" "$ID" SougetsuAkiraFX_*.zxp INSTALL_WINDOWS.bat INSTALL_MAC.command README.txt akira_selftest.jsx)
 echo "Built $OUT ($(du -sh "$OUT" | cut -f1)) and dist/$ID.zip"
