@@ -157,8 +157,8 @@ t('buildCarousel3D', () => {
   const e = env(), L = shape(e, 'card src');
   const payload = { preset: 'cylindrical_ring', name: 'Cylindrical Ring', axis: 'y', facing: 'tangent', count: 6, radius: 700, arc: 360, tiltX: 0, tiltY: 0, roll: 0, rise: 0, cardScale: 0.24, cardW: 260, source: 'timeline', media: [], layers: [1], duration: 8, turns: 1, direction: 1, loop: true, stepped: false, depthBlur: true, introOutro: false, style: 'fade', camera: { zoom: 2666, pos: [0, -600, -2200], poi: [0, 0, 0] }, swatches: ['ff0055', '22aaff'] };
   const r = e.F.buildCarousel3D(JSON.stringify(payload)); A.ok(/^OK:6 cards/.test(r), r);
-  A.strictEqual(L.parent.name, 'FlexCarousel Spin'); A.strictEqual(e.comp._l.filter(l => /^FlexCarousel Card/.test(l.name)).length, 5);
-  const spin = e.comp._l.find(l => l.name === 'FlexCarousel Spin'); A.strictEqual(spin.transform.yRotation.numKeys, 2); A.ok(/loopOut/.test(spin.transform.yRotation.expression));
+  A.strictEqual(L.parent.name, 'AkiraCarousel Spin'); A.strictEqual(e.comp._l.filter(l => /^AkiraCarousel Card/.test(l.name)).length, 5);
+  const spin = e.comp._l.find(l => l.name === 'AkiraCarousel Spin'); A.strictEqual(spin.transform.yRotation.numKeys, 2); A.ok(/loopOut/.test(spin.transform.yRotation.expression));
   A.ok(/^ERR:/.test(e.F.buildCarousel3D('{bad')));
 });
 t('glass morph apply / shape / remove', () => {
@@ -198,7 +198,7 @@ t('maps: create, list, select, active, sync, refresh, trace, tracker, bake', () 
   const parts = r.split(':'), idx = +parts[1], id = parts[3];
   const rig = e.comp.layer(idx), mc = rig.source;
   A.strictEqual(mc.width, 1920); A.strictEqual(mc.height, 1080);
-  deq(mc._l.map(l => l.comment.split('|')[0]), ['FLEX_MAP_LABEL_V1', 'FLEX_MAP_FEATURE_V1', 'FLEX_MAP_BASEMAP_V1', 'FLEX_MAP_BG_V1']);
+  deq(mc._l.map(l => l.comment.split('|')[0]), ['AKIRA_MAP_LABEL_V1', 'AKIRA_MAP_FEATURE_V1', 'AKIRA_MAP_BASEMAP_V1', 'AKIRA_MAP_BG_V1']);
   A.ok(/Akira Map Zoom/.test(rig.transform.scale.expression));
   const list = JSON.parse(e.F.flexMap_listRigs()); A.strictEqual(list.length, 1); A.strictEqual(list[0].id, id); A.strictEqual(list[0].baseFrameMerc, '0.5,0.6,0.3,0.35625');
   A.strictEqual(e.F.flexMap_selectRig(99, id), 'OK:' + idx); A.strictEqual(rig.selected, true);
@@ -213,20 +213,20 @@ t('maps: create, list, select, active, sync, refresh, trace, tracker, bake', () 
   // live refresh for a frame shifted right by half a frame: imagery lands at x=960
   const up = tmpJSON({ version: 19, layerIndex: idx, rigId: id, baseFrameMerc: { minX: 0.55, maxX: 0.65, minY: 0.3, maxY: 0.35625 }, basemapPath: img, labels: [], features: [] });
   A.strictEqual(e.F.flexMap_replaceViewFromFile(up), 'OK');
-  const bm = mc._l.find(l => /^FLEX_MAP_BASEMAP/.test(l.comment)); A.ok(Math.abs(bm.transform.position.value[0] - 960) < 1e-6);
-  A.strictEqual(mc._l.filter(l => /^FLEX_MAP_LABEL/.test(l.comment)).length, 0);
+  const bm = mc._l.find(l => /^AKIRA_MAP_BASEMAP/.test(l.comment)); A.ok(Math.abs(bm.transform.position.value[0] - 960) < 1e-6);
+  A.strictEqual(mc._l.filter(l => /^AKIRA_MAP_LABEL/.test(l.comment)).length, 0);
   // outline into the rig
   const ol = tmpJSON({ version: 20, name: 'Spain', paths: [[[0, 0], [0.5, 0.5], [1, 0]]], geo: [], isClosed: true, layerIndex: idx, rigId: id, autoRig: true, replaceExisting: true, baseFrameMerc: frame, stroke: [1, 0, 0], strokeWidth: 3 });
   A.strictEqual(e.F.flexMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
   A.strictEqual(e.F.flexMap_traceOutlineFromFile(ol), 'SUCCESS:' + idx + ':RIG:' + rig.name);
-  const outl = mc._l.filter(l => l.comment === 'FLEX_MAP_OUTLINE_V1|Spain'); A.strictEqual(outl.length, 1); A.strictEqual(outl[0].name, 'Spain Outline');
+  const outl = mc._l.filter(l => l.comment === 'AKIRA_MAP_OUTLINE_V1|Spain'); A.strictEqual(outl.length, 1); A.strictEqual(outl[0].name, 'Spain Outline');
   const root = outl[0].property('ADBE Root Vectors Group'); A.strictEqual(root.property(1).matchName, 'ADBE Vector Shape - Group');
   deq(root.property(1).property(1).value.vertices[1].map(v => Math.round(v * 1e6) / 1e6), [960, 540]);
   // tracker
   const tr = tmpJSON({ version: 20, layerIndex: idx, rigId: id, autoRig: true, name: 'Madrid', x: 0.25, y: 0.5, baseFrameMerc: frame, vectorPaths: [[[0, 0], [1, 1]]], stroke: [1, 1, 1], strokeWidth: 2 });
   const tres = e.F.flexMap_createTrackerFromFile(tr); A.ok(/^OK:\d+$/.test(tres), tres);
   const T = e.comp.layer(+tres.split(':')[1]); A.strictEqual(T.name, 'Track · Madrid'); A.ok(/R\.toComp\(\[480,540\]\)/.test(T.transform.position.expression), T.transform.position.expression);
-  A.ok(mc._l.some(l => l.comment.indexOf('FLEX_MAP_PLACE_VECTOR_V1|Madrid|') === 0));
+  A.ok(mc._l.some(l => l.comment.indexOf('AKIRA_MAP_PLACE_VECTOR_V1|Madrid|') === 0));
   // bake
   const rigNow = JSON.parse(e.F.flexMap_listRigs())[0];
   A.strictEqual(e.F.flexMap_bakeRig(rigNow.index, id), 'OK'); A.strictEqual(rig.transform.scale.expression, ''); deq(rig.transform.scale.value.map(Math.round), [100, 100]);

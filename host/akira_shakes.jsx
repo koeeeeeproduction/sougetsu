@@ -6,7 +6,7 @@
 // Per selected layer: an adjustment layer above it spanning its in/out, label = labelColor, Motion Tile (mirror edges,
 // 110% output height) whose centre jolts, directional Motion Blur that decays, the preset's own look effect, and the
 // layer is time-stretched by (200 - speed)% so the speed slider changes the shake speed. Basic Shake makes a single
-// "flex_shake" layer over the whole selection. Keyframe timing uses a fixed 1/30 s step like the original.
+// "akira_shake" layer over the whole selection. Keyframe timing uses a fixed 1/30 s step like the original.
 // ES3 only.
 if (typeof $._flex === "undefined") { $._flex = {}; }
 
@@ -49,60 +49,60 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
 
     // len = keyframe span in 1/30 s frames, jolt = frames of the 2nd/3rd tile-centre keys, blur = frame the motion blur reaches 0
     var PRESETS = {
-        Basic: { name: "flex_shake", len: 10, jolt: [2, 5], blur: 5, whole: true },
-        Quick: { name: "Flex_quick", len: 5, jolt: [2, 3], blur: 5, tile: [0.035, 0.03, 0.01] },
-        WaveV1: { name: "Flex_wave", len: 14, jolt: [3, 7], blur: 7, look: function (L, t, end, s, comp) {
+        Basic: { name: "akira_shake", len: 10, jolt: [2, 5], blur: 5, whole: true },
+        Quick: { name: "Akira_quick", len: 5, jolt: [2, 3], blur: 5, tile: [0.035, 0.03, 0.01] },
+        WaveV1: { name: "Akira_wave", len: 14, jolt: [3, 7], blur: 7, look: function (L, t, end, s, comp) {
             var td = eff(L, "ADBE Turbulent Displace"); if (!td) { return; }
             var k = 1080 / comp.width;
             keys(td.property(2), t, [[0, 38 * s], [8, 10 * s]]); td.property(2).setValueAtTime(end, 0);
             keys(td.property(3), t, [[0, 80 * k], [10, 200 * k]]); td.property(3).setValueAtTime(end, 320);
             keys(td.property(6), t, [[0, -50], [10, 65]]); td.property(6).setValueAtTime(end, 100);
         } },
-        WaveV2: { name: "Flex_wave_v2", len: 14, jolt: [3, 7], blur: 7, look: function (L, t, end, s) {
+        WaveV2: { name: "Akira_wave_v2", len: 14, jolt: [3, 7], blur: 7, look: function (L, t, end, s) {
             var td = eff(L, "ADBE Turbulent Displace"); if (!td) { return; }
             td.property(2).setValueAtTime(t, 45 * s * 0.8); td.property(2).setValueAtTime(end, 0); smooth(td.property(2), 50, 50);
             td.property(3).setValueAtTime(t, 130 * s * 0.8); td.property(3).setValueAtTime(end, 477 * s * 0.8); smooth(td.property(3), 50, 50);
             td.property(6).setValueAtTime(t, 26); td.property(6).setValueAtTime(end, 368);
         } },
-        Warp: { name: "Flex_warp", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
+        Warp: { name: "Akira_warp", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
             var o = eff(L, "ADBE Optics Compensation"); if (!o) { return; }
             try { o.property(2).setValue(true); } catch (e) { }
             o.property(1).setValueAtTime(t, 75 * s); o.property(1).setValueAtTime(end, 0);
         } },
-        Lens: { name: "Flex_lens", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
+        Lens: { name: "Akira_lens", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
             var l = eff(L, "CC Lens"); if (!l) { return; }
             l.property(2).setValueAtTime(t, 190 - s * 95); l.property(2).setValueAtTime(t + 3 * FD, 260 - s * 130); l.property(2).setValueAtTime(end, 500);
         } },
-        BounceIn: { name: "Flex_bounce_in", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s, comp, tile) {
+        BounceIn: { name: "Akira_bounce_in", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s, comp, tile) {
             keys(tile.property(2), t, [[0, 100 - 15 * s], [2, 100 - 10 * s], [4, 100]]);
             keys(tile.property(3), t, [[0, 100 - 15 * s], [3, 100], [5, 100 - 10 * s], [9, 100]]);
         } },
-        BounceOut: { name: "Flex_bounce_out", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s, comp, tile) {
+        BounceOut: { name: "Akira_bounce_out", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s, comp, tile) {
             keys(tile.property(3), t, [[0, 100 - 5 * s], [2, 100 - 10 * s], [4, 100]]);
             keys(tile.property(2), t, [[0, 100 - 15 * s], [3, 100], [5, 100 - 5 * s], [9, 100]]);
             scaleWipes(L, t, end, s, 0);
         } },
-        Invert: { name: "Flex_invert", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
+        Invert: { name: "Akira_invert", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) {
             var iv = eff(L, "ADBE Invert"); if (!iv) { return; }
             keys(iv.property(1), t, [[0, 9 * s], [1, 1], [2, 8]]);
             keys(iv.property(2), t, [[2, 0], [3, 100]]);
         } },
-        InvertPixle: { name: "Flex_invert_pixle", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end) {
+        InvertPixle: { name: "Akira_invert_pixle", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end) {
             var iv = eff(L, "ADBE Invert");
             if (iv) { keys(iv.property(1), t, [[0, 9], [1, 1], [2, 8]]); keys(iv.property(2), t, [[2, 0], [3, 100]]); }
             var b = eff(L, "CS BlockLoad"); if (!b) { return; }
             keys(b.property(1), t, [[0, 1], [1, 100], [3, 3], [5, 10], [7, 64]]); b.property(1).setValueAtTime(end, 41);
             keys(b.property(2), t, [[0, 16], [1, 5], [3, 15], [5, 4], [7, 16]]); b.property(2).setValueAtTime(end, 16);
         } },
-        SqueezeV1: { name: "Flex_squeeze_y", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { scaleWipes(L, t, end, s, 0); } },
-        SqueezeV2: { name: "Flex_squeeze_x", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { scaleWipes(L, t, end, s, 90); } },
-        DarkFlicker: { name: "Flex_dark_flicker", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { exposureFlicker(L, t, end, s, -1); } },
-        WhiteFlicker: { name: "Flex_white_flicker", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { exposureFlicker(L, t, end, s, 1); } }
+        SqueezeV1: { name: "Akira_squeeze_y", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { scaleWipes(L, t, end, s, 0); } },
+        SqueezeV2: { name: "Akira_squeeze_x", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { scaleWipes(L, t, end, s, 90); } },
+        DarkFlicker: { name: "Akira_dark_flicker", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { exposureFlicker(L, t, end, s, -1); } },
+        WhiteFlicker: { name: "Akira_white_flicker", len: 10, jolt: [2, 5], blur: 5, look: function (L, t, end, s) { exposureFlicker(L, t, end, s, 1); } }
     };
 
     function flash(comp, atCti, target, start, frames, opacity, label, overlay) {
         var len = comp.frameDuration * (frames > 0 ? frames : 20);
-        var f = comp.layers.addSolid([1, 1, 1], "Flex_flash", comp.width, comp.height, 1, len);
+        var f = comp.layers.addSolid([1, 1, 1], "Akira_flash", comp.width, comp.height, 1, len);
         f.moveBefore(target);
         var t = atCti ? comp.time : start;
         f.startTime = t; f.inPoint = t; f.outPoint = t + len;
@@ -144,7 +144,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         var flashOn = n(a[8]) !== 0, fFrames = n(a[4]), fOpacity = n(a[5]), fLabel = n(a[6]), fOverlay = n(a[7]);
         if (stretch === 0) { stretch = 1; }
         if (!P.whole && atCti && sel.length > 1) { return "ERROR: The comp time option only works with one selected layer."; }
-        app.beginUndoGroup("Flex Shake");
+        app.beginUndoGroup("Akira Shake");
         try {
             if (P.whole) {
                 var inP = 999999, outP = -999999, top = sel[0], list = [];

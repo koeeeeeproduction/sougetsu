@@ -23,8 +23,8 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     if (!H || !H.parseJSON) { return; }
     F.flexMapEngineVersion = 20;
 
-    var RIG = "FLEX_MAP_RIG_V1|", FX_ZOOM = "Akira Map Zoom", FX_PAN = "Akira Map Pan", FX_BEAR = "Akira Map Bearing";
-    var VIEW_TAGS = ["FLEX_MAP_BASEMAP_V1", "FLEX_MAP_BG_V1", "FLEX_MAP_FEATURE_V1", "FLEX_MAP_LABEL_V1", "FLEX_MAP_PATHS_V1"];
+    var RIG = "AKIRA_MAP_RIG_V1|", FX_ZOOM = "Akira Map Zoom", FX_PAN = "Akira Map Pan", FX_BEAR = "Akira Map Bearing";
+    var VIEW_TAGS = ["AKIRA_MAP_BASEMAP_V1", "AKIRA_MAP_BG_V1", "AKIRA_MAP_FEATURE_V1", "AKIRA_MAP_LABEL_V1", "AKIRA_MAP_PATHS_V1"];
     var NO_COMP = "ERR:Open a composition first.";
 
     function esc(s) { return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"'); }
@@ -138,30 +138,30 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
     function buildView(mc, p, vf, toPx) {
         var i, conv = fromNorm(vf, toPx), r = frameRect(vf, toPx), made = [];
         var bg = mc.layers.addSolid(rgb(p.fill, [0.09, 0.14, 0.17]), "Map Background", Math.max(4, Math.round(Math.abs(r[2]))), Math.max(4, Math.round(Math.abs(r[3]))), 1);
-        bg.comment = "FLEX_MAP_BG_V1"; bg.transform.anchorPoint.setValue([0, 0]); bg.transform.position.setValue([r[0], r[1]]);
+        bg.comment = "AKIRA_MAP_BG_V1"; bg.transform.anchorPoint.setValue([0, 0]); bg.transform.position.setValue([r[0], r[1]]);
         made.push(bg);
         var layers = p.basemapLayers || [];
         if (!layers.length && p.basemapPath && !p.removeBasemap) { layers = [{ path: p.basemapPath, frame: vf, label: "Basemap" }]; }
         for (i = 0; i < layers.length; i += 1) {
             var bf = frameOf(layers[i].frame) || vf, it = importImage(layers[i].path);
             if (!it) { continue; }
-            var im = placeImage(mc, it, frameRect(bf, toPx), "FLEX_MAP_BASEMAP_V1|" + (layers[i].label || ""), "Basemap" + (layers[i].label ? " · " + layers[i].label : ""));
+            var im = placeImage(mc, it, frameRect(bf, toPx), "AKIRA_MAP_BASEMAP_V1|" + (layers[i].label || ""), "Basemap" + (layers[i].label ? " · " + layers[i].label : ""));
             made.push(im);
         }
         var feats = p.features || [];
         for (i = 0; i < feats.length; i += 1) {
             var ft = feats[i], rings = ringsFrom(ft.paths, conv);
-            if (rings.length) { made.push(shapeLayer(mc, ft.name || "Borders", "FLEX_MAP_FEATURE_V1|" + (ft.name || ""), rings, ft.isClosed !== false, rgb(ft.stroke, [1, 1, 1]), ft.strokeWidth, null)); }
+            if (rings.length) { made.push(shapeLayer(mc, ft.name || "Borders", "AKIRA_MAP_FEATURE_V1|" + (ft.name || ""), rings, ft.isClosed !== false, rgb(ft.stroke, [1, 1, 1]), ft.strokeWidth, null)); }
         }
         if (p.paths && p.paths.length) {
             var pr = ringsFrom(p.paths, conv);
-            if (pr.length) { made.push(shapeLayer(mc, "Map Paths", "FLEX_MAP_PATHS_V1", pr, true, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, null)); }
+            if (pr.length) { made.push(shapeLayer(mc, "Map Paths", "AKIRA_MAP_PATHS_V1", pr, true, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, null)); }
         }
         var labels = p.labels || [], fs = Math.max(10, Math.round(mc.width * 0.014));
         for (i = 0; i < labels.length; i += 1) {
             var lb = labels[i], pos = conv([lb.x, lb.y]);
             var tx = mc.layers.addText(String(lb.name || ""));
-            tx.name = String(lb.name || "Label"); tx.comment = "FLEX_MAP_LABEL_V1|" + tx.name;
+            tx.name = String(lb.name || "Label"); tx.comment = "AKIRA_MAP_LABEL_V1|" + tx.name;
             try {
                 var td = tx.property("ADBE Text Properties").property("ADBE Text Document"), doc = td.value;
                 doc.fontSize = num(lb.rank, 2) <= 1 ? Math.round(fs * 1.35) : fs; doc.fillColor = [1, 1, 1];
@@ -334,7 +334,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         var cv = convForPayload(rig, p, comp), rings = cv.conv ? ringsFrom(p.paths, cv.conv) : ringsFrom(p.geo, cv.geo);
         if (!rings.length && p.geo && p.geo.length && rig) { var toPx = toPxFor(rig); rings = ringsFrom(p.geo, function (ll) { var m = latLonToMerc(ll[1], ll[0]); return toPx(m[0], m[1]); }); }
         if (!rings.length) { return "ERR:Nothing to draw for " + name + "."; }
-        var tag = "FLEX_MAP_OUTLINE_V1|" + name, target = rig ? rig.layer.source : comp, i, L;
+        var tag = "AKIRA_MAP_OUTLINE_V1|" + name, target = rig ? rig.layer.source : comp, i, L;
         app.beginUndoGroup("Akira Map Outline");
         try {
             if (p.replaceExisting) { for (i = target.numLayers; i >= 1; i -= 1) { if (String(target.layer(i).comment || "") === tag) { target.layer(i).remove(); } } }
@@ -359,14 +359,14 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
         var T;
         app.beginUndoGroup("Akira Map Tracker");
         try {
-            T = comp.layers.addNull(); T.name = "Track · " + name; T.comment = "FLEX_MAP_TRACKER_V1|" + name;
+            T = comp.layers.addNull(); T.name = "Track · " + name; T.comment = "AKIRA_MAP_TRACKER_V1|" + name;
             T.transform.anchorPoint.setValue([0, 0]);
             if (rig) {
                 T.transform.position.expression = "const R=thisComp.layer(\"" + esc(rig.name) + "\");R.toComp([" + Math.round(pt[0] * 1000) / 1000 + "," + Math.round(pt[1] * 1000) / 1000 + "])";
                 if (p.vectorPaths && p.vectorPaths.length) {
                     var pf2 = frameOf(p.baseFrameMerc), mc = rig.layer.source;
                     var rings = pf2 ? ringsFrom(p.vectorPaths, fromNorm(pf2, toPxFor(rig))) : [];
-                    var tag = "FLEX_MAP_PLACE_VECTOR_V1|" + name + "|";
+                    var tag = "AKIRA_MAP_PLACE_VECTOR_V1|" + name + "|";
                     for (i = mc.numLayers; i >= 1; i -= 1) { if (String(mc.layer(i).comment || "").indexOf(tag) === 0) { mc.layer(i).remove(); } }
                     if (rings.length) { shapeLayer(mc, name + " Boundary", tag + (p.osmId || ""), rings, p.vectorClosed !== false, rgb(p.stroke, [1, 1, 1]), p.strokeWidth, null); }
                 }

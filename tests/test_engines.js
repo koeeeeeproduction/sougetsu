@@ -29,14 +29,14 @@ t('every shake preset builds its adjustment layer like the original engine', () 
     A.strictEqual(S.inPoint, 0.5, n); A.strictEqual(S.outPoint, 4, n); A.strictEqual(S.label, 8, n); A.strictEqual(S.stretch, 100, n);
     const tile = S.property('ADBE Effect Parade').property('ADBE Tile'); A.ok(tile.property(1).numKeys >= 4, n + ' tile jolt keys');
     A.strictEqual(tile.property(1).keys[0].t, 1, n + ' starts at the playhead');
-    A.ok(e.comp._l.some(l => l.name === 'Flex_flash'), n + ' flash'); A.strictEqual(e.undo(), 0, n);
+    A.ok(e.comp._l.some(l => l.name === 'Akira_flash'), n + ' flash'); A.strictEqual(e.undo(), 0, n);
   });
   const e = env(); A.strictEqual(e.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0), 'ERROR: Please select at least one layer.');
   const a = e.comp.layers.addText('a'), b = e.comp.layers.addText('b'); a.selected = b.selected = true;
   A.ok(/only works with one selected layer/.test(e.ctx.QuickShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
   A.strictEqual(e.ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0), 'true'); // basic covers the whole selection with one layer
   A.strictEqual(e.ctx.QuickShake_001_JF(0, 100, 100, 1, 5, 100, 1, 1, 0), 'true');
-  A.strictEqual(e.comp._l.filter(l => l.name === 'Flex_quick').length, 2);
+  A.strictEqual(e.comp._l.filter(l => l.name === 'Akira_quick').length, 2);
   A.ok(/^ERROR:/.test(env({ noComp: true }).ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
   A.ok(/^ERROR:/.test(env({ locked: true }).ctx.BasicShake_001_JF(1, 100, 100, 1, 5, 100, 1, 1, 0)));
 });

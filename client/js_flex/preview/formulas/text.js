@@ -200,7 +200,7 @@
         run: function (time, p) {
             var wordsPerSec = p.wordsPerSec || p.charsPerSec || p.speed || 2;
             var words = (Config.USER_TEXT || Config.TEXT).split(/\s+/);
-            if (words.length < 2) words = ['FLEX', 'GUI', 'TEXT', 'PREVIEW'];
+            if (words.length < 2) words = ['SOUGETSU', 'AKIRA', 'TEXT', 'PREVIEW'];
 
             var typingDur = words.length / wordsPerSec;
             var pause = Math.max(0.8, typingDur * 0.5);
@@ -225,7 +225,7 @@
             var words = raw.split(',');
             if (words.length < 2) words = raw.split(/\s+/);
             for (var w = 0; w < words.length; w++) words[w] = words[w].replace(/^\s+|\s+$/g, '');
-            if (words.length < 2) words = ['FLEX', 'GUI', 'PREVIEW', 'DEMO'];
+            if (words.length < 2) words = ['SOUGETSU', 'AKIRA', 'PREVIEW', 'DEMO'];
 
             var elapsed = (time - State.startTime) / 1000;
             var idx = Math.floor(elapsed / duration) % words.length;

@@ -351,17 +351,17 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
                 var f = new File(media[i].path);
                 if (f.exists) { sources.push(comp.layers.add(app.project.importFile(new ImportOptions(f)))); }
             }
-            var ctrl = comp.layers.addNull(); ctrl.name = uniqueName(comp, "FlexCarousel Control"); ctrl.threeDLayer = true;
+            var ctrl = comp.layers.addNull(); ctrl.name = uniqueName(comp, "AkiraCarousel Control"); ctrl.threeDLayer = true;
             ctrl.transform.anchorPoint.setValue([0, 0, 0]); ctrl.transform.position.setValue([W / 2, Hh / 2, 0]);
             ctrl.transform.xRotation.setValue(num(p.tiltX, 0)); ctrl.transform.yRotation.setValue(num(p.tiltY, 0)); ctrl.transform.zRotation.setValue(num(p.roll, 0));
-            var spin = comp.layers.addNull(); spin.name = uniqueName(comp, "FlexCarousel Spin"); spin.threeDLayer = true;
+            var spin = comp.layers.addNull(); spin.name = uniqueName(comp, "AkiraCarousel Spin"); spin.threeDLayer = true;
             spin.transform.anchorPoint.setValue([0, 0, 0]); spin.parent = ctrl; spin.transform.position.setValue([0, 0, 0]);
             var sw = p.swatches || [], cards = [];
             for (i = 0; i < n; i += 1) {
                 var L;
                 if (i < sources.length) { L = sources[i]; }
                 else {
-                    L = comp.layers.addSolid(hexRgb(sw.length ? sw[i % sw.length] : "4a6cf7"), "FlexCarousel Card " + (i + 1), Math.round(cardW), Math.round(cardH), 1);
+                    L = comp.layers.addSolid(hexRgb(sw.length ? sw[i % sw.length] : "4a6cf7"), "AkiraCarousel Card " + (i + 1), Math.round(cardW), Math.round(cardH), 1);
                 }
                 L.threeDLayer = true;
                 var sw0 = 0; try { sw0 = L.source ? L.source.width : L.width; } catch (eW) { sw0 = 0; }
@@ -376,7 +376,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
                 cards.push(L);
             }
             // camera from the panel's preview rig
-            var cam = comp.layers.addCamera("FlexCarousel Camera", [W / 2, Hh / 2]), cr = p.camera || {};
+            var cam = comp.layers.addCamera("AkiraCarousel Camera", [W / 2, Hh / 2]), cr = p.camera || {};
             var cpos = cr.pos || [0, -300, -2300], poi = cr.poi || [0, 0, 0];
             cam.property("ADBE Camera Options Group").property("ADBE Camera Zoom").setValue(num(cr.zoom, W * 50 / 36));
             cam.transform.position.setValue([W / 2 + cpos[0], Hh / 2 + cpos[1], cpos[2]]);

@@ -136,7 +136,7 @@ if (typeof $._flex === "undefined") { $._flex = {}; }
 
     G.updateMotionShowcase_FlexGUI = function (arg) {
         var g = H.locked(); if (g) { return g; }
-        var sc = showcaseComp(); if (!sc) { return "ERR:No active Flex showcase."; }
+        var sc = showcaseComp(); if (!sc) { return "ERR:No active Akira showcase."; }
         var c = cfg(arg);
         app.beginUndoGroup("Update Motion Showcase");
         try { if (!setControls(sc, c)) { app.endUndoGroup(); return "ERR:This showcase has no Showcase Control layer."; } }
