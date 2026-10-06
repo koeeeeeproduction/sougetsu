@@ -23,10 +23,12 @@ $._akira.coreVersion = "1.0.0";
     function keyFile() {
         return new File(dataFolder().fullName + "/license.key");
     }
-    // A Dodo license key looks like XXXXX-XXXX-XXXX-XXXX (letters/digits).
-    // Random strings fail this, so a bare unlock call with junk is rejected.
+    // A real license key (Dodo UUID, SOUG-XXXX-..., or a long code) is at
+    // least 8 chars of letters/digits/dashes/dots/underscores and carries a
+    // digit or a dash. This accepts genuine keys while rejecting the usual
+    // console bypass attempts ("true", "x", "isLicensed", "undefined", ...).
     function wellFormed(k) {
-        return typeof k === "string" && /^[A-Za-z0-9]{4,}(-[A-Za-z0-9]{3,}){2,}$/.test(k);
+        return typeof k === "string" && /^[\w.\-]{8,}$/.test(k) && /[\d\-]/.test(k);
     }
     // Small deterministic signature of the key (not a secret store, just an
     // obfuscated token so the gate is a value match, not a boolean).

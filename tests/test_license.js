@@ -27,10 +27,18 @@ t('assigning isLocked = false does nothing (the headline fix)', () => {
 
 t('unlock with a junk / malformed key is rejected', () => {
     const { F } = raw();
-    A.strictEqual(F.unlockLicenseJSX('not-a-key'), 'ERR:bad key');
-    A.strictEqual(F.isLocked, true);
-    A.strictEqual(F.unlockLicenseJSX('hello'), 'ERR:bad key');
-    A.strictEqual(F.isLocked, true);
+    ['x', 'true', 'false', 'hello', 'isLicensed', 'undefined'].forEach((j) => {
+        A.strictEqual(F.unlockLicenseJSX(j), 'ERR:bad key', 'junk rejected: ' + j);
+        A.strictEqual(F.isLocked, true);
+    });
+});
+
+t('accepts real-shaped keys (Dodo UUID, SOUG code, long token)', () => {
+    ['a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'SOUG-ABCD-EF12-3456', 'AKIRA2026PRO01'].forEach((k) => {
+        const { F } = raw();
+        A.strictEqual(F.unlockLicenseJSX(k), 'OK', 'accepts: ' + k);
+        A.strictEqual(F.isLocked, false);
+    });
 });
 
 t('unlock with a well-formed key opens the gate', () => {
