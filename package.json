@@ -1,6 +1,6 @@
 {
   "name": "sougetsu-akira-fx",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "private": true,
   "description": "Sougetsu Akira FX - After Effects CEP extension (build tooling).",
   "scripts": {

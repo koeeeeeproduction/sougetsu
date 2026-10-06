@@ -397,7 +397,9 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
             if (soft > 0) { fx(ring).addProperty("ADBE Gaussian Blur 2").property(1).setValue(soft * sc); }
             var dots = solid(comp, col, "Halftone Wave Dots");
             var ba = fx(dots).addProperty("CC Ball Action");
-            try { ba.property("Grid Spacing").setValue(Math.max(2, Math.round(num(o.spacing, 22) * sc))); ba.property("Ball Size").setValue(num(o.dot, 45)); } catch (eB) { }
+            function setProp(names, val) { for (var n = 0; n < names.length; n += 1) { try { var pp = ba.property(names[n]); if (pp) { pp.setValue(val); return true; } } catch (eP) { } } return false; }
+            setProp(["Grid Spacing"], Math.max(2, Math.round(num(o.spacing, 22) * sc)));
+            setProp(["Ball Size", "Size"], num(o.dot, 45)); // CC Ball Action calls it "Size" in most AE versions
             if (num(o.distortion, 0)) { var td = fx(dots).addProperty("ADBE Turbulent Displace"); td.property(2).setValue(num(o.distortion, 60) * 0.3); }
             if (bool(o.glow)) { fx(dots).addProperty("ADBE Glo2"); }
             ring.moveBefore(dots);
