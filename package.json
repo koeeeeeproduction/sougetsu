@@ -1,0 +1,14 @@
+{
+  "name": "sougetsu-akira-fx",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Sougetsu Akira FX - After Effects CEP extension (build tooling).",
+  "scripts": {
+    "test": "node tests/test_contracts.js && node tests/test_engines.js && node tests/test_templates2.js && node tests/test_license.js",
+    "build": "bash tools/build_cep.sh",
+    "obfuscate": "node tools/obfuscate_build.js"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.9.0"
+  }
+}

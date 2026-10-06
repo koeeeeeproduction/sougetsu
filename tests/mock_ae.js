@@ -146,10 +146,20 @@ function makeEnv(opts) {
   items.addComp = (n, w, h, par, d, f) => { const c = new CompItem(n, w, h, par, d, f); items.push(c); return c; };
   items.addFolder = (n) => { const f = new FolderItem(n); items.push(f); return f; };
   const File = function (p) { this.p = String(p); this.fullName = this.p; this.exists = fs.existsSync(this.p); this.encoding = ''; this.parent = { fullName: path.dirname(this.p) }; };
-  File.prototype.open = function () { return this.exists; }; File.prototype.read = function () { return fs.readFileSync(this.p, 'utf8'); }; File.prototype.close = function () { };
+  File.prototype.open = function (mode) { this._mode = mode || 'r'; if (this._mode === 'r') { return this.exists; } return true; };
+  File.prototype.read = function () { return fs.readFileSync(this.p, 'utf8'); };
+  File.prototype.write = function (s) { try { fs.mkdirSync(path.dirname(this.p), { recursive: true }); } catch (e) { } fs.writeFileSync(this.p, String(s)); this.exists = true; };
+  File.prototype.remove = function () { try { fs.unlinkSync(this.p); } catch (e) { } this.exists = false; };
+  File.prototype.close = function () { };
   File.openDialog = () => null;
+  const userDataDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'akira-ud-'));
+  const Folder = function (p) { this.fullName = String(p); this.exists = fs.existsSync(this.p || p); };
+  Folder.prototype.create = function () { try { fs.mkdirSync(this.fullName, { recursive: true }); this.exists = true; } catch (e) { } return this.exists; };
+  Object.defineProperty(Folder.prototype, 'exists', { get() { return fs.existsSync(this.fullName); }, set() { }, configurable: true });
+  Folder.userData = { fullName: userDataDir };
+  Folder.temp = { fullName: require('os').tmpdir() };
   const ctx = {
-    console, Shape, KeyframeEase, File, Folder: Object.assign(function (p) { this.fullName = p; }, { temp: { fullName: require('os').tmpdir() } }), ImportOptions: function (f) { this.file = f; },
+    console, Shape, KeyframeEase, File, Folder, ImportOptions: function (f) { this.file = f; },
     CompItem, FolderItem, FootageItem, AVLayer, ShapeLayer, TextLayer, CameraLayer, LightLayer, SolidSource: function () { },
     PropertyType: PT, PropertyValueType: PVT,
     ParagraphJustification: { LEFT_JUSTIFY: 7413, CENTER_JUSTIFY: 7415, RIGHT_JUSTIFY: 7414 },
@@ -166,7 +176,11 @@ function makeEnv(opts) {
   vm.createContext(ctx);
   const host = path.join(__dirname, '..', 'host');
   (opts.files || []).forEach(f => vm.runInContext(fs.readFileSync(path.join(host, f), 'utf8'), ctx, { filename: f }));
-  ctx.$._akira.isLocked = !!opts.locked;
+  // The gate is a token derived from a saved license key, not a settable flag.
+  // Unlock through the real host path unless the test wants the locked state.
+  if (!opts.locked && typeof ctx.$._akira.unlockLicenseJSX === 'function') {
+    ctx.$._akira.unlockLicenseJSX('SOUG-TEST-TEST-TEST');
+  }
   return { ctx, F: ctx.$._akira, comp, items, undo: () => undoDepth };
 }
 

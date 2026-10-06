@@ -16,6 +16,13 @@ cat > "$OUT/.debug" <<'XML'
 </ExtensionList>
 XML
 find "$OUT" \( -name '.DS_Store' -o -name '*.pyc' -o -name '__pycache__' \) -prune -exec rm -rf {} +
+# Obfuscate the panel JS in the build only (source stays readable). Needs the
+# dev dep javascript-obfuscator; if it is missing we warn and ship unobfuscated.
+if [ "${SKIP_OBFUSCATE:-0}" != "1" ] && command -v node >/dev/null 2>&1; then
+  node tools/obfuscate_build.js "$OUT/client" || echo "WARNING: obfuscation skipped/failed — shipping readable panel JS. Run: npm install javascript-obfuscator"
+else
+  echo "WARNING: obfuscation skipped (set SKIP_OBFUSCATE=1 to silence, or install node + javascript-obfuscator)."
+fi
 python3 tools/make_zxp.py "$OUT" "dist/SougetsuAkiraFX_$(sed -n 's/.*ExtensionBundleVersion="\([^"]*\)".*/\1/p' CSXS/manifest.xml | head -1).zxp"
 cp tools/package/INSTALL_WINDOWS.bat tools/package/INSTALL_MAC.command tools/package/README.txt tools/akira_selftest.jsx dist/
 (cd dist && zip -qr "$ID.zip" "$ID" SougetsuAkiraFX_*.zxp INSTALL_WINDOWS.bat INSTALL_MAC.command README.txt akira_selftest.jsx)
