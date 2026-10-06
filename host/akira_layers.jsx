@@ -197,13 +197,30 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         var g = H.locked(); if (g) { return g; }
         var comp = H.activeComp();
         if (!comp) { return "ERR:Open a composition first."; }
-        var props = targetProps(comp, true), i;
-        if (!props.length) { return "ERR:No expressions found on the selection."; }
+        // Gather every property that carries an expression on the selection -
+        // whether the expression is enabled or not, and wherever it lives
+        // (transform, effects, text animators, Source Text). Selected
+        // properties first; if none, walk the whole selected layers.
+        var targets = [], i;
+        var sp = comp.selectedProperties || [];
+        for (i = 0; i < sp.length; i += 1) {
+            try { if (sp[i].propertyType === PropertyType.PROPERTY && sp[i].canSetExpression && sp[i].expression && sp[i].expression.length) { targets.push(sp[i]); } } catch (e1) { }
+        }
+        if (!targets.length) {
+            var layers = H.selectedLayers(comp);
+            for (i = 0; i < layers.length; i += 1) {
+                walkProps(layers[i], function (p) {
+                    try { if (p.canSetExpression && p.expression && p.expression.length) { targets.push(p); } } catch (e2) { }
+                });
+            }
+        }
+        if (!targets.length) { return "ERR:No expressions found. Select the layer(s) first."; }
         app.beginUndoGroup("Remove Expressions");
-        try { for (i = 0; i < props.length; i += 1) { props[i].expression = ""; } }
+        var n = 0;
+        try { for (i = 0; i < targets.length; i += 1) { try { targets[i].expression = ""; n += 1; } catch (e3) { } } }
         catch (e) { app.endUndoGroup(); return "ERR:" + e.toString(); }
         app.endUndoGroup();
-        return "SUCCESS";
+        return "SUCCESS:" + n;
     };
     function sampleTimes(comp) {
         var out = [], t0 = comp.workAreaStart, n = Math.max(1, Math.round(comp.workAreaDuration / comp.frameDuration)), i;

@@ -398,16 +398,17 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
             var dots = solid(comp, col, "Halftone Wave Dots");
             var ba = fx(dots).addProperty("CC Ball Action");
             function setProp(names, val) { for (var n = 0; n < names.length; n += 1) { try { var pp = ba.property(names[n]); if (pp) { pp.setValue(val); return true; } } catch (eP) { } } return false; }
+            // CC Ball Action's default Scatter flings the balls off-screen; keep them in a clean grid.
+            setProp(["Scatter"], 0);
             setProp(["Grid Spacing"], Math.max(2, Math.round(num(o.spacing, 22) * sc)));
             setProp(["Ball Size", "Size"], num(o.dot, 45)); // CC Ball Action calls it "Size" in most AE versions
             if (num(o.distortion, 0)) { var td = fx(dots).addProperty("ADBE Turbulent Displace"); td.property(2).setValue(num(o.distortion, 60) * 0.3); }
             if (bool(o.glow)) { fx(dots).addProperty("ADBE Glo2"); }
+            // The growing ring is the LUMA matte for the dots: that expanding band IS the wave.
+            // Do NOT also add a Set Matte to the source — two mattes cancel out and the dots vanish.
             ring.moveBefore(dots);
             if (typeof dots.setTrackMatte === "function") { dots.setTrackMatte(ring, TrackMatteType.LUMA); ring.enabled = false; }
             else { dots.trackMatteType = TrackMatteType.LUMA; }
-            if (src && (o.clip || "inside") === "inside") {
-                var sm = fx(dots).addProperty("ADBE Set Matte3"); sm.property(1).setValue(src.index);
-            } else if (src) { dots.moveAfter(src); ring.moveBefore(dots); }
             dots.inPoint = t0; dots.outPoint = t0 + (waves - 1) * gap + dur + comp.frameDuration;
             ring.inPoint = dots.inPoint; ring.outPoint = dots.outPoint;
             return "SUCCESS:Halftone wave from " + (src ? src.name : "the comp centre") + ".";
