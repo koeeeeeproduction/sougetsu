@@ -56,7 +56,7 @@
     var DEF = {
         v: VER, xp: 0, total: { fx: 0, renders: 0, comps: 0, missions: 0 }, tools: {}, badges: {}, streak: { last: '', n: 0 },
         day: { d: '', fx: 0, renders: 0, comps: 0, newTools: 0, mins: 0, undo: 0, done: {} },
-        set: { pet: true, events: true, xp: true, missions: true, sounds: true, intro: true, petId: 'ninja', px: 'itachi', pxSize: 64, pxSpeed: 1, pxAnim: true, pxRandom: true, pxPos: 'right', freq: 2, volume: 60,
+        set: { pet: true, events: true, xp: true, missions: true, sounds: true, intro: true, petId: 'ninja', px: '', pxSize: 64, pxSpeed: 1, pxAnim: true, pxRandom: true, pxPos: 'right', freq: 2, volume: 60,
             dndRender: true, dndPresent: false, dndNight: true, intro_style: 'classic', soundpack: 'soft', eventpack: 'core', petPos: null }
     };
     function merge(a, b) { var k; for (k in b) { if (b.hasOwnProperty(k)) { if (a[k] === undefined) { a[k] = JSON.parse(JSON.stringify(b[k])); } else if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && a[k] && typeof a[k] === 'object') { merge(a[k], b[k]); } } } return a; }
@@ -399,7 +399,7 @@
     function openHub(tab) {
         var old = document.getElementById('ap-hub'); if (old) { old.remove(); }
         var hub = document.createElement('div'); hub.id = 'ap-hub';
-        hub.innerHTML = '<div class="card"><button class="close" title="Close">✕</button><div class="tabs"><button data-t="companion">BUDDY</button><button data-t="me">LEVEL</button><button data-t="missions">MISSIONS</button><button data-t="unlocks">UNLOCKS</button><button data-t="settings">SETTINGS</button></div><div class="body"></div></div>';
+        hub.innerHTML = '<div class="card"><button class="close" title="Close">✕</button><div class="tabs"><button data-t="me">LEVEL</button><button data-t="missions">MISSIONS</button><button data-t="unlocks">UNLOCKS</button><button data-t="settings">SETTINGS</button></div><div class="body"></div></div>';
         document.body.appendChild(hub);
         hub.addEventListener('click', function (e) { if (e.target === hub || e.target.classList.contains('close')) { hub.remove(); } });
         hub.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-t')); }); });
@@ -451,7 +451,7 @@
             body.querySelectorAll('[data-num]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-num')] = +c.value; save(); render(); if (c.getAttribute('data-num') === 'freq') { scheduleEvent(); } else { SFX.pet(); } }); });
             body.querySelectorAll('[data-pxc]').forEach(function (c) { var fr = window.AkiraPixel.frame(c.getAttribute('data-pxc'), 0, {}), x = c.getContext('2d'), im = x.createImageData(c.width, c.height), k = 0; fr.forEach(function (row) { row.forEach(function (px) { if (px) { im.data[k] = px[0]; im.data[k + 1] = px[1]; im.data[k + 2] = px[2]; im.data[k + 3] = 255; } k += 4; }); }); x.putImageData(im, 0, 0); });
             body.querySelectorAll('[data-px]').forEach(function (b) { b.addEventListener('click', function () { S.set.px = b.getAttribute('data-px'); S.set.pet = true; save(); render(); show(t); SFX.pet(); }); });
-            var pxo = body.querySelector('[data-pxoff]'); if (pxo) { pxo.addEventListener('change', function () { if (S.set.px) { S.set.pxLast = S.set.px; } S.set.px = pxo.checked ? '' : (S.set.pxLast || 'itachi'); save(); render(); show(t); }); }
+            var pxo = body.querySelector('[data-pxoff]'); if (pxo) { pxo.addEventListener('change', function () { if (S.set.px) { S.set.pxLast = S.set.px; } S.set.px = pxo.checked ? '' : ''; save(); render(); show(t); }); }
             body.querySelectorAll('[data-numsel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-numsel')] = +c.value; save(); render(); }); });
             var ly = body.querySelector('[data-layout]'); if (ly) { ly.addEventListener('change', function () { if (window.AkiraLayout) { window.AkiraLayout.set(ly.checked ? 'vertical' : 'horizontal'); } }); }
             var pr = body.querySelector('[data-present]'); if (pr) { pr.addEventListener('change', function () { presenting = pr.checked; }); }
