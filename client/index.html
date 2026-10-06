@@ -15659,6 +15659,13 @@
                 style="display: none; flex-direction: column; width: 100%; min-height: 0; flex: 1; padding: 2px 2px 10px 2px; gap: 12px;">
                 <div class="shape-group" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
                     <div class="shape-header">SHAPE MORPHER</div>
+                    <div style="display:flex;gap:6px;" id="morph-mode-row">
+                        <select id="morph-mode" style="flex:1;height:28px;background:rgba(0,0,0,.3);color:#eee;border:1px solid var(--glass-border);border-radius:6px;font-size:11px;padding:0 6px;"
+                            onchange="localStorage.setItem('akira_morph_mode', this.value)">
+                            <option value="layer">Layer Morph - any layers fly, scale &amp; turn into the target</option>
+                            <option value="path">Path Morph - shape outline changes into the target shape</option>
+                        </select>
+                    </div>
 
                     <div
                         style="padding: 10px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
@@ -15882,7 +15889,7 @@
                     </div>
 
                     <div style="font-size: 9px; color: #666; line-height: 1.4; text-align: center; padding: 0 8px;">
-                        Select two or more layers (last selected is the target) and click Morph It to execute.
+                        Select two or more layers (last selected is the target) and click Morph It. Layer Morph works on any layer type; Path Morph needs shape layers.
                     </div>
 
                 </div>
@@ -25731,14 +25738,17 @@
                 useSlicer: useSlicer,
                 stripeCount: stripeCount,
                 stripeOffset: stripeOffset,
-                pathCurve: pathCurve
+                pathCurve: pathCurve,
+                mode: (document.getElementById('morph-mode') || {}).value || 'layer'
             };
 
             var optionsStr = JSON.stringify(options);
-            var script = "$._akira.shapeMorpher(" + duration + ", '" + easing + "', " + returnMorph + ", " + linearPath + ", " + pairMorph + ", '" + optionsStr + "')";
+                        var script = "$._akira.shapeMorpher(" + duration + ", '" + easing + "', " + returnMorph + ", " + linearPath + ", " + pairMorph + ", '" + optionsStr + "')";
             csInterface.evalScript(script, function (result) {
                 if (result && result.indexOf("ERROR:") === 0) {
-                    alert(result);
+                    alert(result.substring(6));
+                } else if (result && result.indexOf("SUCCESS") === 0 && typeof showStatus === 'function') {
+                    showStatus(result.length > 8 ? result.substring(8) : 'Morph applied.', 'success');
                 }
             });
         }
@@ -25758,6 +25768,7 @@
 
         
         setTimeout(function () {
+            try { var mm = document.getElementById('morph-mode'), sv = localStorage.getItem('akira_morph_mode'); if (mm && sv) { mm.value = sv; } } catch (eMM) { }
             var easingSelect = document.getElementById('morph-easing');
             if (easingSelect) {
                 easingSelect.addEventListener('change', function () {

@@ -79,8 +79,10 @@ class Shape { constructor() { this.vertices = []; this.inTangents = []; this.out
 class KeyframeEase { constructor(s, i) { this.speed = s; this.influence = i; } }
 
 let undoDepth = 0, undoMax = 0;
-let uid = 0;
+let uid = 0, selSeq = 0;
 class AVLayer {
+  get selected() { return !!this._sel; }
+  set selected(v) { this._sel = v ? (this._sel || ++selSeq) : 0; }
   constructor(comp, name, kind) {
     this.id = ++uid; this.containingComp = comp; this.name = name; this.kind = kind; this.comment = ''; this.selected = false; this.enabled = true;
     this.label = 0; this.inPoint = 0; this.outPoint = 10; this.startTime = 0; this.threeDLayer = false; this.nullLayer = kind === 'null'; this.adjustmentLayer = false;
@@ -131,7 +133,7 @@ class CompItem {
   }
   get numLayers() { return this._l.length; }
   layer(i) { return this._l[i - 1]; }
-  get selectedLayers() { return this._l.filter(l => l.selected); }
+  get selectedLayers() { return this._l.filter(l => l.selected).sort((a, b) => a._sel - b._sel); }  // AE: selection order
   saveFrameToPng(t, f) { this.savedFrame = f.p; }
   openInViewer() { }
 }

@@ -401,11 +401,114 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         try { g.item.remove(); } catch (e1) { try { g.item.enabled = false; } catch (e2) { } }
         return np.property("ADBE Vector Shape");
     }
+    // ---- Layer Morph: any layers fly to the last-selected layer on an arc, match its size and angle, then hand over ----
+    var LMORPH = "AKIRA_LMORPH|", LMORPH_T = "AKIRA_LMORPH_T|";
+    function strField(s, k, d) { var m = new RegExp('"' + k + '"\\s*:\\s*"([^"]*)"').exec(s); return m ? m[1] : d; }
+    function layerMatrix(L, t) {
+        var tr = L.transform, m = xf(tr.anchorPoint.valueAtTime(t, false), tr.position.valueAtTime(t, false), tr.scale.valueAtTime(t, false), tr.rotation.valueAtTime(t, false));
+        return L.parent ? mmul(layerMatrix(L.parent, t), m) : m;
+    }
+    function boxOf(L, t) {   // centre (comp), size along the layer's own axes (comp px), local centre
+        var r = { left: 0, top: 0, width: 100, height: 100 };
+        try { r = L.sourceRectAtTime(t, false); } catch (e) { }
+        if (!r || !(r.width > 0) || !(r.height > 0)) { try { r = { left: 0, top: 0, width: L.width, height: L.height }; } catch (e2) { r = { left: 0, top: 0, width: 100, height: 100 }; } }
+        var m = layerMatrix(L, t), lc = [r.left + r.width / 2, r.top + r.height / 2];
+        return { c: [m[0] * lc[0] + m[2] * lc[1] + m[4], m[1] * lc[0] + m[3] * lc[1] + m[5]], w: Math.sqrt(Math.pow(m[0] * r.width, 2) + Math.pow(m[1] * r.width, 2)),
+            h: Math.sqrt(Math.pow(m[2] * r.height, 2) + Math.pow(m[3] * r.height, 2)), lc: lc };
+    }
+    function two(v) { return [v[0], v[1]]; }
+    function same(v, ref) { return ref.length === 3 ? [v[0], v[1], v.length > 2 ? v[2] : ref[2]] : [v[0], v[1]]; }
+    function keyAll(prop, times, vals) { var i; for (i = 0; i < times.length; i += 1) { prop.setValueAtTime(times[i], vals[i]); } }
+    function layerMorph(comp, layers, dur, ease, inf, outf, o) {
+        var pairs = [], i, k, done = 0, skipped = [];
+        var back = boolField(o, "returnMorph", false), lin = boolField(o, "linearPath", false), curve = numField(o, "pathCurve", 55) / 100;
+        var trails = boolField(o, "useTrails", false), trailCount = Math.max(1, Math.round(numField(o, "trailCount", 3))), trailDelay = numField(o, "trailDelay", 0.04);
+        var amp = numField(o, "bounceAmp", 0.1), freq = numField(o, "bounceFreq", 2), decay = numField(o, "bounceDecay", 5);
+        if (boolField(o, "pairMorph", false)) { for (i = 0; i + 1 < layers.length; i += 2) { pairs.push([[layers[i]], layers[i + 1]]); } }
+        else { pairs.push([layers.slice(0, layers.length - 1), layers[layers.length - 1]]); }
+        var t0 = comp.time, stagger = dur * 0.15;
+        for (k = 0; k < pairs.length; k += 1) {
+            var srcs = pairs[k][0], T = pairs[k][1], bT = boxOf(T, t0), trT = T.transform;
+            var tRot = trT.rotation.valueAtTime(t0, false), arrive = null;
+            for (i = 0; i < srcs.length; i += 1) {
+                var L = srcs[i], tr = L.transform;
+                if (H.isCamOrLight(L)) { skipped.push(L.name); continue; }
+                var s0 = t0 + i * stagger, s1 = s0 + dur, mid = s0 + dur * 0.5, b = boxOf(L, s0);
+                var P0 = tr.position.valueAtTime(s0, false), S0 = tr.scale.valueAtTime(s0, false), R0 = tr.rotation.valueAtTime(s0, false), O0 = tr.opacity.valueAtTime(s0, false);
+                var sx = b.w > 0.01 ? bT.w / b.w : 1, sy = b.h > 0.01 ? bT.h / b.h : 1;
+                sx = Math.max(0.01, Math.min(100, sx)); sy = Math.max(0.01, Math.min(100, sy));
+                var S1 = same([S0[0] * sx, S0[1] * sy], S0), dR = tRot - R0;
+                while (dR > 180) { dR -= 360; } while (dR < -180) { dR += 360; }
+                var R1 = R0 + dR;
+                // where the anchor must end up so the box centre lands on the target centre after scaling/turning
+                var an = tr.anchorPoint.valueAtTime(s0, false), off = [(b.lc[0] - an[0]) * S1[0] / 100, (b.lc[1] - an[1]) * S1[1] / 100], ra = R1 * Math.PI / 180;
+                var offR = [off[0] * Math.cos(ra) - off[1] * Math.sin(ra), off[0] * Math.sin(ra) + off[1] * Math.cos(ra)], goal = [bT.c[0] - offR[0], bT.c[1] - offR[1]];
+                if (L.parent) { var pm = minv(layerMatrix(L.parent, s0)); goal = [pm[0] * goal[0] + pm[2] * goal[1] + pm[4], pm[1] * goal[0] + pm[3] * goal[1] + pm[5]]; }
+                var P1 = same(goal, P0), dx = P1[0] - P0[0], dy = P1[1] - P0[1], dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 0.5 && Math.abs(sx - 1) < 0.001 && Math.abs(sy - 1) < 0.001) { skipped.push(L.name + " (already on the target)"); continue; }
+                var pos = tr.position; if (pos.dimensionsSeparated) { try { pos.dimensionsSeparated = false; } catch (eSep) { } }
+                if (pos.dimensionsSeparated) { skipped.push(L.name + " (separated position)"); continue; }
+                keyAll(pos, [s0, s1], [P0, P1]);
+                var dir = dx >= 0 ? 1 : -1;
+                if (!lin && dist > 1) {   // arc: tangents bent perpendicular to the travel direction
+                    var h = dist * 0.35 * curve, px = -dy / dist * h * -dir, py = dx / dist * h * -dir;
+                    var outT = same([dx / 3 + px, dy / 3 + py], P0), inT = same([-dx / 3 + px, -dy / 3 + py], P0);
+                    try { pos.setSpatialTangentsAtKey(pos.nearestKeyIndex(s0), same([0, 0], P0), outT); pos.setSpatialTangentsAtKey(pos.nearestKeyIndex(s1), inT, same([0, 0], P0)); } catch (eT) { }
+                }
+                keyAll(tr.scale, [s0, mid, s1], [S0, same([(S0[0] + S1[0]) / 2 * 0.88, (S0[1] + S1[1]) / 2 * 0.88], S0), S1]);
+                keyAll(tr.rotation, [s0, mid, s1], [R0, R0 + dR / 2 + 12 * dir, R1]);
+                keyAll(tr.opacity, [s1 - dur * 0.25, s1], [O0, 0]);
+                if (back) {
+                    var b0 = s1 + 0.5, b1 = b0 + dur;
+                    keyAll(pos, [b0, b1], [P1, P0]); keyAll(tr.scale, [b0, b1], [S1, S0]); keyAll(tr.rotation, [b0, b1], [R1, R0]); keyAll(tr.opacity, [b0, b0 + dur * 0.25], [0, O0]);
+                }
+                easeKeys(pos, ease, inf, outf); easeKeys(tr.scale, ease, inf, outf); easeKeys(tr.rotation, ease, inf, outf); easeKeys(tr.opacity, "easy-ease", 33, 33);
+                try { L.motionBlur = true; } catch (eMB) { }
+                L.comment = LMORPH + T.name;
+                if (arrive === null || s1 < arrive) { arrive = s1; }
+                if (trails) {
+                    for (var q = 1; q <= trailCount; q += 1) {
+                        var d = L.duplicate(); d.name = L.name + " Trail " + q; d.comment = TRAIL + L.name;
+                        d.startTime = L.startTime + q * trailDelay; d.moveAfter(L);
+                        d.transform.opacity.expression = "// akira-morph\nvalue*" + Math.max(0.05, 1 - q / (trailCount + 1)).toFixed(3);
+                    }
+                }
+                done += 1;
+            }
+            if (arrive !== null) {   // the target pops in as the sources land
+                var OT = trT.opacity.valueAtTime(t0, false), ST = trT.scale.valueAtTime(t0, false), a0 = arrive - dur * 0.3;
+                keyAll(trT.opacity, [a0, arrive], [0, OT]);
+                keyAll(trT.scale, [a0, arrive, arrive + dur * 0.35], [same([ST[0] * 0.85, ST[1] * 0.85], ST), same([ST[0] * 1.06, ST[1] * 1.06], ST), ST]);
+                if (back) { var c0 = arrive + 0.5; keyAll(trT.opacity, [c0, c0 + dur * 0.3], [OT, 0]); }
+                easeKeys(trT.opacity, "easy-ease", 33, 33); easeKeys(trT.scale, ease === "linear" ? "easy-ease" : ease, inf, outf);
+                if (ease === "elastic" || ease === "bounce") {
+                    trT.scale.expression = "// akira-morph\nconst t0=" + arrive + ";if(time<t0){value}else{const t=time-t0," +
+                        (ease === "bounce" ? "a=Math.abs(Math.sin(t*" + freq + "*Math.PI*2))" : "a=Math.sin(t*" + freq + "*Math.PI*2)") + "*" + amp + "*100/Math.exp(" + decay + "*t);value.map(v=>v+a)}";
+                }
+                T.comment = LMORPH_T + T.name;
+            }
+        }
+        if (!done) { return "ERROR:Nothing to morph" + (skipped.length ? ": " + skipped.join(", ") : ". Select two or more layers; the last one you select is the target."); }
+        return "SUCCESS:Morphed " + done + " layer" + (done === 1 ? "" : "s") + " into " + pairs[pairs.length - 1][1].name + (skipped.length ? " (skipped " + skipped.join(", ") + ")" : "") + ".";
+    }
+    function restoreProp(prop) { try { if (prop.numKeys) { var v = prop.keyValue(1); while (prop.numKeys) { prop.removeKey(prop.numKeys); } prop.setValue(v); } } catch (e) { } try { if (String(prop.expression).indexOf("akira-morph") !== -1) { prop.expression = ""; } } catch (e2) { } }
     F.shapeMorpher = function (duration, easing, returnMorph, linearPath, pairMorph, optionsStr) {
         var g = H.locked(); if (g) { return "ERROR:" + g.substring(4); }
         var comp = H.activeComp(); if (!comp) { return "ERROR:Open a composition first."; }
+        var oStr = String(optionsStr || "{}");
+        if (strField(oStr, "mode", "layer") !== "path") {
+            var all = H.selectedLayers(comp);
+            if (all.length < 2) { return "ERROR:Select two or more layers. The last one you select is the target."; }
+            var oo = oStr.replace(/\}\s*$/, ',"returnMorph":' + (returnMorph === true || String(returnMorph) === "true") + ',"linearPath":' + (linearPath === true || String(linearPath) === "true") + ',"pairMorph":' + (pairMorph === true || String(pairMorph) === "true") + '}').replace("{,", "{");
+            app.beginUndoGroup("Layer Morph");
+            var res;
+            try { res = layerMorph(comp, all, Math.max(comp.frameDuration * 2, parseFloat(duration) || 0.8), String(easing || "easy-ease"), numField(oStr, "customEaseIn", 50), numField(oStr, "customEaseOut", 50), oo); }
+            catch (eL) { app.endUndoGroup(); return "ERROR:" + eL.toString(); }
+            app.endUndoGroup();
+            return res;
+        }
         var layers = selShapes(comp), i, k;
-        if (layers.length < 2) { return "ERROR:Select at least two shape layers (source first, then target)."; }
+        if (layers.length < 2) { return "ERROR:Path Morph needs at least two shape layers (source first, then target). Use Layer Morph for other layers."; }
         layers.sort(function (a, b) { return a.index - b.index; });
         var o = String(optionsStr || "{}"), dur = Math.max(comp.frameDuration, parseFloat(duration) || 1), ease = String(easing || "easy-ease");
         var inf = numField(o, "customEaseIn", 50), outf = numField(o, "customEaseOut", 50);
@@ -477,6 +580,18 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         try {
             for (i = 0; i < sel.length; i += 1) {
                 var A = sel[i], c = String(A.comment || "");
+                if (c.indexOf(LMORPH) === 0 || c.indexOf(LMORPH_T) === 0) {
+                    var at = A.transform; restoreProp(at.position); restoreProp(at.scale); restoreProp(at.rotation); restoreProp(at.opacity);
+                    if (c.indexOf(LMORPH) === 0) {
+                        var tn = c.substring(LMORPH.length);
+                        for (j = comp.numLayers; j >= 1; j -= 1) {
+                            var LL = comp.layer(j), lcc = String(LL.comment || "");
+                            if (lcc === TRAIL + A.name) { LL.remove(); continue; }
+                            if (LL.name === tn && lcc.indexOf(LMORPH_T) === 0) { var tt = LL.transform; restoreProp(tt.opacity); restoreProp(tt.scale); LL.comment = ""; }
+                        }
+                    }
+                    A.comment = ""; done += 1; continue;
+                }
                 if (c.indexOf(MORPH) !== 0) { continue; }
                 var target = c.substring(MORPH.length), pa = firstPath(A);
                 if (pa && pa.numKeys) { var first = pa.keyValue(1); while (pa.numKeys) { pa.removeKey(pa.numKeys); } pa.setValue(first); }

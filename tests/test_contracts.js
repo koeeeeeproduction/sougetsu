@@ -122,7 +122,7 @@ t('shape morpher + remove', () => {
   const e = env(), mk = (n, v) => { const L = shape(e, n); const pg = L.property('ADBE Root Vectors Group').addProperty('ADBE Vector Shape - Group'); const s = new M.Shape(); s.vertices = v; pg.property('ADBE Vector Shape').setValue(s); L.selected = true; return [L, pg.property('ADBE Vector Shape')]; };
   const [B] = mk('B', [[1, 1]]), [Aa, pa] = mk('A', [[0, 0]]);
   A.ok(/^ERROR:/.test(env().F.shapeMorpher(1, 'linear', false, false, false, '{}')));
-  A.strictEqual(e.F.shapeMorpher(1, 'easy-ease', true, true, false, JSON.stringify({ useTrails: true, trailCount: 2, trailDelay: 0.05 })), 'SUCCESS');
+  A.strictEqual(e.F.shapeMorpher(1, 'easy-ease', true, true, false, JSON.stringify({ mode: 'path', useTrails: true, trailCount: 2, trailDelay: 0.05 })), 'SUCCESS');
   A.strictEqual(pa.numKeys, 3); A.strictEqual(B.enabled, false); A.strictEqual(e.comp.numLayers, 4);
   Aa.selected = true; B.selected = false;
   A.strictEqual(e.F.removeMorph(), 'SUCCESS'); A.strictEqual(pa.numKeys, 0); A.strictEqual(B.enabled, true); A.strictEqual(e.comp.numLayers, 2);
@@ -167,13 +167,31 @@ t('shape morpher: rectangle -> ellipse tool shapes, different positions', () => 
   rc.property('ADBE Vector Rect Size').setValue([200, 100]); R.transform.position.setValue([500, 500]); R.selected = true;
   const El = shape(e, 'Ell'); const eg = El.property('ADBE Root Vectors Group').addProperty('ADBE Vector Group'); eg.property('ADBE Vectors Group').addProperty('ADBE Vector Shape - Ellipse').property('ADBE Vector Ellipse Size').setValue([100, 100]);
   El.transform.position.setValue([700, 500]); El.selected = true;
-  const r = e.F.shapeMorpher(1, 'easy-ease', false, false, false, '{}');
+  const r = e.F.shapeMorpher(1, 'easy-ease', false, false, false, '{"mode":"path"}');
   A.strictEqual(r, 'SUCCESS', r);
   const src = R.index < El.index ? R : El, vg = src.property('ADBE Root Vectors Group').property(1).property('ADBE Vectors Group');
   const path = vg.property(1); A.strictEqual(path.matchName, 'ADBE Vector Shape - Group');
   const pp = path.property('ADBE Vector Shape'); A.strictEqual(pp.numKeys, 2);
   const k1 = pp.keyValue(1), k2 = pp.keyValue(2); A.strictEqual(k1.vertices.length, k2.vertices.length);
   if (src === R) { const xs = k2.vertices.map(v => v[0]); A.ok(Math.min(...xs) >= 149 && Math.max(...xs) <= 251, 'ellipse lands at +200px in rect space: ' + xs); }
+  A.strictEqual(e.undo(), 0);
+});
+t('layer morph: any layers fly into the last-selected target, remove restores them', () => {
+  const e = env();
+  const a = e.comp.layers.addText('Hello'); a.transform.position.setValue([200, 300]); a.rect = { left: 0, top: -40, width: 200, height: 40 };
+  const b = e.comp.layers.addSolid([1, 0, 0], 'Card', 400, 400); b.transform.position.setValue([1200, 600]); b.transform.anchorPoint.setValue([200, 200]); b.rect = { left: 0, top: 0, width: 400, height: 400 };
+  a.selected = true; b.selected = true;
+  const r = e.F.shapeMorpher(0.8, 'easy-ease', false, false, false, JSON.stringify({ useTrails: true, trailCount: 2, trailDelay: 0.04, pathCurve: 55 }));
+  A.ok(/^SUCCESS:Morphed 1 layer into Card/.test(r), r);
+  const p = a.transform.position; A.strictEqual(p.numKeys, 2);
+  const end = p.keyValue(2); A.ok(Math.abs(end[0] - 1000) < 1 && Math.abs(end[1] - 800) < 1, 'text centre lands on the card centre: ' + end);
+  const sc = a.transform.scale.keyValue(3); A.ok(Math.abs(sc[0] - 200) < 0.01 && Math.abs(sc[1] - 1000) < 0.01, 'matches the card size: ' + sc);
+  A.strictEqual(a.transform.opacity.keyValue(2), 0); A.strictEqual(b.transform.opacity.numKeys, 2); A.strictEqual(b.transform.scale.numKeys, 3);
+  A.strictEqual(e.comp.numLayers, 4);
+  b.selected = false;
+  A.strictEqual(e.F.removeMorph(), 'SUCCESS');
+  A.strictEqual(p.numKeys, 0); deq(p.value, [200, 300]); A.strictEqual(b.transform.opacity.numKeys, 0); A.strictEqual(e.comp.numLayers, 2);
+  A.ok(/^ERROR:/.test(e.F.shapeMorpher(1, 'linear', false, false, false, '{}')));
   A.strictEqual(e.undo(), 0);
 });
 t('glass morph apply / shape / remove', () => {
