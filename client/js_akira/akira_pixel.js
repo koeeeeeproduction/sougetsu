@@ -253,6 +253,9 @@
             sway: [{ r: [1, 3], c: [5, 19] }]
         }
     };
+    // Pixel sprites converted from the supplied pixel-art references (background removed, 64px tall, per-sprite palette).
+    var BMP = {"itachi":{"name":"Itachi","waist":30,"blink":[[9,11,"L"],[10,11,"L"],[13,11,"L"],[14,11,"L"]],"sway":[],"gesture":{"shift":[[0,5,2,20,0,-1]]},"w":23,"h":64,"pal":{"A":"#fdfefe","B":"#f0f9fb","C":"#eff7fa","D":"#f1f6fb","E":"#eef6f9","F":"#ecf7f9","G":"#ebedf0","H":"#fac5b2","I":"#fcc2af","J":"#caafb0","K":"#9999aa","L":"#c38882","M":"#8a8a9d","N":"#6a606d","O":"#3e4155","P":"#2d324d","Q":"#1c366f","R":"#132f70","S":"#123070","T":"#12306e","U":"#122e6f","V":"#122e6d","W":"#112f6f","X":"#12245a","Y":"#0a0f2d","Z":"#020205"},"rows":[".......B.........F.....",".......FF..PP..JHF.....","......ZJJFPPPPZMHZ.....",".....IIHHPPPPPPPHII....","....IHIKPPPPPPPPPIHI...","....HILPPPPPPPPPPZII...","...ZLILNPPYYYYPPNLLLH..","...BMMZNNPBKKKPNPPMLF..","..ZFMAAPPPKKKKPPPPKFB..","..FBFAPPPZKKKNZPPPMBBZ.","..NBMAPPPHLIILLPPAMBFF.",".ZBFKAAPZZZHHZZYPAAFBB.",".FBBMAAPIHIHHHIYYAAMBF.",".BFBKAAPYIIHHHHYZAABFB.","ZBBFAAAAZIHIHIHYZAAKFBZ","BBFBAAAAZKIHHHZZAAAMBBF","ZFFBMQVVVWQQQQVVYAVKBFB","IHHLLVQUVWQWWUWVVQVLIHH","HHIILUWWVYUUWYYVVULLHHH","HIHILWWVVVUUUUWVUULIIHI",".IHILSWYQYUURSWVWULLHHZ","..MMMVYYWQUSSWUVYUMMMH.","...MVYYYWVXURUUVVYYMM..","...MYYYYUUWRURUQVYYM...","......YURRRSRRQRUYY....","......YRTRRSSSQRSVV....","......VSTSSSSSRTSRZ....","......VRTSSSSQSSVR.....","......VRTTSSRSSSURV....","......VVRSSSSSSSSYX....",".....HYUTTSSSSSSSYU....",".....ZYSTTTSSSSSYWR....",".....VUYYUTSSSSWUUS....",".....KVVVVXUURWUUUZ....","......KKKKKKKKKKKKZ....",".....HKEECEJECEEEEK....",".....ZEEEEEECEEEEEF....",".....DEEEEEJEEEEEEF....","....PZEEEEKNEEEEEEE....","....POFEEEEKKEEEEEE....","....OZNENNNJKKEEEEE....","....OZPPOPPP.KEEEEE....","....PZNNJJKP.KEEEEE....","....PKNDNNKN.KEEEEEK...","....ZKEEEEKK.KKEEEEK...",".....KEEEKK..KKEEEEK...","......LLLLK...KLELL....","......IILL....LLIII....","......IIIL.....IHHL....",".....YHIHZ....ZIIII....",".....RRRXX....XXXTR....",".....HBKK......KKBN....","......NNK......KNFF....","......FDK......KNNY....","......NNK......ZKNF....","......BHZ.......KFN....","......VZX.......XRR....",".....ZRZX......XXZR....",".....ZTRX.......XRT....",".....RRZZ.......XXR....","....ZRRTX......XTRRZ...","...ZHVVXX......ZXRVVLZ.","..ZOHIXX........ZXLHOZ.","...ZVZX...........XZVZ."],"bmp":true},"luffy":{"name":"Luffy","waist":32,"blink":[[12,11,"H"],[16,11,"H"],[17,11,"H"],[11,12,"X"],[12,12,"X"],[13,12,"X"],[16,12,"X"],[17,12,"X"],[18,12,"X"]],"sway":[{"r":[34,52],"c":[19,29]}],"gesture":{"shift":[[0,11,0,29,1,0]]},"w":30,"h":64,"pal":{"A":"#f5f9fb","B":"#f7d137","C":"#ecbb9b","D":"#f6be4b","E":"#feb787","F":"#feb684","G":"#d1b68f","H":"#fdb582","I":"#f5ad75","J":"#be7a2e","K":"#c6785e","L":"#9c897f","M":"#4672bd","N":"#b76c55","O":"#d6262e","P":"#d8252e","Q":"#d8242d","R":"#d2252e","S":"#50476a","T":"#203578","U":"#81112b","V":"#531124","W":"#09031e","X":"#04021e","Y":"#010525","Z":"#01021a"},"rows":["............VDYDXY............","..........ZDDDDDDDZ...........",".........YDDDDDDDDDY..........",".........JDDDDDDDDJDJ.........","........YJJDRRRRRRJDJY........","........JJUDDDDDDDUUJX........","........XDJJJJJJJJJJDX........","......ZDJJJYXKXXXXXJJJD.......",".....ZJJJYXYYHXXNKXXJJJH......",".....DJJJXXNKHHXNYXXXJJJY.....","....XJJJXXXNHHHHHHKXXYJJJ.....","....YJJJXXXEAHHESAEYXJJJJ.....",".....JJJJVEAAAEHAAAKXJJJJ.....","......JJJNEHAEHEAAHNSJJW......",".......ZJVYHEHEEHVEWJJZ.......","..........YHEAAAAEX...........","...........ZEFKEHYZ...........","............YNNNNY............","..........YUKEKNEHXV..........","........YQRKFFEEFFKUQY........","......YRQQREEHFEHEKUQPRY......",".....ZQQQQQQHEHHFHQPQOQP......",".....XRUQQQOKEHEEWPQQOPRZ.....",".....QRUQOOQEKNKIEPQOQRRQ.....",".....OQUQOOQHEIIHEPOOQUQQ.....","....ZOOUUOURNNKIINOOOUUOOS....","....OOOUYOOOKIEEIKOOOYUOOY....","...YPOUAYRRRKEEEFVOOOYUUOO....","...RPOUAUUOOEEHHEEOOUYAUPOY...","...ORUAAUUOOEEEEEEWOUYAUUOQ...","..RPRUAAUUUKEEEEEEWOUUAAUPOY..",".YPRPUAAUROHEEEFEEKORUAAURUQZ.","YRURUUAAUUKEEFEEEEKKVUAAUUPUQ.","YURUUUAUUUYYEFFEHYBYUUUAUURUUY",".YKKYWYUUUBBBBBBBBJBUUUAUXKKY.",".ZENY.UUJJBBBBBBJJJBJWUU.YKHY.",".YEE.YUUJJBBBBBBBJJBBJUUW.HFY.",".EFY..UUYTYMTTTTTTTBBJUU..YFE.","XFFE...YTMMMMMTYMMMBBJY..YEFF.","YFFFH..YMMMMMMMMMMMTBBJ..IFFF.","XHEHEY.YMMMMTTTTTMMMBBJZWEHEH.","ZEHEN..TMMMMMTYTMMMMBBBJYKEEE.",".ZNKY..MMMMMMTYYTTMMBBBJKZYZY.","......YMMMMMMT.ZTMMMBBBBBY....","......ZMMMMMTT..TTMMTBBJBBZ...","......TMMMMMTX..TTMMTBBBBNB...","......MMMMMMTY..YTMMMTBBJB....",".....YMMMMMTT....TMMMTTTJB....",".....GAMMTTTT....TTMMMTGG.....","....YAAAAAAGG....GGAAAAAG.....",".....GGGAAGGG....GGAAAGGG.....","......YNGGGGY....YYGGNNY......","......ZNNN.........XNNHW......","......HHHN..........HHHZ......","......HHHZ..........ZHHC......","......HHF...........YHHZ......","......FFN............FHZ......",".....ZFEZ............NHE......",".....ZFFW............XFHZ.....","....YHHE.............YFHE.....","...XXCHN.............NHCYY....","..YIIEWNY............NNEEIIY..",".ZKVKNKNX............ZYNINVW..",".YLYYXNY..............YXLYLLY."],"bmp":true},"gojo":{"name":"Gojo","waist":30,"blink":null,"sway":[{"r":[0,6],"c":[5,15]}],"gesture":{"shift":[[7,16,0,6,0,-1]]},"w":21,"h":64,"pal":{"A":"#eddffb","B":"#f5c0ac","C":"#b59fca","D":"#705db1","E":"#6b58b5","F":"#6b58a5","G":"#514178","H":"#2f2651","I":"#302550","J":"#2e2554","K":"#2e2550","L":"#2d254e","M":"#2c254e","N":"#2c254a","O":"#2e2452","P":"#2d244f","Q":"#2c244d","R":"#2b234b","S":"#231b3b","T":"#191031","U":"#151027","V":"#150e30","W":"#170d30","X":"#160c30","Y":"#10081f","Z":"#010005"},"rows":[".....................","........CCAA.........",".......AAAAAA........","......CAAAAAAA.......","......CAAAAAAA.......","......AAAAACAC.......","......ACCCCCC........","........CGCUS........","........SSSUUB.......",".F......BBBBB........",".F......BBBBBU.......",".BBBB..UZZBBZJ.......",".BBB....DZDZGZ.......",".BBF...EUTZZJZE......",".BBF.DDEJUDZUXJEED...",".BBFDDELJJPJPJEFDED..","EDBBZEELJPEZPKDDEKZ..",".LJNZKEDPPDZDEPKKKZE.",".FJZKKKEEEEZKKPKKKTE.","RJPZUKKKKEEZKKKKKZWK.","GQKZZPKKKKDZKKKKPZLK.","EPPZXKKKKKPZKKKKPZKK.","EJLUWIKGKKPPKKKPPZKPU","ELPZXHPPJKPPKKPPPZJGQ","EKQT.QPKKRPPKPPPZZQKP",".EU..SPKKKETPPGQZZEQP",".....LPKKKKXPPXPZZTUE",".....LJKKKPPKPGPZZDGQ",".....RSEKKLLPPPQZZEPN",".....RPPJUPQPPPXZZEEJ",".....LLSPPPUPPPDRZTRS",".....ULQPPLUQLLGZEEP.",".....QLLLULULLLPZQQP.",".....LLLPNEEPPPLBFQ..",".....LLKKRLNLLLLZBS..",".....LKEEELULLKKLB...",".....LLKLLLQLLLPTU...",".....ULLKUPUXRZRU....",".....XXWXW..XWXWR....",".....QLMWX..WXDLL....",".....LLMTX..QSMLP....",".....KKDI...LPEP.....",".....KKKK...LLPK.....",".....LKGP...LLLL.....",".....LQDP...LPLQ.....",".....KEG....PPK......",".....QDE....LLM......","....EQDG....LLL......","....EDEJ....LPE......","....GEER....LLE......",".....ERV...JRLE......",".....WVV...RDP.......",".....WWW...KSF.......","......WW...KVT.......","......WV...LMR.......","......VVV..LK........",".......WW..KL........",".......WX..LL........",".......WW..KQ........",".......WV..LKE.......","...........VK........","..........HKU........","...........LE........","...........RE........"],"bmp":true},"frieren":{"name":"Frieren","waist":30,"blink":[[21,8,"J"],[27,7,"J"]],"sway":[{"r":[9,32],"c":[0,15]},{"r":[9,32],"c":[37,49]}],"gesture":{"px":[[45,4,"A"],[46,5,"A"],[44,5,"A"]]},"w":50,"h":64,"pal":{"A":"#fdfef9","B":"#fcfcf6","C":"#fbfcf8","D":"#fdfbfb","E":"#fcfbf7","F":"#f4eef2","G":"#ede5f1","H":"#fce4da","I":"#ebe4ef","J":"#dac7c1","K":"#dab26b","L":"#c8b190","M":"#b4adbd","N":"#b7aab0","O":"#b1abbc","P":"#a59eb4","Q":"#867e92","R":"#98724a","S":"#866249","T":"#715a5a","U":"#56403d","V":"#8b3132","W":"#454654","X":"#2b2c39","Y":"#282d39","Z":"#381024"},"rows":[".............................................KK...","..............................................SKKR",".......................GGGGG................K..KK.","....................IQGGGGGGGQFI..........KVVKS.KS","...................GIPGGIQGFGIGGGM.....K..VVZVK.KK",".................PGIQDIIHHJIGGQQGGGI...K..VVZVK.KR","................PGGPPIGHHHHHQGQPPGGGG..KK.KVVKR.KS","...............GGGPPQGGHHHHXJGHHHPPGGG.KKR..R.SKR.","..............GGGPHHLTGHHHHHHJLH.PPPGGGKRKV..VKKS.",".............GGGPP..HLQHHHHHJZ.....QPGKSRSVVVVS...","............GGGPP.....ZHHHHH.Z......VSRGGPZZ......","...........GGGPP......Z.HHHU......JHZZPGGGV.......","..........GGGPP.........LVBKZLLL.HHHUK.QGVVM......",".........GGIQ........RBOURKECCCBVHHLSK..QVGGI.....","........GGFQ........MCCBKKKCCBBVZLLLKBK..VGGGG....","........GGI......ZQCCEBMKWKBBVVZMSLKKKK.Z..GGG....",".......GGF......DSKKBBMKKMKBVZCBKKKKAKK..Z..GGG...",".......GPQ.....AUQQKKBMKKWKVZKKKRKKCKKOP.Z..QGGP..","......PIQ.....KSSSSOKRMKWVZKKKQKRRKKKMECE.V..PGI..","......GQ.........SMMQQSKVZKKQMQQQOMKOMABT.V...GM..","......GQ........DMAQOQZVZWQWWDQQSSMQEAAEQ.....QGQ.","......G.......RKKKKMMVZZPWQWWYSSSSZEEAAE.......P..","......I......KKKKKKZVZDAMMMMMQ......CAEE.......G..","......I.....KKUKKKVZZCEDMMMMMMM......CB.......QP..","............KUUHHVZ.EAEMMMMMMMMM.............QP...","............KUHHHZZDAEAMMMMEMMMMQ.................",".............ZHHJJ.AEEEMMMEEEMMMM.................",".............ZZJL.DEEEMMOEEEEMMMME................","...........VZ.....CEEMMMEEEEECMMMOY...............","..........VZ.....QEEEMMMEEEEEEMMMME...............","........VZZ.....OEEEMMOEEEEEEEEMOOMM..............",".......VZ......BEEMEMMOEEEEEEEEOMOME..............","......VZ.......EEEMMMOOEEEEEEBEMMMOCD.............","....VZZ.......KKQEOOOOEECMECBBCOOOMMB.............","...KZ.........KKKKMOOOKKKRRKCCCCOOMOKK............",".KKR..........TKKRRROOKKKRRKKKKOOORRKK............","KKR............UKRRRRRKUXRRKKKKKRRRRKK............",".R................URRRRUXXXXKKKRRRRR..............",".....................ZXXXXYXXX.RRR................","......................XXXXXXXX....................","......................WWWWXXXX....................","......................WWWWXXX.....................","......................WWWWXXX.....................","......................WXXXXXX.....................",".....................WWXX.XXXW....................",".....................WWXXZXXXX....................",".....................WWWWUXXXU....................",".....................WWWWUUXUU....................",".....................WWWWUUUUU....................",".....................UWWWUUUU.....................",".....................SSWUZUUU.....................",".....................SSSS.UUU.....................",".....................USSU.UUU.....................","......................SSS.UUU.....................","......................SSS.UU......................","......................SSSUUU......................","......................USUUUU......................","......................USUUUU......................","......................USSUSU......................","......................SSSUU.......................","......................SSSU........................","......................SSSU........................","......................SSRU........................",".......................SS........................."],"bmp":true}};
+    for (var bk in BMP) { if (BMP.hasOwnProperty(bk)) { C[bk] = BMP[bk]; } }
     var IDS = ['itachi', 'frieren', 'luffy', 'gojo', 'nagi', 'l'];
 
     // per-character idle personality: breathing curve (px, 12 frames), drift (px), gesture
@@ -287,6 +290,11 @@
             for (x = 0; x < seg.length; x++) { row[c0 + x] = out[x]; }
         }
     }
+    function shiftBlock(g, r0, r1, c0, c1, dy) {   // move a rectangle up/down by dy (vacated pixels become transparent)
+        var y, x, copy = g.map(function (r) { return r.slice(); });
+        for (y = r0; y < r1; y++) { for (x = c0; x <= c1; x++) { if (g[y] && g[y][x] !== undefined) { g[y][x] = '.'; } } }
+        for (y = r0; y < r1; y++) { for (x = c0; x <= c1; x++) { var ny = y + dy; if (g[ny] && copy[y] && copy[y][x] && copy[y][x] !== '.') { g[ny][x] = copy[y][x]; } } }
+    }
     function put(g, x, y, ch) { if (g[y] && x >= 0 && x < g[y].length) { g[y][x] = ch; } }
 
     // character beats, p = 0..1 through the gesture
@@ -318,14 +326,23 @@
             for (y = c.eyes[0]; y <= c.eyes[1]; y++) { for (x = 0; x < 24; x++) { if (g[y][x] === 'E' || g[y][x] === 'W') { g[y][x] = (y === c.eyes[1] ? 'O' : 's'); } } }
             for (x = 0; x < 24; x++) { if (g[c.eyes[0] - 1][x] === 'O' && (g[c.eyes[0]][x] === 's' || g[c.eyes[0]][x] === 'O')) { g[c.eyes[0] - 1][x] = c.pal.s ? 's' : 'S'; } }
         }
-        if (o.gesture !== undefined && GESTURE[id]) { GESTURE[id](g, o.gesture); }
+        if (o.blink && c.blink) { c.blink.forEach(function (b) { put(g, b[0], b[1], b[2]); }); }
+        if (o.gesture !== undefined) {
+            if (c.bmp && c.gesture) {
+                var on = o.gesture > 0.2 && o.gesture < 0.8;
+                if (on) {
+                    (c.gesture.shift || []).forEach(function (m) { if (m[4]) { shiftRegion(g, m[0], m[1], m[2], m[3], m[4]); } if (m[5]) { shiftBlock(g, m[0], m[1], m[2], m[3], m[5]); } });
+                    if (c.gesture.px && Math.floor(o.gesture * 10) % 2 === 0) { c.gesture.px.forEach(function (q) { put(g, q[0], q[1], q[2]); }); }
+                }
+            } else if (GESTURE[id]) { GESTURE[id](g, o.gesture); }
+        }
         (c.sway || []).forEach(function (s) { shiftRegion(g, s.r[0], s.r[1], s.c[0], s.c[1], st.sway[i]); });
         shiftRows(g, 0, c.waist, BREATH[st.breath][i]);
         if (c.staff) { staff(g, BREATH[st.breath][i]); }
-        var dx = st.drift[i], out = [];
-        for (y = 0; y < 32; y++) {
+        var dx = st.drift[i], out = [], W = c.w || 24, Hh = c.h || 32;
+        for (y = 0; y < Hh; y++) {
             var row = [];
-            for (x = 0; x < 24; x++) { var ch = g[y][x - dx] || '.'; row.push(ch === '.' ? null : hex(c.pal[ch] || OUT)); }
+            for (x = 0; x < W; x++) { var ch = g[y][x - dx] || '.'; row.push(ch === '.' ? null : hex(c.pal[ch] || OUT)); }
             out.push(row);
         }
         return out;
@@ -345,14 +362,19 @@
     function mount(el, opts) {
         opts = opts || {};
         var cv = document.createElement('canvas'), x = cv.getContext('2d'), id = opts.id || 'itachi', size = opts.size || 64, speed = opts.speed || 1, anim = opts.animate !== false;
-        cv.width = 24; cv.height = 32; cv.className = 'akpx';
+        function dims() { var c = C[id]; return [c.w || 24, c.h || 32]; }
+        cv.width = dims()[0]; cv.height = dims()[1]; cv.className = 'akpx';
         cv.style.cssText = 'image-rendering:pixelated;image-rendering:crisp-edges;display:block;';
         el.appendChild(cv);
-        var img = x.createImageData(24, 32), f = 0, t0 = 0, nextBlink = 0, blinkUntil = 0, gStart = -1, nextGesture = 0, raf = 0, last = 0, dead = false;
-        function layout() { var s = Math.max(1, Math.floor(size / 32)) || 1; cv.style.width = (24 * size / 32) + 'px'; cv.style.height = size + 'px'; }
+        var img = x.createImageData(cv.width, cv.height), f = 0, t0 = 0, nextBlink = 0, blinkUntil = 0, gStart = -1, nextGesture = 0, raf = 0, last = 0, dead = false;
+        function layout() {
+            var d = dims();
+            if (cv.width !== d[0] || cv.height !== d[1]) { cv.width = d[0]; cv.height = d[1]; img = x.createImageData(d[0], d[1]); }
+            cv.style.width = Math.round(d[0] * size / d[1]) + 'px'; cv.style.height = size + 'px';
+        }
         function draw(fr) {
             var d = img.data, yy, xx, k = 0;
-            for (yy = 0; yy < 32; yy++) { for (xx = 0; xx < 24; xx++, k += 4) { var c = fr[yy][xx]; if (c) { d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255; } else { d[k + 3] = 0; } } }
+            for (yy = 0; yy < fr.length; yy++) { for (xx = 0; xx < fr[yy].length; xx++, k += 4) { var c = fr[yy][xx]; if (c) { d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255; } else { d[k + 3] = 0; } } }
             x.putImageData(img, 0, 0);
         }
         function sched(now) { nextBlink = now + 2500 + Math.random() * 3500; }
@@ -375,11 +397,11 @@
         raf = requestAnimationFrame(tick);
         return {
             canvas: cv,
-            set: function (o) { if (o.id && C[o.id]) { id = o.id; } if (o.size) { size = o.size; layout(); } if (o.speed) { speed = o.speed; } if (o.animate !== undefined) { anim = o.animate; } if (o.random !== undefined) { opts.random = o.random; } draw(frame(id, f, {})); if (anim && !raf) { raf = requestAnimationFrame(tick); } },
+            set: function (o) { if (o.id && C[o.id] && o.id !== id) { id = o.id; layout(); } if (o.size) { size = o.size; layout(); } if (o.speed) { speed = o.speed; } if (o.animate !== undefined) { anim = o.animate; } if (o.random !== undefined) { opts.random = o.random; } draw(frame(id, f, {})); if (anim && !raf) { raf = requestAnimationFrame(tick); } },
             poke: function () { gStart = performance.now(); },
             destroy: function () { dead = true; if (raf) { cancelAnimationFrame(raf); } if (cv.parentNode) { cv.parentNode.removeChild(cv); } }
         };
     }
 
-    root.AkiraPixel = { ids: IDS, chars: C, frame: frame, mount: mount, name: function (id) { return C[id] ? C[id].name : id; } };
+    root.AkiraPixel = { ids: IDS, chars: C, frame: frame, mount: mount, dims: function (id) { var c = C[id]; return c ? [c.w || 24, c.h || 32] : [24, 32]; }, name: function (id) { return C[id] ? C[id].name : id; } };
 })(window);

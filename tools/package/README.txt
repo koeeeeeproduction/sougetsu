@@ -1,12 +1,12 @@
-Sougetsu Akira FX 1.1.0
+Sougetsu Akira FX 1.1.1
 =======================
 
 OPTION A - ZXP (signed, recommended)
  1. Close After Effects.
- 2. Install SougetsuAkiraFX_1.1.0.zxp with a ZXP installer, e.g. aescripts ZXP Installer
+ 2. Install SougetsuAkiraFX_1.1.1.zxp with a ZXP installer, e.g. aescripts ZXP Installer
     (free: aescripts.com/learn/zxp-installer) - drag the .zxp onto it.
     Or with Adobe's own tool (Windows, Command Prompt as administrator):
-    "C:\Program Files\Common Files\Adobe\Adobe Desktop Common\RemoteComponents\UPI\UnifiedPluginInstallerAgent\UnifiedPluginInstallerAgent.exe" /install "%USERPROFILE%\Downloads\SougetsuAkiraFX_1.1.0.zxp"
+    "C:\Program Files\Common Files\Adobe\Adobe Desktop Common\RemoteComponents\UPI\UnifiedPluginInstallerAgent\UnifiedPluginInstallerAgent.exe" /install "%USERPROFILE%\Downloads\SougetsuAkiraFX_1.1.1.zxp"
  3. Start After Effects > Window > Extensions (Legacy) > Sougetsu Akira FX.
  Use either A or B, not both (B removes copies installed by A).
 

@@ -124,7 +124,7 @@
         '#ap-pet .akpx{transform-origin:50% 100%}.st-celebrate .akpx{animation:apJump .5s ease-out 3}.st-worried .akpx{animation:apShake .12s linear 5}.st-wake .akpx{animation:apStretch .9s ease-out 1}.st-sleep .akpx{filter:brightness(.75) saturate(.8)}',
         '#ap-pet.px.st-sleep:after{content:"z";position:absolute;right:-2px;top:-4px;font:900 11px Inter,Arial;color:#cfe3ff;animation:apZ 2.4s ease-in-out infinite}',
         '#ap-root.left{right:auto;left:10px;align-items:flex-start}',
-        '#ap-hub .pxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}#ap-hub .pxgrid .it{padding:6px 2px;font-weight:800;letter-spacing:.5px}#ap-hub .pxgrid canvas{width:36px;height:48px;display:block;margin:0 auto 4px;image-rendering:pixelated}',
+        '#ap-hub .pxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}#ap-hub .pxgrid .it{padding:6px 2px;font-weight:800;letter-spacing:.5px}#ap-hub .pxgrid canvas{height:56px;width:auto;max-width:100%;display:block;margin:0 auto 4px;image-rendering:pixelated}',
         '#ap-pet{width:54px;height:54px;pointer-events:auto;cursor:pointer;position:relative;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}',
         '#ap-pet svg{width:100%;height:100%;overflow:visible}',
         '#ap-chip{pointer-events:auto;cursor:pointer;height:22px;padding:0 9px;border-radius:11px;border:1px solid var(--primary,#00ff55);background:rgba(0,0,0,.75);color:var(--primary,#00ff55);font-size:10px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:6px}',
@@ -218,7 +218,7 @@
         var usePx = !!(S.set.px && window.AkiraPixel && window.AkiraPixel.chars[S.set.px]);
         if (usePx) {
             var sz = Math.max(32, Math.min(128, S.set.pxSize || 64));
-            petEl.style.width = Math.round(sz * 0.75) + 'px'; petEl.style.height = sz + 'px';
+            var dm = window.AkiraPixel.dims(S.set.px); petEl.style.width = Math.round(sz * dm[0] / dm[1]) + 'px'; petEl.style.height = sz + 'px';
             var o = { id: S.set.px, size: sz, speed: S.set.pxSpeed || 1, animate: S.set.pxAnim !== false, random: S.set.pxRandom !== false };
             if (!pxInst || !petEl.contains(pxInst.canvas)) { petEl.innerHTML = ''; pxInst = window.AkiraPixel.mount(petEl, o); } else { pxInst.set(o); }
         } else {
@@ -387,7 +387,7 @@
         var el = document.createElement('div'); el.id = 'ap-intro'; el.className = st;
         el.innerHTML = '<h1>SOUGETSU</h1><div class="l">INITIALIZING...</div><div class="bar"><b></b></div>' + (S.set.pet ? '<div class="pet st-celebrate">' + (S.set.px && window.AkiraPixel ? '' : petSVG(pet())) + '</div>' : '') + '<div class="go">Let\'s create.</div>';
         document.body.appendChild(el);
-        var pxIntro = null; if (S.set.pet && S.set.px && window.AkiraPixel) { var pe = el.querySelector('.pet'); pe.style.width = '45px'; pxIntro = window.AkiraPixel.mount(pe, { id: S.set.px, size: 60, random: false }); }
+        var pxIntro = null; if (S.set.pet && S.set.px && window.AkiraPixel) { var pe = el.querySelector('.pet'); pe.style.width = 'auto'; pxIntro = window.AkiraPixel.mount(pe, { id: S.set.px, size: 60, random: false }); }
         var done = false; function end() { if (done) { return; } done = true; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 260); }
         el.addEventListener('click', end);
         requestAnimationFrame(function () { el.querySelector('.bar b').style.width = '100%'; });
@@ -420,7 +420,7 @@
                 }).join('') + (missionsDone() === 3 ? '<div style="text-align:center;font-weight:900;color:#fff;margin-top:8px">MISSION COMPLETE 🔥 Nice work.</div>' : '<div style="color:#888;margin-top:6px">New missions every day. Each one is +30 XP.</div>') : '<div style="color:#888">Daily missions are off. Turn them on in Settings.</div>');
             } else if (t === 'companion') {
                 var P = window.AkiraPixel;
-                h = '<h3>PIXEL COMPANION</h3>' + (P ? '<div class="pxgrid">' + P.ids.map(function (id) { return '<button class="it' + (S.set.px === id ? ' sel' : '') + '" data-px="' + id + '"><canvas width="24" height="32" data-pxc="' + id + '"></canvas>' + P.name(id).toUpperCase() + '</button>'; }).join('') + '</div>' : '') +
+                h = '<h3>PIXEL COMPANION</h3>' + (P ? '<div class="pxgrid">' + P.ids.map(function (id) { return '<button class="it' + (S.set.px === id ? ' sel' : '') + '" data-px="' + id + '"><canvas width="' + P.dims(id)[0] + '" height="' + P.dims(id)[1] + '" data-pxc="' + id + '"></canvas>' + P.name(id).toUpperCase() + '</button>'; }).join('') + '</div>' : '') +
                     '<div class="row"><span>Classic pet instead (' + pet().name + ')</span><input type="checkbox" data-pxoff ' + (!S.set.px ? 'checked' : '') + '></div>' +
                     '<div class="row"><span>Show companion</span><input type="checkbox" data-tog="pet" ' + (S.set.pet ? 'checked' : '') + '></div>' +
                     '<div class="row"><span>Animation</span><input type="checkbox" data-tog="pxAnim" ' + (S.set.pxAnim !== false ? 'checked' : '') + '></div>' +
@@ -449,7 +449,7 @@
             body.querySelectorAll('[data-tog]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-tog')] = c.checked; save(); render(); }); });
             body.querySelectorAll('[data-sel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-sel')] = c.value; save(); render(); }); });
             body.querySelectorAll('[data-num]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-num')] = +c.value; save(); render(); if (c.getAttribute('data-num') === 'freq') { scheduleEvent(); } else { SFX.pet(); } }); });
-            body.querySelectorAll('[data-pxc]').forEach(function (c) { var fr = window.AkiraPixel.frame(c.getAttribute('data-pxc'), 0, {}), x = c.getContext('2d'), im = x.createImageData(24, 32), k = 0; fr.forEach(function (row) { row.forEach(function (px) { if (px) { im.data[k] = px[0]; im.data[k + 1] = px[1]; im.data[k + 2] = px[2]; im.data[k + 3] = 255; } k += 4; }); }); x.putImageData(im, 0, 0); });
+            body.querySelectorAll('[data-pxc]').forEach(function (c) { var fr = window.AkiraPixel.frame(c.getAttribute('data-pxc'), 0, {}), x = c.getContext('2d'), im = x.createImageData(c.width, c.height), k = 0; fr.forEach(function (row) { row.forEach(function (px) { if (px) { im.data[k] = px[0]; im.data[k + 1] = px[1]; im.data[k + 2] = px[2]; im.data[k + 3] = 255; } k += 4; }); }); x.putImageData(im, 0, 0); });
             body.querySelectorAll('[data-px]').forEach(function (b) { b.addEventListener('click', function () { S.set.px = b.getAttribute('data-px'); S.set.pet = true; save(); render(); show(t); SFX.pet(); }); });
             var pxo = body.querySelector('[data-pxoff]'); if (pxo) { pxo.addEventListener('change', function () { if (S.set.px) { S.set.pxLast = S.set.px; } S.set.px = pxo.checked ? '' : (S.set.pxLast || 'itachi'); save(); render(); show(t); }); }
             body.querySelectorAll('[data-numsel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-numsel')] = +c.value; save(); render(); }); });
