@@ -1,0 +1,136 @@
+
+
+
+
+
+
+#shape-subview-tools { gap: 14px; padding-bottom: 6px; }
+#shape-subview-tools .sh20-section { display: grid; gap: 8px; }
+#shape-subview-tools .sh20-section + .sh20-section { margin-top: 2px; }
+#shape-subview-tools .sh20-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+    color: #6f6f76; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+#shape-subview-tools .sh20-head small {
+    font-size: 8.5px; font-weight: 600; letter-spacing: .3px; text-transform: none; color: #55555c;
+}
+#shape-subview-tools .sh20-head.accent { color: var(--primary); }
+
+
+#shape-subview-tools .sh20-beta {
+    display: flex; align-items: baseline; gap: 8px; padding: 6px 10px; margin: 2px 0 4px;
+    border-left: 2px solid #d9a441; background: rgba(217,164,65,0.06); border-radius: 0 6px 6px 0;
+    font-size: 9px; line-height: 1.4; color: #8e8e95;
+}
+#shape-subview-tools .sh20-beta b { color: #d9a441; letter-spacing: 1.4px; font-size: 8.5px; font-weight: 800; }
+
+
+#shape-subview-tools .sh20-icons {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px;
+}
+#shape-subview-tools .sh20-icons.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#shape-subview-tools .sh20-icon {
+    height: 40px; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--glass-border); border-radius: 7px;
+    color: #a9a9b2; cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+}
+#shape-subview-tools .sh20-icon svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+#shape-subview-tools .sh20-icon svg .dot { fill: currentColor; stroke: none; }
+#shape-subview-tools .sh20-icon:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-dim, rgba(255,255,255,0.05)); }
+#shape-subview-tools .sh20-icon:active { transform: translateY(1px); }
+
+
+#shape-subview-tools .sh20-fields,
+#fgp-zone .sh20-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 10px; }
+#shape-subview-tools .sh20-fields.cols-2, #fgp-zone .sh20-fields.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#shape-subview-tools .sh20-fields.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#shape-subview-tools .sh20-field, #fgp-zone .sh20-field { display: grid; gap: 4px; min-width: 0; }
+#shape-subview-tools .sh20-field label, #fgp-zone .sh20-field label {
+    font-size: 8.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #7d7d85; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+#shape-subview-tools .sh20-field label em, #fgp-zone .sh20-field label em { font-style: normal; color: #55555c; }
+#shape-subview-tools .sh20-field .ae-input,
+#fgp-zone .sh20-field input {
+    width: 100%; height: 26px; box-sizing: border-box; padding: 0 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-bottom-color: var(--glass-border);
+    border-radius: 5px; color: #fff; font-size: 11px; font-weight: 600; font-family: inherit; outline: none;
+    font-variant-numeric: tabular-nums;
+}
+#shape-subview-tools .sh20-field .ae-input:focus, #fgp-zone .sh20-field input:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
+
+
+#shape-subview-tools .sh20-actions, #fgp-zone .sh20-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+#shape-subview-tools .sh20-actions.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#shape-subview-tools .sh20-actions.cols-1, #fgp-zone .sh20-actions.cols-1 { grid-template-columns: 1fr; }
+#shape-subview-tools .sh20-actions .tool-btn, #fgp-zone .sh20-actions .tool-btn { margin: 0; width: auto; min-width: 0; letter-spacing: .6px; }
+#shape-subview-tools .sh20-actions .tool-btn.primary, #fgp-zone .sh20-actions .tool-btn.primary {
+    background: var(--primary); color: var(--accent-text-color, #0b0b0b); border-color: var(--primary);
+}
+
+
+#shape-subview-tools .sh20-checks { display: flex; gap: 14px; flex-wrap: wrap; }
+#shape-subview-tools .sh20-check {
+    display: flex; align-items: center; gap: 6px; font-size: 9.5px; color: #c4c4cb; cursor: pointer; user-select: none;
+}
+#shape-subview-tools .sh20-check input { accent-color: var(--primary); margin: 0; cursor: pointer; }
+
+
+#shape-subview-tools .sh20-help, #fgp-zone .sh20-help { font-size: 8.5px; line-height: 1.5; color: #6f6f76; margin: 0; }
+
+
+#fgp-zone { display: grid; gap: 8px; margin-top: 2px !important; }
+#fgp-zone .shape-header {
+    font-size: 9px; font-weight: 800; letter-spacing: 1.2px; color: #6f6f76; margin: 0; padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+
+
+
+#beat-sync-modal .modal-box.beat20 { gap: 7px; }
+#beat-sync-modal .beat20-intro { font-size: 10px; line-height: 1.4; color: #aaa; text-align: center; margin-bottom: 4px; }
+#beat-sync-modal .beat20-step {
+    font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: var(--primary); margin-top: 6px;
+}
+#beat-sync-modal .beat20-source { display: flex; align-items: center; gap: 6px; }
+#beat-sync-modal .beat20-file {
+    flex: 1; min-width: 0; height: 26px; line-height: 24px; box-sizing: border-box; padding: 0 8px;
+    background: rgba(0, 0, 0, 0.5); border: 1px solid var(--glass-border); border-radius: 6px;
+    font-size: 10px; font-weight: 600; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#beat-sync-modal .beat20-pill {
+    height: 26px; line-height: 24px; padding: 0 10px; margin: 0; flex-shrink: 0; box-sizing: border-box; font-family: inherit;
+}
+#beat-sync-modal .beat20-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+#beat-sync-modal .beat20-seg button {
+    height: 26px; padding: 0; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.03);
+    color: #bbb; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase;
+    white-space: nowrap; cursor: pointer; transition: 0.2s;
+}
+#beat-sync-modal .beat20-seg button:hover { border-color: var(--primary); color: #fff; }
+#beat-sync-modal .beat20-seg button.on { border-color: var(--primary); color: var(--primary); background: var(--primary-dim); }
+#beat-sync-modal .beat20-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 8px; }
+#beat-sync-modal .beat20-lbl { font-size: 10px; font-weight: 600; color: #bbb; }
+#beat-sync-modal .beat20-lbl em { font-style: normal; color: #666; margin-left: 2px; }
+#beat-sync-modal .beat20-num { font-size: 10px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+#beat-sync-modal .beat20-row input[type="range"] { flex: 1 1 100%; width: 100%; margin: 0; }
+#beat-sync-modal .beat20-in {
+    flex: 0 0 auto; width: 128px; min-width: 0; height: 26px; box-sizing: border-box; padding: 0 8px;
+    font-family: inherit; font-size: 10px; font-weight: 600; color: #fff; cursor: pointer;
+}
+#beat-sync-modal .beat20-in-num { width: 70px; cursor: text; }
+#beat-sync-modal .beat20-check { padding: 2px 0; }
+#beat-sync-modal .beat20-go {
+    height: 32px; margin-top: 6px; border-radius: 6px; border: 1px solid var(--primary); background: var(--primary);
+    color: var(--accent-text-color, #000); font-family: inherit; font-size: 10px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; transition: 0.2s;
+}
+#beat-sync-modal .beat20-go:hover { box-shadow: 0 0 12px var(--primary-dim); filter: brightness(1.08); }
+#beat-sync-modal .beat20-go:disabled { opacity: .55; cursor: default; box-shadow: none; filter: none; }
+#beat-sync-modal .beat20-readout { display: flex; justify-content: center; gap: 8px; font-size: 9px; color: #777; min-height: 12px; }
+#beat-sync-modal .beat20-readout b { color: var(--primary); font-weight: 800; }

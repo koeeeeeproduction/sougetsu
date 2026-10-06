@@ -1,0 +1,579 @@
+
+
+
+#cs20-root {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+
+#cs20-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 6px;
+}
+
+.cs20-tab {
+    flex: 1 1 auto;
+    min-width: 70px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #aaa;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cs20-tab:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+
+#cs20-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+#cs20-toolbar .cs20-search {
+    flex: 1;
+    min-width: 0;
+}
+
+#cs20-toolbar .asset-input {
+    height: 26px;
+}
+
+.cs20-sort {
+    height: 26px;
+    max-width: 116px;
+    padding: 0 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: #aaa;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    -webkit-appearance: menulist;
+    appearance: menulist;
+}
+
+.cs20-icobtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: #888;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cs20-icobtn:hover,
+.cs20-icobtn.on {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.cs20-zoom {
+    flex: 0 0 62px;
+    width: 62px;
+    height: 26px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+
+.cs20-pane {
+    display: none;
+    min-height: 0;
+}
+
+.cs20-pane.active {
+    display: block;
+}
+
+
+#cs20-root[data-size="s"] .sc-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+#cs20-root[data-size="m"] .sc-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+#cs20-root[data-size="l"] .sc-grid {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+#cs20-root[data-size="s"] .sc-thumb,
+#cs20-root[data-size="s"] .sc-thumb-placeholder {
+    height: 54px;
+}
+
+#cs20-root[data-size="l"] .sc-thumb,
+#cs20-root[data-size="l"] .sc-thumb-placeholder {
+    height: 128px;
+}
+
+
+#cs20-root[data-view="list"] .sc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#cs20-root[data-view="list"] .sc-item {
+    flex-direction: row;
+    align-items: center;
+    border-radius: 7px;
+}
+
+#cs20-root[data-view="list"] .sc-item:hover {
+    transform: none;
+}
+
+#cs20-root[data-view="list"] .sc-thumb,
+#cs20-root[data-view="list"] .sc-thumb-placeholder,
+#cs20-root[data-view="list"] .ffx-thumb-box {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 34px;
+    font-size: 8px;
+}
+
+#cs20-root[data-view="list"] .sc-name {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.cs20-pane .sc-item>span {
+    top: 6px !important;
+    right: 6px !important;
+    bottom: auto !important;
+    left: auto !important;
+}
+
+#cs20-root[data-view="list"] .sc-item>span {
+    position: static !important;
+    margin-left: 6px;
+    flex: 0 0 auto;
+}
+
+#cs20-root[data-view="list"] .sc-label-dot {
+    position: static !important;
+    flex: 0 0 auto;
+    margin-left: 6px;
+}
+
+
+.cs20-arow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.cs20-path {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--primary);
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.cs20-btn {
+    height: 26px;
+    padding: 0 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: #aaa;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cs20-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.cs20-btn.primary {
+    flex: 1;
+    background: var(--primary-dim);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.cs20-drop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 62px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.015);
+    color: #666;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.15s;
+}
+
+.cs20-assets.dragging .cs20-drop {
+    border-color: var(--primary);
+    border-style: solid;
+    background: var(--primary-dim);
+    color: var(--primary);
+}
+
+.cs20-ext {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 72px;
+    background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+    color: var(--primary);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+#cs20-root[data-size="s"] .cs20-ext {
+    height: 54px;
+}
+
+#cs20-root[data-size="l"] .cs20-ext {
+    height: 128px;
+}
+
+#cs20-root[data-view="list"] .cs20-ext {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 34px;
+    font-size: 8px;
+}
+
+.cs20-link-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 4;
+    padding: 1px 4px;
+    border: 1px solid var(--primary-dim);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.65);
+    color: var(--primary);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.cs20-btn.danger:hover {
+    border-color: #ff4545;
+    color: #ff4545;
+}
+
+.cs20-btn[disabled] {
+    cursor: default;
+}
+
+.cs20-types {
+    margin-bottom: 8px;
+}
+
+
+.cs20-wave-box {
+    position: relative;
+    width: 100%;
+    height: 72px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #161616, #0a0a0a);
+}
+
+#cs20-root[data-size="s"] .cs20-wave-box {
+    height: 54px;
+}
+
+#cs20-root[data-size="l"] .cs20-wave-box {
+    height: 128px;
+}
+
+#cs20-root[data-view="list"] .cs20-wave-box {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 34px;
+}
+
+.cs20-wave {
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0.85;
+}
+
+.cs20-wave-label {
+    position: absolute;
+    left: 6px;
+    bottom: 4px;
+    color: #4a4a4a;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    pointer-events: none;
+}
+
+.cs20-playhead {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.09);
+    border-right: 1px solid var(--primary);
+    pointer-events: none;
+}
+
+
+.cs20-card-import {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 6;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.72);
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.sc-item:hover .cs20-card-import {
+    display: flex;
+}
+
+.cs20-card-import:hover {
+    background: var(--primary);
+    color: #050505;
+}
+
+
+.cs20-preview-back {
+    position: fixed;
+    inset: 0;
+    z-index: 10060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.cs20-preview-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 560px;
+    max-height: 92%;
+    overflow: hidden;
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    background: #101010;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+}
+
+.cs20-preview-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.cs20-preview-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #ddd;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.cs20-preview-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    padding: 10px;
+    background: #050505;
+}
+
+.cs20-preview-media {
+    max-width: 100%;
+    max-height: 58vh;
+    object-fit: contain;
+}
+
+.cs20-preview-audio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.cs20-preview-wave {
+    width: 100%;
+    height: 96px;
+    border-radius: 6px;
+    background: #0d0d0d;
+}
+
+.cs20-preview-audio audio {
+    width: 100%;
+}
+
+.cs20-empty {
+    grid-column: 1/-1;
+    padding: 26px 14px;
+    color: #555;
+    font-size: 10px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+@media (max-width: 380px) {
+    .cs20-tab {
+        min-width: 58px;
+        padding: 4px 6px;
+        font-size: 8px;
+    }
+
+    .cs20-zoom {
+        display: none;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.sc-del,
+.sc-rename {
+    z-index: 6;
+    min-width: 18px;
+    min-height: 18px;
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .55);
+}
+
+
+
+
+
+.sc-list .sc-item {
+    padding-right: 46px;
+}
+
+.sc-list .sc-name {
+    min-width: 0;
+}
+
+.sc-list .sc-del,
+.sc-list .sc-rename {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sc-list .sc-del {
+    right: 6px;
+}
+
+.sc-list .sc-rename {
+    right: 26px;
+}
+
+
+
+.sc-thumb-placeholder {
+    padding: 22px 24px 6px;
+    word-break: break-word;
+}
+
+
+
+
+
+.sc-list .sc-thumb-placeholder {
+    padding: 2px;
+    font-size: 7px;
+    overflow: hidden;
+}
+
+
+
+.sc-item>.sc-name {
+    min-width: 0;
+}

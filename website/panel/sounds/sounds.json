@@ -1,0 +1,62 @@
+{
+"v": 1,
+"count": 8,
+"items": [
+{
+"id": "Clicks & Taps/soft-click-02.wav",
+"name": "Soft Click 02",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-click-02.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/scroll-05.wav",
+"name": "Scroll 05",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/scroll-05.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-04.wav",
+"name": "Jingle Sax 04",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-04.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-01.wav",
+"name": "Laser 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-01.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-12.wav",
+"name": "Power Up 12",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-12.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-07.wav",
+"name": "Soft Switch 07",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-07.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-two-01.wav",
+"name": "Tone Two 01",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-two-01.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/open-02.wav",
+"name": "Open 02",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/open-02.wav",
+"dur": 1.0
+}
+]
+}

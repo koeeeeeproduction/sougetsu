@@ -1,0 +1,355 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+#akira-theme-fx {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    contain: strict;
+}
+
+body.akira-fx-off #akira-theme-fx {
+    display: none;
+}
+
+
+
+
+
+
+
+#akira-theme-fx.akira-fx-paused *,
+#akira-theme-fx.akira-fx-paused {
+    animation-play-state: paused !important;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+    #akira-theme-fx *, #akira-theme-fx { animation: none !important; }
+}
+
+
+
+
+.akira-flame-bloom {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: -40px;
+    height: 300px;
+    background: radial-gradient(closest-side at 50% 100%, var(--fb, rgba(255, 140, 0, 0.3)) 0%, transparent 78%);
+    animation: akira-bloom-breathe 5.2s ease-in-out infinite;
+}
+
+@keyframes akira-bloom-breathe {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 1; }
+}
+
+.akira-flame-layer {
+    position: absolute;
+    left: -6%;
+    bottom: -2px;
+    width: 112%;
+    height: var(--h, 130px);
+    will-change: transform;
+    transform-origin: 50% 100%;
+    animation: akira-flame-lick var(--dur, 2.4s) ease-in-out infinite alternate;
+    animation-delay: var(--delay, 0s);
+}
+
+.akira-flame-layer svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+@keyframes akira-flame-lick {
+    0%   { transform: translateX(calc(var(--drift, 8px) * -1)) scaleY(0.94); }
+    100% { transform: translateX(var(--drift, 8px)) scaleY(1.08); }
+}
+
+
+.akira-ember {
+    position: absolute;
+    bottom: -12px;
+    width: var(--sz, 4px);
+    height: var(--sz, 4px);
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff6d0 0%, var(--akira-ember, #ffb800) 45%, rgba(255, 90, 0, 0) 72%);
+    opacity: 0;
+    animation: akira-ember-rise var(--dur, 7s) linear infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes akira-ember-rise {
+    0%   { transform: translate3d(0, 0, 0) scale(0.6); opacity: 0; }
+    12%  { opacity: var(--op, 0.9); }
+    70%  { opacity: var(--op, 0.9); }
+    100% { transform: translate3d(var(--dx, 14px), calc(var(--rise, 340px) * -1), 0) scale(1.15); opacity: 0; }
+}
+
+
+
+
+#akira-header-tails {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    
+
+    height: clamp(120px, 17vh, 168px);
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    transform-origin: 50% 100%;
+    animation: akira-header-tails-in 850ms 100ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+#akira-header-tails svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: hidden;
+    
+}
+
+@keyframes akira-header-tails-in {
+    from { opacity: 0; transform: translateY(-12px) scaleY(.88); }
+    to   { opacity: .40; transform: translateY(0) scaleY(1); }
+}
+
+
+#akira-tails {
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    bottom: -10px;
+    width: 116%;
+    height: 62%;
+    opacity: 0;
+    animation: akira-tails-in 1200ms 220ms ease-out forwards;
+}
+
+@keyframes akira-tails-in {
+    to { opacity: 0.24; }
+}
+
+#akira-tails svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    
+    
+}
+
+
+#akira-aura {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    animation: akira-aura-in 1400ms ease-out forwards,
+               akira-aura-breathe 6.5s 1.4s ease-in-out infinite;
+    background:
+        radial-gradient(120% 42% at 50% 104%, var(--akira-aura-1, rgba(255, 168, 0, 0.20)) 0%, transparent 62%),
+        radial-gradient(90% 34% at 50% -6%, var(--akira-aura-2, rgba(255, 122, 0, 0.13)) 0%, transparent 60%);
+}
+
+@keyframes akira-aura-in {
+    to { opacity: 1; }
+}
+
+
+
+
+@keyframes akira-aura-breathe {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 1; }
+}
+
+
+
+
+.akira-flame-burst {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+}
+
+.akira-flame-burst svg { width: 100%; height: 100%; display: block; }
+
+
+
+
+.akira-trail-puff {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999998;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        var(--tp-hot, #fff0b0) 0%,
+        var(--tp-accent, #ffb800) 26%,
+        var(--tp-ember, #ff7a00) 52%,
+        rgba(255, 60, 0, 0) 72%);
+    
+    
+    opacity: 0.7;
+    will-change: transform, opacity;
+}
+
+
+
+
+#akira-circuits {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    animation: akira-circuits-in 900ms 150ms ease-out forwards;
+}
+
+#akira-circuits svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    
+}
+
+@keyframes akira-circuits-in {
+    to { opacity: 0.55; }
+}
+
+
+.akira-scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -18%;
+    height: 16%;
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        var(--sc, rgba(163, 230, 53, 0.5)) 62%,
+        var(--sc-hot, rgba(232, 255, 156, 0.85)) 88%,
+        transparent 100%);
+    opacity: 0.30;
+    will-change: transform;
+    animation: akira-scan-sweep 7s linear infinite;
+}
+
+@keyframes akira-scan-sweep {
+    0%   { transform: translateY(0); opacity: 0; }
+    8%   { opacity: 0.34; }
+    72%  { opacity: 0.34; }
+    100% { transform: translateY(760%); opacity: 0; }
+}
+
+
+
+
+#akira-pixbars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 24%;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    padding: 0 4px;
+    opacity: 0;
+    animation: akira-pix-in 700ms 120ms steps(4, end) forwards;
+}
+
+@keyframes akira-pix-in {
+    to { opacity: 0.42; }
+}
+
+.akira-pixbar {
+    flex: 1;
+    min-width: 0;
+    
+
+    height: 100%;
+    transform-origin: 50% 100%;
+    background: var(--c, #39c5bb);
+    
+    -webkit-mask-image: repeating-linear-gradient(to top,
+        #000 0 6px, transparent 6px 9px);
+    mask-image: repeating-linear-gradient(to top, #000 0 6px, transparent 6px 9px);
+    will-change: transform;
+    animation: akira-pixbar-bounce var(--dur, 1s) steps(5, end) infinite alternate;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes akira-pixbar-bounce {
+    from { transform: scaleY(var(--s1, 0.4)); }
+    to   { transform: scaleY(var(--s2, 0.7)); }
+}
+
+#akira-pixrain {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.akira-pix {
+    position: absolute;
+    top: -14px;
+    image-rendering: pixelated;
+    opacity: 0;
+    animation: akira-pix-fall var(--dur, 7s) steps(24, end) infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes akira-pix-fall {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+    10%  { opacity: var(--op, 0.6); }
+    88%  { opacity: var(--op, 0.6); }
+    100% { transform: translate3d(var(--dx, 0), 108vh, 0); opacity: 0; }
+}
+
+
+.akira-trail-puff.akira-trail-pixel {
+    border-radius: 0;
+    filter: none;
+    image-rendering: pixelated;
+    background: var(--tp-accent, #39c5bb);
+    box-shadow: 0 0 0 3px var(--tp-ember, #ff5f9e);
+}
+
+
+
+
+.akira-theme-select {
+    background: #111;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    max-width: 72%;
+}
+
+.akira-theme-select option {
+    background: #111;
+    color: #ddd;
+}
