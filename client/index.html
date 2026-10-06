@@ -7114,7 +7114,7 @@
             <div class="close-modal" onclick="closeModal('highlighter-modal')">&times;</div>
             <div class="modal-title"
                 style="color:var(--primary); margin-bottom:10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                HIGHLIGHTER</div>
+                TEXT HIGHLIGHTER</div>
 
             <div class="hl-intro">
                 A highlight that resizes itself with the text. Change the words later and
@@ -7246,7 +7246,7 @@
             <div class="close-modal" onclick="closeModal('carousel-modal')">×</div>
             <div class="modal-title"
                 style="color:var(--primary); margin-bottom:10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                ORB GENERATOR</div>
+                ORB CLONER</div>
             <div class="car-tabs">
                 <div id="car-tab-generator" class="car-tab active" onclick="switchCarouselTab('generator')">GENERATOR
                 </div>
@@ -8190,7 +8190,7 @@
             </div>
             <div class="modal-title"
                 style="margin-bottom:20px; font-size:12px; color:var(--primary); font-weight:900; letter-spacing:1px; text-align:center;">
-                TEXT EXPLODER</div>
+                SPLIT TEXT</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; width:100%;">
                 <div class="tool-btn" style="flex:1 1 45%; margin:0;"
                     onclick="run('splitText', 'chars'); closeModal('text-split-modal')">CHARACTERS</div>
@@ -8737,7 +8737,7 @@
                     <path
                         d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
                 </svg>
-                <span>AUTOCAPTIONS</span>
+                <span>AUTO SUBTITLES</span>
             </div>
 
             
@@ -12368,7 +12368,7 @@
                         <path d="M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z"
                             fill="currentColor" />
                     </svg></span>
-                <span class="btn-label">COMP CUT</span>
+                <span class="btn-label">CUT COMP</span>
             </div>
             
             <div class="l-btn immerse-only" onclick="run('splitLayers')"
@@ -12378,7 +12378,7 @@
                             d="M10 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h5v-2H5V4h5V2zm9 0h-5v2h5v16h-5v2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM12 4h2v16h-2V4z"
                             fill="currentColor" />
                     </svg></span>
-                <span class="btn-label">SPLIT LAYER</span>
+                <span class="btn-label">SPLIT AT PLAYHEAD</span>
             </div>
         </div>
     </div>
@@ -12407,28 +12407,26 @@
 
             <div class="top-tools-row" id="layout-tool-row">
                 <div class="tool-btn" onclick="run('precompSeparately', event.shiftKey ? 'true' : '')"
-                    data-tooltip="Precompose Each Layer Individually">PRECOMP SEP</div>
-                <div class="tool-btn" onclick="run('applyFill')" data-tooltip="Add Fill Effect">FILL</div>
-                <div class="tool-btn" onclick="run('applyElastic')" data-tooltip="Apply Elastic Expression">ELASTIC
+                    data-tooltip="Precompose Each Layer Individually">PRECOMP EACH</div>
+                <div class="tool-btn" onclick="run('applyFill')" data-tooltip="Add Fill Effect">COLOR FILL</div>
+                <div class="tool-btn" onclick="run('applyElastic')" data-tooltip="Apply Elastic Expression">OVERSHOOT
                 </div>
-                <div class="tool-btn" id="purge-btn" onclick="triggerPurge()" data-tooltip="Purge Memory">PURGE</div>
+                <div class="tool-btn" id="purge-btn" onclick="triggerPurge()" data-tooltip="Purge Memory">CLEAR CACHE</div>
                 <div class="tool-btn" id="btn-grad-lock" onclick="fxLockToggle()"
-                    data-tooltip="Toggle Gradient Lock to Layer Bounds">GRADIENT LOCK
+                    data-tooltip="Toggle Gradient Lock to Layer Bounds">PIN GRADIENT
                 </div>
                 <div class="tool-btn" onclick="openModal('text-split-modal')"
-                    data-tooltip="Decompose Text by Characters, Words or Lines">TEXT EXPLODER</div>
+                    data-tooltip="Decompose Text by Characters, Words or Lines">SPLIT TEXT</div>
                 <div class="tool-btn" onclick="run('trueDup')" data-tooltip="True Duplicate Pre-comp (Unlinked)">
-                    TRUE
-                    DUP</div>
+                    CLEAN DUPLICATE</div>
                 <div class="tool-btn" onclick="run('applyBounce')" data-tooltip="Apply Inertial Bounce Expression">
-                    BOUNCE</div>
+                    AUTO BOUNCE</div>
                 <div id="btn-unprecomp" class="tool-btn"
                     style="display:none; border-color:var(--primary); color:var(--primary); flex:1 1 100%;"
-                    onclick="runUnPrecomp()" data-tooltip="Extract Layers from Pre-comps">UN-PRECOMP</div>
+                    onclick="runUnPrecomp()" data-tooltip="Extract Layers from Pre-comps">RELEASE PRECOMP</div>
                 <div id="btn-paste-image" class="tool-btn"
                     style="border-color:var(--primary); color:var(--primary); flex:1 1 100%;"
-                    onclick="handlePasteButton()" data-tooltip="Paste image from web">PASTE
-                    IMAGE</div>
+                    onclick="handlePasteButton()" data-tooltip="Paste image from web">PASTE FROM CLIPBOARD</div>
             </div>
 
             <div class="offset-panel" id="offset-panel" style="display:none;">
@@ -12467,17 +12465,16 @@
                 <div class="tool-btn"
                     style="height: 24px; padding: 0 8px; font-size: 9px; flex: 1; min-width: 70px; flex-direction: row;"
                     onclick="run('duplicateKeyframes', 'loop')" data-tooltip="Loop duplicate selected keyframes">
-                    LOOP
-                    DUP</div>
+                    LOOP COPIES</div>
                 <div class="tool-btn"
                     style="height: 24px; padding: 0 8px; font-size: 9px; flex: 1.2; min-width: 90px; flex-direction: row; border-color: var(--primary); color: var(--primary);"
                     onclick="run('repositionKeyframes')" data-tooltip="Cut and move keyframes to layer start">
-                    REPOSITION
+                    REALIGN
                 </div>
                 <div class="tool-btn"
                     style="height: 24px; padding: 0 8px; font-size: 9px; flex: 1.2; min-width: 90px; flex-direction: row; border-color: var(--accent); color: var(--accent);"
                     onclick="runSmartBakerPrompt()" data-tooltip="Bake expressions into simplified keyframes">
-                    SMART BAKE
+                    BAKE EXPRESSIONS
                 </div>
             </div>
 
@@ -12849,13 +12846,13 @@
                 style="display:flex; margin-bottom:10px; border-bottom:1px solid var(--glass-border);">
                 <div id="st-presets" class="sub-tab-item active" onclick="switchFxSub('presets')"
                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:10px; font-weight:800; color:var(--primary); border-bottom:2px solid var(--primary);">
-                    FX PRESETS</div>
+                    EFFECTS LIBRARY</div>
                 <div id="st-shakes" class="sub-tab-item" onclick="switchFxSub('shakes')"
                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:10px; font-weight:800; color:#888; border-bottom:2px solid transparent;">
-                    SHAKES</div>
+                    CAMERA SHAKE</div>
                 <div id="st-maprigs" class="sub-tab-item" onclick="switchFxSub('maprigs')"
                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:10px; font-weight:800; color:#888; border-bottom:2px solid transparent;">
-                    MAP RIGS</div>
+                    MAP ANIMATOR</div>
             </div>
 
             <div id="fx-sub-presets" style="display:flex; flex-direction:column; flex:1;">
@@ -12887,7 +12884,7 @@
                             <svg viewBox="0 0 24 24">
                                 <path d="M7 2h10v20H7V2zM3 6h2v12H3V6zm16 0h2v12h-2V6z" fill="currentColor" />
                             </svg>
-                            <div class="preset-text">ORB GENERATOR</div>
+                            <div class="preset-text">ORB CLONER</div>
                         </div>
                         <div class="preset-item preset-btn"
                             style="width:36px; flex-shrink:0; padding:0; justify-content:center;"
@@ -12918,7 +12915,7 @@
                                 <path d="M4 15h16v5H4v-5zM6.5 12.5 14 5l3.5 3.5L10 16H6.5v-3.5z"
                                     fill="currentColor" />
                             </svg>
-                            <div class="preset-text">HIGHLIGHTER</div>
+                            <div class="preset-text">TEXT HIGHLIGHTER</div>
                         </div>
                         <div class="preset-item preset-btn"
                             style="width:36px; flex-shrink:0; padding:0; justify-content:center;"
@@ -12944,7 +12941,7 @@
                                     d="M12 6a6 6 0 0 0-6 6 6 6 0 0 0 6 6 6 6 0 0 0 6-6 6 6 0 0 0-6-6zm0 10a4 4 0 0 1-4-4 4 4 0 0 1 4-4 4 4 0 0 1 4 4 4 4 0 0 1-4 4z"
                                     fill="currentColor" />
                             </svg>
-                            <div class="preset-text">PROXIMITY</div>
+                            <div class="preset-text">PROXIMITY EFFECTOR</div>
                         </div>
                     </div>
 
@@ -12956,7 +12953,7 @@
                                     d="M21 16.5l-9 5.25-9-5.25V7.5L12 2.25l9 5.25v9zM12 4.15L5.04 8.25 12 12.35l6.96-4.1L12 4.15z"
                                     fill="currentColor" />
                             </svg>
-                            <div class="preset-text">3D EXTRUSION</div>
+                            <div class="preset-text">3D DEPTH</div>
                         </div>
                         <div class="preset-item preset-btn"
                             style="width:36px; flex-shrink:0; padding:0; justify-content:center;"
@@ -12978,7 +12975,7 @@
                                     d="M4 4h4v4H4V4zm6 0h10v4H10V4zM4 10h4v4H4v-4zm6 0h10v4H10v-4zM4 16h4v4H4v-4zm6 0h10v4H10v-4z"
                                     fill="currentColor" />
                             </svg>
-                            <div class="preset-text">NUMBER COUNTER</div>
+                            <div class="preset-text">COUNT UP</div>
                         </div>
                         <div class="preset-item preset-btn"
                             style="width:36px; flex-shrink:0; padding:0; justify-content:center;"
@@ -13001,7 +12998,7 @@
                                     d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
                                 <path d="M7 10h10v2H7zM7 14h6v2H7z" fill="currentColor" />
                             </svg>
-                            <div class="preset-text">GLASS MORPH</div>
+                            <div class="preset-text">FROSTED GLASS</div>
                         </div>
                         <div class="preset-item preset-btn"
                             style="width:36px; flex-shrink:0; padding:0; justify-content:center; color:#ff3333;"
@@ -13132,7 +13129,7 @@
                                     d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"
                                     fill="currentColor" />
                             </svg>
-                            <div class="preset-text">AUTOCAPTIONS</div>
+                            <div class="preset-text">AUTO SUBTITLES</div>
                         </div>
                     </div>
                 </div>
@@ -13221,14 +13218,12 @@
             <div class="sub-tab-bar"
                 style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; flex-shrink: 0; width: 100%;">
                 <button class="sub-tab-btn active" data-tab="tools" onclick="switchSubShapeTab('tools')"
-                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">SHAPE
-                    TOOLS</button>
+                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">SHAPES</button>
                 <button class="sub-tab-btn" data-tab="layout" onclick="switchSubShapeTab('layout')"
-                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">LAYOUT
-                    BUILDER</button>
+                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">LAYOUT GRID</button>
 
                 <button class="sub-tab-btn" data-tab="templates" onclick="switchSubShapeTab('templates')"
-                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">TEMPLATES</button>
+                    style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">UI TEMPLATES</button>
                 <button class="sub-tab-btn" data-tab="morph" onclick="switchSubShapeTab('morph')"
                     style="flex: 1; padding: 6px 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">MORPH</button>
             </div>
@@ -13715,7 +13710,7 @@
                 style="display: none; flex-direction: column; width: 100%; min-height: 0; flex: 1; padding: 2px 2px 10px 2px;">
 
                 <div class="shape-group">
-                    <div class="shape-header">UI TEMPLATES (1-CLICK BUILD)</div>
+                    <div class="shape-header">UI TEMPLATES (ONE-CLICK BUILD)</div>
                     <div class="discord-suggestion-banner"
                         style="margin: 4px 4px 8px 4px; padding: 8px 10px; background: rgba(88, 101, 242, 0.1); border: 1px dashed rgba(88, 101, 242, 0.4); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                         <div
@@ -15659,7 +15654,7 @@
             <div id="shape-subview-morph" class="shape-subview"
                 style="display: none; flex-direction: column; width: 100%; min-height: 0; flex: 1; padding: 2px 2px 10px 2px; gap: 12px;">
                 <div class="shape-group" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                    <div class="shape-header">SHAPE MORPHER</div>
+                    <div class="shape-header">MORPH STUDIO</div>
                     <div style="display:flex;gap:6px;" id="morph-mode-row">
                         <select id="morph-mode" style="flex:1;height:28px;background:rgba(0,0,0,.3);color:#eee;border:1px solid var(--glass-border);border-radius:6px;font-size:11px;padding:0 6px;"
                             onchange="localStorage.setItem('akira_morph_mode', this.value)">
@@ -16238,8 +16233,7 @@
                 <button class="sub-tab-btn active" data-tab="effects" onclick="switchSubFXTab('effects')"
                     style="flex: 1; padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">EFFECTS</button>
                 <button class="sub-tab-btn" data-tab="tree" onclick="switchSubFXTab('tree')"
-                    style="flex: 1; padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">COMP
-                    TREE</button>
+                    style="flex: 1; padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">COMP MAP</button>
             </div>
 
             
@@ -16266,7 +16260,7 @@
                     <label for="master-fx-toggle" class="master-toggleSwitch"
                         data-tooltip="Toggle Master Switch"></label>
                 </div>
-                <div class="shape-header">TIMELINE EFFECTS MANAGER</div>
+                <div class="shape-header">TIMELINE INSPECTOR</div>
                 <div id="fx-dynamic-list" style="display:flex; flex-direction:column; gap:5px;"></div>
             </div>
 
@@ -16981,7 +16975,7 @@
 
 
         <div id="view-flow" class="view">
-            <div class="shape-header">CUSTOM EASING EDITOR</div>
+            <div class="shape-header">CURVE EDITOR</div>
             <div id="bezier-selection-status"
                 style="font-size: 10px; color: rgba(255, 255, 255, 0.6); text-align: center; margin-top: -8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; min-height: 12px;">
             </div>
@@ -17206,7 +17200,7 @@
                 <div id="ease-custom-content" ondrop="handleFlowDrop(event)" ondragover="handleFlowDragOver(event)"
                     ondragleave="handleFlowDragLeave(event)" ondragend="handleFlowDragLeave(event)"></div>
                 <div id="ease-ramp-content" style="display:none;">
-                    <div class="shape-header" style="margin-top:5px; color:var(--primary);">RAMP PRESETS</div>
+                    <div class="shape-header" style="margin-top:5px; color:var(--primary);">SPEED RAMP PRESETS</div>
                     <div class="ease-grid">
                         <div class="ease-btn" onclick="setPresetRamp(0.25, 0.8, 'Pop & Lock')"
                             data-tooltip="Pop & Lock (Fast Peak Early)">
@@ -17282,7 +17276,7 @@
                         </div>
                     </div>
 
-                    <div class="shape-header" style="margin-top:10px;">CUSTOM SPEED RAMP</div>
+                    <div class="shape-header" style="margin-top:10px;">SPEED RAMP BUILDER</div>
                     <div class="ramp-sliders-container">
                         <div class="ramp-slider-row">
                             <div class="ramp-label-row">
@@ -17408,15 +17402,13 @@
                 <button class="sub-tab-btn active" data-tab="media" onclick="switchSubRefTab('media')"
                     style="flex: 1 1 auto; min-width: 70px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">MEDIA</button>
                 <button class="sub-tab-btn" data-tab="downloader" onclick="switchSubRefTab('downloader')"
-                    style="flex: 1 1 auto; min-width: 70px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">DOWNLOADER</button>
+                    style="flex: 1 1 auto; min-width: 70px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">VIDEO GRABBER</button>
                 <button class="sub-tab-btn" data-tab="bgremover" onclick="switchSubRefTab('bgremover')"
-                    style="flex: 1 1 auto; min-width: 70px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">BG
-                    REMOVER</button>
+                    style="flex: 1 1 auto; min-width: 70px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">CUTOUT</button>
                 <button class="sub-tab-btn" data-tab="icons" onclick="switchSubRefTab('icons')"
-                    style="flex: 1 1 auto; min-width: 60px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">ICONS</button>
+                    style="flex: 1 1 auto; min-width: 60px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">ICON LIBRARY</button>
                 <button class="sub-tab-btn" data-tab="colormatch" onclick="switchSubRefTab('colormatch')"
-                    style="display: none !important; flex: 1 1 auto; min-width: 80px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">COLOR
-                    MATCH</button>
+                    style="display: none !important; flex: 1 1 auto; min-width: 80px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #aaa; font-family: inherit; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease;">GRADE MATCH</button>
             </div>
             <div class="ref-container" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                 
@@ -31073,13 +31065,13 @@ User Prompt: "${userPrompt}"`;
             let gridClass = easesMinimized ? 'ease-grid minimized' : 'ease-grid';
 
             let html = '<div class="shape-header" style="margin-top:5px; display:flex; justify-content:space-between; align-items:center;">' +
-                '  <span style="color:var(--primary);">PRO PRESETS</span>' +
+                '  <span style="color:var(--primary);">EASE PRESETS</span>' +
                 '  <button onclick="toggleMinimizeEases()" class="save-asset-btn" style="margin:0; padding:2px 6px; font-size:8px; height:18px; line-height:1; border-radius:4px; background:rgba(255,255,255,0.05); color:#aaa; cursor:pointer; font-weight:800; border:1px solid rgba(255,255,255,0.1);">' + btnText + '</button>' +
                 '</div>' +
                 '<div class="' + gridClass + '">';
 
             flowPresets.forEach((p, index) => {
-                if (index === 4) html += '</div><div class="shape-header" style="margin-top:5px;">STANDARD CLASSICS</div><div class="' + gridClass + '">';
+                if (index === 4) html += '</div><div class="shape-header" style="margin-top:5px;">CLASSIC EASES</div><div class="' + gridClass + '">';
                 let v = p.val.split(',').map(Number);
                 let p1x = 2 + v[0] * 26; let p1y = 28 - v[1] * 26;
                 let p2x = 2 + v[2] * 26; let p2y = 28 - v[3] * 26;
