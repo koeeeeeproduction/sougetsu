@@ -161,6 +161,21 @@ t('buildCarousel3D', () => {
   const spin = e.comp._l.find(l => l.name === 'AkiraCarousel Spin'); A.strictEqual(spin.transform.yRotation.numKeys, 2); A.ok(/loopOut/.test(spin.transform.yRotation.expression));
   A.ok(/^ERR:/.test(e.F.buildCarousel3D('{bad')));
 });
+t('shape morpher: rectangle -> ellipse tool shapes, different positions', () => {
+  const e = env();
+  const R = shape(e, 'Rect'); const rg = R.property('ADBE Root Vectors Group').addProperty('ADBE Vector Group'); const rc = rg.property('ADBE Vectors Group').addProperty('ADBE Vector Shape - Rect');
+  rc.property('ADBE Vector Rect Size').setValue([200, 100]); R.transform.position.setValue([500, 500]); R.selected = true;
+  const El = shape(e, 'Ell'); const eg = El.property('ADBE Root Vectors Group').addProperty('ADBE Vector Group'); eg.property('ADBE Vectors Group').addProperty('ADBE Vector Shape - Ellipse').property('ADBE Vector Ellipse Size').setValue([100, 100]);
+  El.transform.position.setValue([700, 500]); El.selected = true;
+  const r = e.F.shapeMorpher(1, 'easy-ease', false, false, false, '{}');
+  A.strictEqual(r, 'SUCCESS', r);
+  const src = R.index < El.index ? R : El, vg = src.property('ADBE Root Vectors Group').property(1).property('ADBE Vectors Group');
+  const path = vg.property(1); A.strictEqual(path.matchName, 'ADBE Vector Shape - Group');
+  const pp = path.property('ADBE Vector Shape'); A.strictEqual(pp.numKeys, 2);
+  const k1 = pp.keyValue(1), k2 = pp.keyValue(2); A.strictEqual(k1.vertices.length, k2.vertices.length);
+  if (src === R) { const xs = k2.vertices.map(v => v[0]); A.ok(Math.min(...xs) >= 149 && Math.max(...xs) <= 251, 'ellipse lands at +200px in rect space: ' + xs); }
+  A.strictEqual(e.undo(), 0);
+});
 t('glass morph apply / shape / remove', () => {
   const e = env();
   A.strictEqual(e.F.applyGlassMorph(), 'SUCCESS'); A.strictEqual(e.comp.numLayers, 3);

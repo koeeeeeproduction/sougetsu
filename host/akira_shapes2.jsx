@@ -306,6 +306,101 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
             try { prop.setTemporalEaseAtKey(k, ia, oa); } catch (e1) { }
         }
     }
+    // ---- morph geometry: any shape (bezier path, or Rectangle / Ellipse / Polystar tool shapes) as a bezier in comp space ----
+    var GEOM = { "ADBE Vector Shape - Group": 1, "ADBE Vector Shape - Rect": 1, "ADBE Vector Shape - Ellipse": 1, "ADBE Vector Shape - Star": 1 };
+    function firstGeom(vectors, chain) {
+        var i;
+        for (i = 1; i <= vectors.numProperties; i += 1) {
+            var c = vectors.property(i);
+            try { if (c.enabled === false) { continue; } } catch (e0) { }
+            if (GEOM[c.matchName]) { return { item: c, vectors: vectors, chain: chain }; }
+            if (c.matchName === "ADBE Vector Group") {
+                var r = firstGeom(c.property("ADBE Vectors Group"), chain.concat([c.property("ADBE Vector Transform Group")]));
+                if (r) { return r; }
+            }
+        }
+        return null;
+    }
+    function pv(prop, n, t, d) { try { var q = prop.property(n), v = q ? q.valueAtTime(t, false) : null; return (v === null || v === undefined) ? d : v; } catch (e) { return d; } }
+    var K = 0.5523;
+    function primitiveShape(it, t) {
+        var mn = it.matchName, v = [], ii = [], oo = [], s = new Shape(), j;
+        if (mn === "ADBE Vector Shape - Rect") {
+            var sz = pv(it, "ADBE Vector Rect Size", t, [100, 100]), c = pv(it, "ADBE Vector Rect Position", t, [0, 0]), r = Math.min(pv(it, "ADBE Vector Rect Roundness", t, 0), sz[0] / 2, sz[1] / 2);
+            var l = c[0] - sz[0] / 2, R = c[0] + sz[0] / 2, tp = c[1] - sz[1] / 2, b = c[1] + sz[1] / 2, k = r * K;
+            if (r <= 0) { v = [[R, tp], [R, b], [l, b], [l, tp]]; ii = [[0, 0], [0, 0], [0, 0], [0, 0]]; oo = ii.slice(); }
+            else {
+                v = [[R, tp + r], [R, b - r], [R - r, b], [l + r, b], [l, b - r], [l, tp + r], [l + r, tp], [R - r, tp]];
+                ii = [[0, -k], [0, 0], [k, 0], [0, 0], [0, k], [0, 0], [-k, 0], [0, 0]];
+                oo = [[0, 0], [0, k], [0, 0], [-k, 0], [0, 0], [0, -k], [0, 0], [k, 0]];
+            }
+        } else if (mn === "ADBE Vector Shape - Ellipse") {
+            var es = pv(it, "ADBE Vector Ellipse Size", t, [100, 100]), ec = pv(it, "ADBE Vector Ellipse Position", t, [0, 0]), rx = es[0] / 2, ry = es[1] / 2;
+            v = [[ec[0], ec[1] - ry], [ec[0] + rx, ec[1]], [ec[0], ec[1] + ry], [ec[0] - rx, ec[1]]];
+            ii = [[-rx * K, 0], [0, -ry * K], [rx * K, 0], [0, ry * K]]; oo = [[rx * K, 0], [0, ry * K], [-rx * K, 0], [0, -ry * K]];
+        } else {
+            var type = pv(it, "ADBE Vector Star Type", t, 1), n = Math.max(3, Math.round(pv(it, "ADBE Vector Star Points", t, 5))), sc = pv(it, "ADBE Vector Star Position", t, [0, 0]);
+            var ro = pv(it, "ADBE Vector Star Outer Radius", t, 100), ri = pv(it, "ADBE Vector Star Inner Radius", t, 50), rot = pv(it, "ADBE Vector Star Rotation", t, 0) * Math.PI / 180;
+            var cnt = type === 2 ? n : n * 2;
+            for (j = 0; j < cnt; j += 1) {
+                var rad = (type === 2 || j % 2 === 0) ? ro : ri, an = rot - Math.PI / 2 + j * Math.PI * 2 / cnt;
+                v.push([sc[0] + Math.cos(an) * rad, sc[1] + Math.sin(an) * rad]); ii.push([0, 0]); oo.push([0, 0]);
+            }
+        }
+        s.vertices = v; s.inTangents = ii; s.outTangents = oo; s.closed = true;
+        return s;
+    }
+    function geomShape(g, t) { return g.item.matchName === "ADBE Vector Shape - Group" ? g.item.property("ADBE Vector Shape").valueAtTime(t, false) : primitiveShape(g.item, t); }
+    // affine [a,b,c,d,e,f]: x' = a x + c y + e, y' = b x + d y + f
+    function xf(anchor, pos, scale, rotDeg) {
+        var r = rotDeg * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r), sx = scale[0] / 100, sy = scale[1] / 100;
+        var a = cs * sx, b = sn * sx, c = -sn * sy, d = cs * sy;
+        return [a, b, c, d, pos[0] - (a * anchor[0] + c * anchor[1]), pos[1] - (b * anchor[0] + d * anchor[1])];
+    }
+    function mmul(m, n) { return [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]]; }
+    function minv(m) { var det = m[0] * m[3] - m[1] * m[2] || 1e-9, a = m[3] / det, b = -m[1] / det, c = -m[2] / det, d = m[0] / det; return [a, b, c, d, -(a * m[4] + c * m[5]), -(b * m[4] + d * m[5])]; }
+    function toCompMatrix(L, g, t) {
+        var tr = L.transform, m = xf(tr.anchorPoint.valueAtTime(t, false), tr.position.valueAtTime(t, false), tr.scale.valueAtTime(t, false), tr.rotation.valueAtTime(t, false)), i;
+        for (i = 0; i < g.chain.length; i += 1) {
+            var gt = g.chain[i];
+            m = mmul(m, xf(pv(gt, "ADBE Vector Anchor", t, [0, 0]), pv(gt, "ADBE Vector Position", t, [0, 0]), pv(gt, "ADBE Vector Scale", t, [100, 100]), pv(gt, "ADBE Vector Rotation", t, 0)));
+        }
+        return m;
+    }
+    function mapShape(sh, m) {
+        var o = new Shape(), v = [], ii = [], oo = [], i;
+        for (i = 0; i < sh.vertices.length; i += 1) {
+            var p = sh.vertices[i], a = sh.inTangents[i] || [0, 0], b = sh.outTangents[i] || [0, 0];
+            v.push([m[0] * p[0] + m[2] * p[1] + m[4], m[1] * p[0] + m[3] * p[1] + m[5]]);
+            ii.push([m[0] * a[0] + m[2] * a[1], m[1] * a[0] + m[3] * a[1]]); oo.push([m[0] * b[0] + m[2] * b[1], m[1] * b[0] + m[3] * b[1]]);
+        }
+        o.vertices = v; o.inTangents = ii; o.outTangents = oo; o.closed = sh.closed;
+        return o;
+    }
+    // give both paths the same vertex count by splitting the longest segments of the smaller one (keeps the drawn shape)
+    function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; }
+    function splitTo(sh, n) {
+        var v = sh.vertices.slice(), ii = [], oo = [], guard = 0, z;
+        for (z = 0; z < v.length; z += 1) { ii.push(sh.inTangents[z] || [0, 0]); oo.push(sh.outTangents[z] || [0, 0]); }
+        while (v.length < n && guard++ < 500) {
+            var segs = sh.closed ? v.length : v.length - 1, best = 0, bl = -1, k;
+            for (k = 0; k < segs; k += 1) { var q = v[(k + 1) % v.length], dx = q[0] - v[k][0], dy = q[1] - v[k][1], len = dx * dx + dy * dy; if (len > bl) { bl = len; best = k; } }
+            var j = (best + 1) % v.length, p0 = v[best], p3 = v[j], p1 = [p0[0] + oo[best][0], p0[1] + oo[best][1]], p2 = [p3[0] + ii[j][0], p3[1] + ii[j][1]];
+            var a1 = mid(p0, p1), b1 = mid(p1, p2), c1 = mid(p2, p3), a2 = mid(a1, b1), b2 = mid(b1, c1), m = mid(a2, b2);
+            oo[best] = [a1[0] - p0[0], a1[1] - p0[1]]; ii[j] = [c1[0] - p3[0], c1[1] - p3[1]];
+            v.splice(best + 1, 0, m); ii.splice(best + 1, 0, [a2[0] - m[0], a2[1] - m[1]]); oo.splice(best + 1, 0, [b2[0] - m[0], b2[1] - m[1]]);
+        }
+        var o = new Shape(); o.vertices = v; o.inTangents = ii; o.outTangents = oo; o.closed = sh.closed; return o;
+    }
+    // the source needs a real path property to keyframe: Rectangle / Ellipse / Star tool shapes are converted in place
+    function sourcePath(g, t) {
+        if (g.item.matchName === "ADBE Vector Shape - Group") { return g.item.property("ADBE Vector Shape"); }
+        var sh = primitiveShape(g.item, t), idx = g.item.propertyIndex, np = g.vectors.addProperty("ADBE Vector Shape - Group");
+        np.property("ADBE Vector Shape").setValue(sh);
+        try { np.moveTo(idx); } catch (e) { }
+        try { g.item.remove(); } catch (e1) { try { g.item.enabled = false; } catch (e2) { } }
+        return np.property("ADBE Vector Shape");
+    }
     F.shapeMorpher = function (duration, easing, returnMorph, linearPath, pairMorph, optionsStr) {
         var g = H.locked(); if (g) { return "ERROR:" + g.substring(4); }
         var comp = H.activeComp(); if (!comp) { return "ERROR:Open a composition first."; }
@@ -320,12 +415,24 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         if (pairMorph === true || String(pairMorph) === "true") { for (i = 0; i + 1 < layers.length; i += 2) { pairs.push([layers[i], layers[i + 1]]); } }
         else { for (i = 0; i + 1 < layers.length; i += 1) { pairs.push([layers[i], layers[i + 1]]); } }
         app.beginUndoGroup("Shape Morph");
+        var done = 0, skipped = [];
         try {
             var t0 = comp.time;
             for (i = 0; i < pairs.length; i += 1) {
-                var A = pairs[i][0], B = pairs[i][1], pa = firstPath(A), pb = firstPath(B);
-                if (!pa || !pb) { continue; }
-                var start = t0 + i * dur, shA = pa.valueAtTime(start, false), shB = pb.valueAtTime(start, false);
+                var A = pairs[i][0], B = pairs[i][1], ga = firstGeom(root(A), []), gb = firstGeom(root(B), []);
+                if (!ga || !gb) { skipped.push(!ga ? A.name : B.name); continue; }
+                var start = t0 + i * dur, lin = (linearPath === true || String(linearPath) === "true");
+                var pa = sourcePath(ga, start); ga = firstGeom(root(A), []);
+                var mA = toCompMatrix(A, ga, start), mB = toCompMatrix(B, gb, start);
+                if (lin) {   // the layer travels to B's position, so the path only takes B's shape around its own anchor
+                    var pB0 = B.transform.position.valueAtTime(start, false), pA0 = A.transform.position.valueAtTime(start, false);
+                    mB = mmul([1, 0, 0, 1, pA0[0] - pB0[0], pA0[1] - pB0[1]], mB);
+                }
+                var shA = pa.valueAtTime(start, false), shB = mapShape(geomShape(gb, start), mmul(minv(mA), mB));
+                if (shA.vertices.length < shB.vertices.length) { shA = splitTo(shA, shB.vertices.length); }
+                else if (shB.vertices.length < shA.vertices.length) { shB = splitTo(shB, shA.vertices.length); }
+                shA.closed = shB.closed = (shA.closed || shB.closed);
+                done += 1;
                 while (pa.numKeys) { pa.removeKey(pa.numKeys); }
                 pa.setValueAtTime(start, shA); pa.setValueAtTime(start + dur, shB);
                 if (returnMorph === true || String(returnMorph) === "true") { pa.setValueAtTime(start + dur * 2, shA); }
@@ -359,6 +466,7 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
             }
         } catch (e) { app.endUndoGroup(); return "ERROR:" + e.toString(); }
         app.endUndoGroup();
+        if (!done) { return "ERROR:Nothing to morph: " + (skipped.length ? skipped.join(", ") + " has no shape inside." : "select two shape layers."); }
         return "SUCCESS";
     };
     F.removeMorph = function () {
