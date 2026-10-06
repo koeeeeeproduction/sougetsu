@@ -1102,6 +1102,8 @@
             transform: scale(0.85);
         }
 
+        .tab-item svg.ak-ic { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; transform: none; }
+
         .spiderman-web {
             display: none;
             position: fixed;
@@ -6833,7 +6835,7 @@
                                 <line x1="16" y1="17" x2="8" y2="17"></line>
                                 <polyline points="10 9 9 9 8 9"></polyline>
                             </svg>
-                            Workspace Notes
+                            Notes Board
                         </span>
                         <span id="notes-char-count" class="notes-char-count">0 characters</span>
                     </div>
@@ -8714,7 +8716,7 @@
         <div class="modal-box">
             <div class="close-modal" onclick="closeModal('about-modal')">×</div>
             <div class="modal-title">SOUGETSU AKIRA FX</div>
-            <div class="about-text">Version 1.0.0 <br><br>Engineered for speed.<br>Designed for
+            <div class="about-text">Version 1.1.0 <br><br>Engineered for speed.<br>Designed for
                 motion.<br><br>Created by
                 <span>Saanu/Sougetsu</span><br><br>Video editor and developer hehe.<br><br>
                 <div class="web-link"
@@ -12382,59 +12384,19 @@
     </div>
 
     <div class="tab-bar">
-        <div id="t-tools" class="tab-item active" onclick="switchTab('tools')" data-tooltip="General & Properties">
-            <svg viewBox="0 0 24 24">
-                <path d="M18 11H6V9H18V11Z" fill="currentColor" />
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M2 16C2 17.6569 3.34315 19 5 19H19C20.6569 19 22 17.6569 22 16V8C22 6.34315 20.6569 5 19 5H5C3.34315 5 2 6.34315 2 8V16ZM5 17H19C19.5523 17 20 16.5523 20 16V8C20 7.44772 19.5523 7 19 7H5C4.44772 7 4 7.44771 4 8V16C4 16.5523 4.44772 17 5 17Z"
-                    fill="currentColor" />
-            </svg>
+        <div id="t-tools" class="tab-item active" onclick="switchTab('tools')" data-tooltip="Core Toolkit"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/><path d="M4 12h5M13 12h7"/><circle cx="11" cy="12" r="0.6" fill="currentColor"/></svg>
         </div>
-        <div id="t-fxpresets" class="tab-item" onclick="switchTab('fxpresets')" data-tooltip="FX & Advanced Rigs">
-            <svg viewBox="0 0 24 24" style="transform: rotate(-15deg);">
-                <path
-                    d="M7.5 5.6L5 7l1.4-2.5L5 2l2.5 1.4L10 2 8.6 4.5 10 7 7.5 5.6zm12 9.8L17 14l1.4 2.5L17 19l2.5-1.4L22 19l-1.4-2.5L22 14l-2.5 1.4zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5L22 2zm-7.63 5.29c-.39-.39-1.02-.39-1.41 0L1.32 18.93c-.39.39-.39 1.02 0 1.41l2.34 2.34c.39.39 1.02.39 1.41 0L16.71 11.04c.39-.39.39-1.02 0-1.41l-2.34-2.34z"
-                    fill="currentColor" />
-            </svg>
+        <div id="t-fxpresets" class="tab-item" onclick="switchTab('fxpresets')" data-tooltip="Effects Lab"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M5 19L15 9"/><path d="M14 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="currentColor"/><path d="M19 13l.7 1.3L21 15l-1.3.7L19 17l-.7-1.3L17 15l1.3-.7z" fill="currentColor"/><path d="M8 3l.6 1.4L10 5l-1.4.6L8 7l-.6-1.4L6 5l1.4-.6z" fill="currentColor"/></svg>
         </div>
-        <div id="t-shapes" class="tab-item" onclick="switchTab('shapes')" data-tooltip="Vector Shapes"><svg
-                viewBox="0 0 24 24">
-                <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7zM12 7v10h2V7z" />
-            </svg></div>
-        <div id="t-text" class="tab-item" onclick="switchTab('text')" data-tooltip="Text & Fonts">
-            <svg viewBox="0 0 24 24">
-                <path d="M2.5 4v3h5v12h3V7h5V4h-13zm19 5h-9v3h3v7h3v-7h3V9z" fill="currentColor" />
-            </svg>
+        <div id="t-shapes" class="tab-item" onclick="switchTab('shapes')" data-tooltip="Shape Forge"><svg class="ak-ic" viewBox="0 0 24 24"><rect x="3.5" y="10" width="9" height="9" rx="1.5"/><circle cx="15.5" cy="8.5" r="5"/><path d="M8 3.5l3 5H5z"/></svg></div>
+        <div id="t-text" class="tab-item" onclick="switchTab('text')" data-tooltip="Type Studio"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M5 19L10.5 5h1L17 19"/><path d="M7.4 13.5h7.2"/><path d="M19 9v10"/></svg>
         </div>
-        <div id="t-fx" class="tab-item" onclick="handleFXTabClick(event)" data-tooltip="Timeline Manager"><svg
-                viewBox="0 0 24 24">
-                <path d="M3 13h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"
-                    fill="currentColor" />
-            </svg></div>
-        <div id="t-colors" class="tab-item" onclick="switchTab('colors')" data-tooltip="Colors"><svg
-                viewBox="0 0 24 24">
-                <path
-                    d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.32-.13-.62-.34-.85-.27-.28-.44-.67-.44-1.1 0-.83.67-1.5 1.5-1.5h1.78c2.48 0 4.5-2.02 4.5-4.5 0-3.86-3.8-7.55-8.5-7.55zM7.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.5-.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-1.5 8a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"
-                    fill="currentColor" />
-            </svg></div>
-        <div id="t-assets" class="tab-item" onclick="switchTab('assets')" data-tooltip="Comp Saver"><svg
-                viewBox="0 0 24 24">
-                <path
-                    d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44A1.06 1.06 0 0 1 12 2c.21 0 .41.06.57.18l7.9-4.44c.32.17.53.5.53.88v9zM12 4.15L6.04 7.5 12 10.85l5.96-3.35L12 4.15zM5 15.91l6 3.38v-6.71L5 9.21v6.7zm14 0v-6.7l-6 3.38v6.71l6-3.38z"
-                    fill="currentColor" />
-            </svg></div>
-        <div id="t-flow" class="tab-item" onclick="switchTab('flow')" data-tooltip="Flow & Easing"><svg
-                viewBox="0 0 24 24">
-                <path d="M3 19c2.5 0 5-5 7.5-10S15.5 4 18 4v2c-1.5 0-4 4.5-6.5 9.5S6.5 21 4 21v-2z" fill="currentColor"
-                    stroke="currentColor" stroke-width="1.5" />
-            </svg></div>
+        <div id="t-fx" class="tab-item" onclick="handleFXTabClick(event)" data-tooltip="Timeline Control"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M3 6h9M3 12h13M3 18h7"/><path d="M14 3v18" stroke-dasharray="2 2.5"/><path d="M12.5 3h3l-1.5 2z" fill="currentColor"/></svg></div>
+        <div id="t-colors" class="tab-item" onclick="switchTab('colors')" data-tooltip="Color Lab"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M12 3.5c3 3.6 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.9 6-10.5z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></div>
+        <div id="t-assets" class="tab-item" onclick="switchTab('assets')" data-tooltip="Comp Vault"><svg class="ak-ic" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="5" rx="1.2"/><path d="M5 9v9.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V9"/><path d="M10 13h4"/></svg></div>
+        <div id="t-flow" class="tab-item" onclick="switchTab('flow')" data-tooltip="Motion Curves"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M4 19C9 19 9 5 20 5"/><path d="M4 19l4-6M20 5l-4.5 1"/><circle cx="8" cy="13" r="1.4" fill="currentColor"/><circle cx="15.5" cy="6" r="1.4" fill="currentColor"/></svg></div>
 
-        <div id="t-ref" class="tab-item" onclick="switchTab('ref')" data-tooltip="Editors Tab"><svg viewBox="0 0 24 24">
-                <path
-                    d="M11.99 18.54l-7.37-5.73L3 14.07l8.99 7 8.99-7-1.62-1.26-7.38 5.73zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"
-                    fill="currentColor" />
-            </svg></div>
+        <div id="t-ref" class="tab-item" onclick="switchTab('ref')" data-tooltip="Edit Bay"><svg class="ak-ic" viewBox="0 0 24 24"><rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3.5 9l2.2-4.8 15 4.2"/><path d="M8.6 5.4l2.2 3.6M13.6 6.8l2.2 3.4"/></svg></div>
         
     </div>
 
@@ -18421,7 +18383,7 @@
                         <polyline points="4 17 10 11 4 5"></polyline>
                         <line x1="12" y1="19" x2="20" y2="19"></line>
                     </svg></div>
-                <div class="tab-item icon-btn" id="t-notes" onclick="switchTab('notes')" data-tooltip="Workspace Notes">
+                <div class="tab-item icon-btn" id="t-notes" onclick="switchTab('notes')" data-tooltip="Notes Board">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round" style="width: 14px; height: 14px; stroke: currentColor; fill: none;">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -22608,16 +22570,16 @@
         function openManageTabsModal() {
             let hiddenTabs = JSON.parse(localStorage.getItem('akira_hidden_tabs')) || [];
             let tabsInfo = [
-                { id: 'tools', name: 'General & Properties' },
-                { id: 'fxpresets', name: 'FX & Advanced Rigs' },
-                { id: 'shapes', name: 'Vector Shapes' },
-                { id: 'text', name: 'Text & Fonts' },
-                { id: 'fx', name: 'Timeline Manager' },
+                { id: 'tools', name: 'Core Toolkit' },
+                { id: 'fxpresets', name: 'Effects Lab' },
+                { id: 'shapes', name: 'Shape Forge' },
+                { id: 'text', name: 'Type Studio' },
+                { id: 'fx', name: 'Timeline Control' },
                 { id: 'colors', name: 'Colors' },
-                { id: 'assets', name: 'Comp Saver & Assets' },
-                { id: 'flow', name: 'Flow & Easing' },
-                { id: 'ref', name: 'Editors Tab' },
-                { id: 'notes', name: 'Workspace Notes' }
+                { id: 'assets', name: 'Comp Vault & Assets' },
+                { id: 'flow', name: 'Motion Curves' },
+                { id: 'ref', name: 'Edit Bay' },
+                { id: 'notes', name: 'Notes Board' }
             ];
             let container = document.getElementById('manage-tabs-list');
             if (container) {
@@ -22639,7 +22601,7 @@
         }
         function resetPreferences() { akiraConfirm("ARE YOU ABSOLUTELY SURE?\n\nThis will permanently DELETE:\n- Your License Key\n- All Favorites\n- Custom Theme Settings\n- Layout Preferences\n\nThe extension will restart immediately.", () => { localStorage.clear(); location.reload(); }); }
 
-        const CURRENT_VERSION = "1.0.0"
+        const CURRENT_VERSION = "1.1.0"
         const UPDATE_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/update.json?" + new Date().getTime();
         const ANNOUNCEMENT_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/Changelogs.json?" + new Date().getTime();
         const CREATOR_MESSAGE_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/Text%20From%20Creator.json";
@@ -23409,7 +23371,7 @@
                 try { checkForUpdates(false); } catch (e) { }
             });
         }
-        const LOCAL_CHANGELOG = { id: 'akira-fx-1.0.0', title: 'Welcome to Akira FX', message: 'Thanks for testing Akira FX 1.0.\n\n- New focus timer with four mascots (bottom-left button)\n- Text animation presets, subtitle editor, Comp Saver and more\n\nSomething not working? Tell us what you clicked and what you saw.', btnText: '', btnLink: '' };
+        const LOCAL_CHANGELOG = { id: 'akira-fx-1.0.0', title: 'Welcome to Akira FX', message: 'Thanks for testing Akira FX 1.0.\n\n- New focus timer with four mascots (bottom-left button)\n- Text animation presets, subtitle editor, Comp Vault and more\n\nSomething not working? Tell us what you clicked and what you saw.', btnText: '', btnLink: '' };
         let currentAnnouncement = null; let currentCreatorMessage = null; function creatorEscapeHtml(value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); } function creatorLinkHtml(label, url) { if (!/^https?:\/\//i.test(url || '')) return creatorEscapeHtml(label || url || ''); return '<a href="#" class="creator-message-link" data-url="' + creatorEscapeHtml(url) + '" onclick="openCreatorExternalLink(this.getAttribute(\'data-url\')); return false;">' + creatorEscapeHtml(label || url) + '</a>'; } function renderCreatorInline(value) { const source = String(value || ''); const tokenRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>]+)/gi; let output = '', last = 0, match; while ((match = tokenRegex.exec(source)) !== null) { output += creatorEscapeHtml(source.substring(last, match.index)); let label = match[1] || match[3]; let url = match[2] || match[3]; let trailing = ''; if (!match[2]) { const trailingMatch = url.match(/[.,!?;:]+$/); if (trailingMatch) { trailing = trailingMatch[0]; url = url.slice(0, -trailing.length); label = url; } } output += creatorLinkHtml(label, url) + creatorEscapeHtml(trailing); last = match.index + match[0].length; } return output + creatorEscapeHtml(source.substring(last)); } function renderCreatorMessageText(text) { const lines = String(text || '').replace(/\r/g, '').split('\n'); return lines.map(function (line) { const trimmed = line.trim(); if (!trimmed) return '<div style="height:9px"></div>'; if (/^#{1,3}\s+/.test(trimmed)) return '<div style="color:var(--primary); font-size:12px; font-weight:800; margin:8px 0 4px;">' + renderCreatorInline(trimmed.replace(/^#{1,3}\s+/, '')) + '</div>'; if (/^[-•]\s+/.test(trimmed)) return '<div style="display:flex; gap:8px; margin:5px 0 5px 5px;"><span style="color:var(--primary);">•</span><span>' + renderCreatorInline(trimmed.replace(/^[-•]\s+/, '')) + '</span></div>'; return '<p style="margin:5px 0; color:#c7c7c7;">' + renderCreatorInline(trimmed) + '</p>'; }).join(''); } function normalizeCreatorMessage(payload) { let candidates = payload && Array.isArray(payload.messages) ? payload.messages : (Array.isArray(payload) ? payload : [payload]); const now = Date.now(); candidates = candidates.filter(function (item) { if (!item || item.enabled === false || item.active === false) return false; if (item.expiresAt && !isNaN(Date.parse(item.expiresAt)) && Date.parse(item.expiresAt) < now) return false; return !!(item.message || item.text || item.content); }); if (!candidates.length) return null; const item = candidates[candidates.length - 1]; const message = item.message || item.text || item.content || ''; const sourceId = String(item.id || item.version || item.date || 'creator-message'); const fingerprintSource = sourceId + '|' + (item.title || '') + '|' + message + '|' + (item.badgeText || item.badge || '') + '|' + (item.btnLink || item.buttonLink || item.link || ''); let fingerprint = 2166136261; for (let i = 0; i < fingerprintSource.length; i++) { fingerprint ^= fingerprintSource.charCodeAt(i); fingerprint += (fingerprint << 1) + (fingerprint << 4) + (fingerprint << 7) + (fingerprint << 8) + (fingerprint << 24); } return { id: sourceId, notificationId: sourceId + '-' + (fingerprint >>> 0).toString(16), title: item.title || 'Message from Creator', message: message, badgeText: item.badgeText || item.badge || 'MESSAGE FROM CREATOR', btnText: item.btnText || item.buttonText || 'OPEN LINK', btnLink: item.btnLink || item.buttonLink || item.link || '' }; } function setCreatorMessageIndicator(show) { const widget = document.getElementById('ram-widget'); const label = document.getElementById('ram-announcement-text'); if (!widget) return; widget.classList.toggle('has-announcement', !!show); widget.setAttribute('data-tooltip', show ? 'Open message from creator' : 'Click to Free Up RAM'); if (label && currentCreatorMessage) label.textContent = currentCreatorMessage.badgeText; } function checkForCreatorMessage(forceOpen) { fetch(CREATOR_MESSAGE_JSON_URL + '?t=' + Date.now(), { cache: 'no-store' }).then(function (response) { return response.text(); }).then(function (raw) { if (!raw || !raw.trim()) { currentCreatorMessage = null; setCreatorMessageIndicator(false); if (forceOpen) showStatus('No creator message is available right now.', 'info'); return; } let parsed; try { parsed = JSON.parse(raw); } catch (error) { console.error('Creator message JSON error:', error); if (forceOpen) showStatus('Creator message could not be loaded.', 'error'); return; } currentCreatorMessage = normalizeCreatorMessage(parsed); if (!currentCreatorMessage) { setCreatorMessageIndicator(false); if (forceOpen) showStatus('No creator message is available right now.', 'info'); return; } const dismissed = localStorage.getItem('akira_dismissed_creator_message_id') === currentCreatorMessage.notificationId; setCreatorMessageIndicator(!dismissed); if (forceOpen) openCreatorMessageModal(false); }).catch(function (error) { console.error('Creator message check error:', error); if (forceOpen) showStatus('Creator message is temporarily unavailable.', 'error'); }); } window.openCreatorExternalLink = function (url) { if (!/^https?:\/\//i.test(url || '')) return; if (window.cep && window.cep.util) window.cep.util.openURLInDefaultBrowser(url); else window.open(url, '_blank'); }; window.openCreatorMessageModal = function (forceShow) { if (forceShow) { checkForCreatorMessage(true); return; } if (!currentCreatorMessage) return; const title = document.getElementById('creator-message-title'); const body = document.getElementById('creator-message-body'); const action = document.getElementById('creator-message-action'); const modal = document.getElementById('creator-message-modal'); if (title) title.textContent = currentCreatorMessage.title; if (body) body.innerHTML = renderCreatorMessageText(currentCreatorMessage.message); if (action) { action.textContent = currentCreatorMessage.btnText; action.style.display = currentCreatorMessage.btnLink ? 'block' : 'none'; } if (modal) modal.classList.add('active'); }; window.closeCreatorMessageModal = function () { const modal = document.getElementById('creator-message-modal'); if (modal) modal.classList.remove('active'); }; window.dismissCreatorMessage = function () { if (currentCreatorMessage) localStorage.setItem('akira_dismissed_creator_message_id', currentCreatorMessage.notificationId); setCreatorMessageIndicator(false); closeCreatorMessageModal(); }; window.openCreatorMessageAction = function () { if (currentCreatorMessage && currentCreatorMessage.btnLink) openCreatorExternalLink(currentCreatorMessage.btnLink); };
 
         window.renderChangelogText = function (text) {
@@ -32418,8 +32380,10 @@ User Prompt: "${userPrompt}"`;
     <script src="js_akira/akira_themes.js?v=2.9.2-focus-aa1d0eff"></script>
     <script src="js_akira/akira_anime_themes.js?v=1.0.0"></script>
     <script src="js_akira/akira_layout.js?v=1.0.0"></script>
+    <script src="js_akira/akira_pixel.js?v=1.0.0"></script>
     <script src="js_akira/akira_personality.js?v=1.0.0"></script>
     <script src="js_akira/akira_timer.js?v=1.0.0"></script>
+    <script src="js_akira/akira_timer_dock.js?v=1.0.0"></script>
     <script src="js_akira/map_rigs.js?v=8.1.0-plus"></script>
     <script src="js_akira/shake_logic.js?v=8.0.0"></script>
     <link rel="stylesheet" href="css_akira/comp_saver_20.css?v=1.1.0">

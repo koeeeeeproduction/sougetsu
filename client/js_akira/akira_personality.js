@@ -56,7 +56,7 @@
     var DEF = {
         v: VER, xp: 0, total: { fx: 0, renders: 0, comps: 0, missions: 0 }, tools: {}, badges: {}, streak: { last: '', n: 0 },
         day: { d: '', fx: 0, renders: 0, comps: 0, newTools: 0, mins: 0, undo: 0, done: {} },
-        set: { pet: true, events: true, xp: true, missions: true, sounds: true, intro: true, petId: 'ninja', freq: 2, volume: 60,
+        set: { pet: true, events: true, xp: true, missions: true, sounds: true, intro: true, petId: 'ninja', px: 'itachi', pxSize: 64, pxSpeed: 1, pxAnim: true, pxRandom: true, pxPos: 'right', freq: 2, volume: 60,
             dndRender: true, dndPresent: false, dndNight: true, intro_style: 'classic', soundpack: 'soft', eventpack: 'core', petPos: null }
     };
     function merge(a, b) { var k; for (k in b) { if (b.hasOwnProperty(k)) { if (a[k] === undefined) { a[k] = JSON.parse(JSON.stringify(b[k])); } else if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && a[k] && typeof a[k] === 'object') { merge(a[k], b[k]); } } } return a; }
@@ -121,6 +121,10 @@
     css.textContent = [
         '#ap-root{position:fixed;right:10px;bottom:8px;z-index:9500;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;font-family:Inter,-apple-system,"Segoe UI",Arial,sans-serif}',
         '#ap-root *{box-sizing:border-box}',
+        '#ap-pet .akpx{transform-origin:50% 100%}.st-celebrate .akpx{animation:apJump .5s ease-out 3}.st-worried .akpx{animation:apShake .12s linear 5}.st-wake .akpx{animation:apStretch .9s ease-out 1}.st-sleep .akpx{filter:brightness(.75) saturate(.8)}',
+        '#ap-pet.px.st-sleep:after{content:"z";position:absolute;right:-2px;top:-4px;font:900 11px Inter,Arial;color:#cfe3ff;animation:apZ 2.4s ease-in-out infinite}',
+        '#ap-root.left{right:auto;left:10px;align-items:flex-start}',
+        '#ap-hub .pxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}#ap-hub .pxgrid .it{padding:6px 2px;font-weight:800;letter-spacing:.5px}#ap-hub .pxgrid canvas{width:36px;height:48px;display:block;margin:0 auto 4px;image-rendering:pixelated}',
         '#ap-pet{width:54px;height:54px;pointer-events:auto;cursor:pointer;position:relative;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}',
         '#ap-pet svg{width:100%;height:100%;overflow:visible}',
         '#ap-chip{pointer-events:auto;cursor:pointer;height:22px;padding:0 9px;border-radius:11px;border:1px solid var(--primary,#00ff55);background:rgba(0,0,0,.75);color:var(--primary,#00ff55);font-size:10px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:6px}',
@@ -194,7 +198,7 @@
     function pet() { var id = S.set.petId, i; for (i = 0; i < PETS.length; i++) { if (PETS[i].id === id && unlocked(PETS[i])) { return PETS[i]; } } return PETS[0]; }
 
     // ---------- DOM ----------
-    var root, petEl, bubble, chip, state = 'idle', stateTimer = 0, bubbleTimer = 0;
+    var pxInst = null, root, petEl, bubble, chip, state = 'idle', stateTimer = 0, bubbleTimer = 0;
     function mount() {
         if (root) { return; }
         root = document.createElement('div'); root.id = 'ap-root';
@@ -203,15 +207,27 @@
         chip = document.createElement('div'); chip.id = 'ap-chip'; chip.title = 'Sougetsu level & missions';
         root.appendChild(bubble); root.appendChild(petEl); root.appendChild(chip);
         document.body.appendChild(root);
-        petEl.addEventListener('click', function () { poke(); openHub('me'); });
+        petEl.addEventListener('click', function () { poke(); openHub(S.set.px ? 'companion' : 'me'); });
         chip.addEventListener('click', function () { openHub('me'); });
         render();
     }
     function render() {
         if (!root) { return; }
         petEl.style.display = S.set.pet ? '' : 'none';
-        petEl.innerHTML = petSVG(pet());
-        petEl.className = 'st-' + state;
+        root.classList.toggle('left', S.set.pxPos === 'left');
+        var usePx = !!(S.set.px && window.AkiraPixel && window.AkiraPixel.chars[S.set.px]);
+        if (usePx) {
+            var sz = Math.max(32, Math.min(128, S.set.pxSize || 64));
+            petEl.style.width = Math.round(sz * 0.75) + 'px'; petEl.style.height = sz + 'px';
+            var o = { id: S.set.px, size: sz, speed: S.set.pxSpeed || 1, animate: S.set.pxAnim !== false, random: S.set.pxRandom !== false };
+            if (!pxInst || !petEl.contains(pxInst.canvas)) { petEl.innerHTML = ''; pxInst = window.AkiraPixel.mount(petEl, o); } else { pxInst.set(o); }
+        } else {
+            if (pxInst) { pxInst.destroy(); pxInst = null; }
+            petEl.style.width = petEl.style.height = '';
+            petEl.innerHTML = petSVG(pet());
+        }
+        petEl.className = 'st-' + state + (usePx ? ' px' : '');
+        petEl.title = usePx ? window.AkiraPixel.name(S.set.px) + ' - click for companion, level and missions' : petEl.title;
         var L = levelOf(S.xp);
         chip.style.display = (S.set.xp || S.set.missions || !S.set.pet) ? '' : 'none';
         chip.innerHTML = (S.set.xp ? 'LV ' + (L.lvl < 10 ? '0' : '') + L.lvl + '<i><b style="width:' + Math.round(L.into / L.next * 100) + '%"></b></i>' : '✦ SOUGETSU') +
@@ -219,7 +235,7 @@
     }
     function setState(s, ms) {
         if (state === s && !ms) { return; }
-        state = s; if (petEl) { petEl.className = 'st-' + s; }
+        state = s; if (petEl) { petEl.className = 'st-' + s + (pxInst ? ' px' : ''); }
         clearTimeout(stateTimer);
         if (ms) { stateTimer = setTimeout(function () { setState(baseState()); }, ms); }
     }
@@ -369,8 +385,9 @@
         if (!S.set.intro) { return; }
         var st = S.set.intro_style; if (!INTROS.filter(function (x) { return x.id === st && unlocked(x); }).length) { st = 'classic'; }
         var el = document.createElement('div'); el.id = 'ap-intro'; el.className = st;
-        el.innerHTML = '<h1>SOUGETSU</h1><div class="l">INITIALIZING...</div><div class="bar"><b></b></div>' + (S.set.pet ? '<div class="pet st-celebrate">' + petSVG(pet()) + '</div>' : '') + '<div class="go">Let\'s create.</div>';
+        el.innerHTML = '<h1>SOUGETSU</h1><div class="l">INITIALIZING...</div><div class="bar"><b></b></div>' + (S.set.pet ? '<div class="pet st-celebrate">' + (S.set.px && window.AkiraPixel ? '' : petSVG(pet())) + '</div>' : '') + '<div class="go">Let\'s create.</div>';
         document.body.appendChild(el);
+        var pxIntro = null; if (S.set.pet && S.set.px && window.AkiraPixel) { var pe = el.querySelector('.pet'); pe.style.width = '45px'; pxIntro = window.AkiraPixel.mount(pe, { id: S.set.px, size: 60, random: false }); }
         var done = false; function end() { if (done) { return; } done = true; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 260); }
         el.addEventListener('click', end);
         requestAnimationFrame(function () { el.querySelector('.bar b').style.width = '100%'; });
@@ -382,7 +399,7 @@
     function openHub(tab) {
         var old = document.getElementById('ap-hub'); if (old) { old.remove(); }
         var hub = document.createElement('div'); hub.id = 'ap-hub';
-        hub.innerHTML = '<div class="card"><button class="close" title="Close">✕</button><div class="tabs"><button data-t="me">LEVEL</button><button data-t="missions">MISSIONS</button><button data-t="unlocks">UNLOCKS</button><button data-t="settings">SETTINGS</button></div><div class="body"></div></div>';
+        hub.innerHTML = '<div class="card"><button class="close" title="Close">✕</button><div class="tabs"><button data-t="companion">BUDDY</button><button data-t="me">LEVEL</button><button data-t="missions">MISSIONS</button><button data-t="unlocks">UNLOCKS</button><button data-t="settings">SETTINGS</button></div><div class="body"></div></div>';
         document.body.appendChild(hub);
         hub.addEventListener('click', function (e) { if (e.target === hub || e.target.classList.contains('close')) { hub.remove(); } });
         hub.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-t')); }); });
@@ -401,6 +418,16 @@
                     var v = Math.min(m.goal, S.day[m.stat] || 0), d = !!S.day.done[m.id];
                     return '<div class="m' + (d ? ' done' : '') + '"><span class="ck">' + (d ? '✓' : '') + '</span>' + m.text + '<span class="p">' + (d ? 'DONE' : v + '/' + m.goal) + '</span></div>';
                 }).join('') + (missionsDone() === 3 ? '<div style="text-align:center;font-weight:900;color:#fff;margin-top:8px">MISSION COMPLETE 🔥 Nice work.</div>' : '<div style="color:#888;margin-top:6px">New missions every day. Each one is +30 XP.</div>') : '<div style="color:#888">Daily missions are off. Turn them on in Settings.</div>');
+            } else if (t === 'companion') {
+                var P = window.AkiraPixel;
+                h = '<h3>PIXEL COMPANION</h3>' + (P ? '<div class="pxgrid">' + P.ids.map(function (id) { return '<button class="it' + (S.set.px === id ? ' sel' : '') + '" data-px="' + id + '"><canvas width="24" height="32" data-pxc="' + id + '"></canvas>' + P.name(id).toUpperCase() + '</button>'; }).join('') + '</div>' : '') +
+                    '<div class="row"><span>Classic pet instead (' + pet().name + ')</span><input type="checkbox" data-pxoff ' + (!S.set.px ? 'checked' : '') + '></div>' +
+                    '<div class="row"><span>Show companion</span><input type="checkbox" data-tog="pet" ' + (S.set.pet ? 'checked' : '') + '></div>' +
+                    '<div class="row"><span>Animation</span><input type="checkbox" data-tog="pxAnim" ' + (S.set.pxAnim !== false ? 'checked' : '') + '></div>' +
+                    '<div class="row"><span>Random idle moves</span><input type="checkbox" data-tog="pxRandom" ' + (S.set.pxRandom !== false ? 'checked' : '') + '></div>' +
+                    '<div class="row"><span>Speed</span><input type="range" min="0.5" max="2" step="0.25" data-num="pxSpeed" value="' + (S.set.pxSpeed || 1) + '"></div>' +
+                    '<div class="row"><span>Size</span><select data-numsel="pxSize">' + [32, 48, 64, 96, 128].map(function (n) { return '<option value="' + n + '"' + ((S.set.pxSize || 64) === n ? ' selected' : '') + '>' + n + ' px</option>'; }).join('') + '</select></div>' +
+                    '<div class="row" style="border:0"><span>Position</span><select data-sel="pxPos"><option value="right"' + (S.set.pxPos !== 'left' ? ' selected' : '') + '>Bottom right</option><option value="left"' + (S.set.pxPos === 'left' ? ' selected' : '') + '>Bottom left</option></select></div>';
             } else if (t === 'unlocks') {
                 h = '<h3>PETS</h3><div class="grid">' + PETS.map(function (p) { return '<button class="it' + (unlocked(p) ? '' : ' lock') + (pet().id === p.id ? ' sel' : '') + '" data-pet="' + p.id + '">' + petSVG(p) + p.name + (unlocked(p) ? '' : '<br>LV ' + p.lvl) + '</button>'; }).join('') + '</div>' +
                     group('INTRO STYLE', INTROS, 'intro_style') + group('SOUND PACK', SOUNDPACKS, 'soundpack') + group('EVENT PACK', EVENTPACKS, 'eventpack') +
@@ -421,7 +448,11 @@
             body.querySelectorAll('[data-opt]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-key'), it = { intro_style: INTROS, soundpack: SOUNDPACKS, eventpack: EVENTPACKS }[k].filter(function (x) { return x.id === b.getAttribute('data-opt'); })[0]; if (unlocked(it)) { S.set[k] = it.id; save(); show(t); if (k === 'soundpack') { SFX.level(); } } }); });
             body.querySelectorAll('[data-tog]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-tog')] = c.checked; save(); render(); }); });
             body.querySelectorAll('[data-sel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-sel')] = c.value; save(); render(); }); });
-            body.querySelectorAll('[data-num]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-num')] = +c.value; save(); if (c.getAttribute('data-num') === 'freq') { scheduleEvent(); } else { SFX.pet(); } }); });
+            body.querySelectorAll('[data-num]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-num')] = +c.value; save(); render(); if (c.getAttribute('data-num') === 'freq') { scheduleEvent(); } else { SFX.pet(); } }); });
+            body.querySelectorAll('[data-pxc]').forEach(function (c) { var fr = window.AkiraPixel.frame(c.getAttribute('data-pxc'), 0, {}), x = c.getContext('2d'), im = x.createImageData(24, 32), k = 0; fr.forEach(function (row) { row.forEach(function (px) { if (px) { im.data[k] = px[0]; im.data[k + 1] = px[1]; im.data[k + 2] = px[2]; im.data[k + 3] = 255; } k += 4; }); }); x.putImageData(im, 0, 0); });
+            body.querySelectorAll('[data-px]').forEach(function (b) { b.addEventListener('click', function () { S.set.px = b.getAttribute('data-px'); S.set.pet = true; save(); render(); show(t); SFX.pet(); }); });
+            var pxo = body.querySelector('[data-pxoff]'); if (pxo) { pxo.addEventListener('change', function () { if (S.set.px) { S.set.pxLast = S.set.px; } S.set.px = pxo.checked ? '' : (S.set.pxLast || 'itachi'); save(); render(); show(t); }); }
+            body.querySelectorAll('[data-numsel]').forEach(function (c) { c.addEventListener('change', function () { S.set[c.getAttribute('data-numsel')] = +c.value; save(); render(); }); });
             var ly = body.querySelector('[data-layout]'); if (ly) { ly.addEventListener('change', function () { if (window.AkiraLayout) { window.AkiraLayout.set(ly.checked ? 'vertical' : 'horizontal'); } }); }
             var pr = body.querySelector('[data-present]'); if (pr) { pr.addEventListener('change', function () { presenting = pr.checked; }); }
             var ts = body.querySelector('[data-test]'); if (ts) { ts.addEventListener('click', function () { var was = S.set.sounds; S.set.sounds = true; var n = S.set.dndNight; S.set.dndNight = false; SFX.level(); S.set.sounds = was; S.set.dndNight = n; }); }
