@@ -7,6 +7,7 @@
 - Download & Install section, SEO / Open Graph for sougetsustore.com
 Settings you may change are in the CONFIG block of the page script (search for "CONFIG").
 usage: python3 tools/build_site_panel.py && python3 tools/build_site.py"""
+import json
 import os, re
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SRC = os.path.join(ROOT, 'docs', 'website_original_v5.html')
@@ -80,7 +81,7 @@ rex(r'<section class="apps">.*?</section>',
 rep('<span class="pill"><i></i>workflow</span><h2>Most of an edit is <em>busywork.</em></h2></div><p>Select this, apply that. Check it went through. Ask the client if it is fine. Core takes the busywork and leaves you the decisions.</p>',
     '<span class="pill"><i></i>tools</span><h2>Most of an edit is <em>busywork.</em></h2></div><p>Select this, apply that, nudge it, do it again. Sougetsu Akira FX turns those steps into one click and leaves you the decisions. Everything it builds stays editable.</p>')
 rep('<h3>One panel, every layer</h3><p>Drop in a layer, add a preset, split into variants. A step that fails at 3am is retried four times.</p>',
-    '<h3>One click, one undo</h3><p>Bounce, Elastic, Text Exploder, True Dup, Precomp Separately, Paste Image, an anchor grid and Null / Adjustment / Solid in one row. Each tool is a single undo step.</p>')
+    '<h3>One click, one undo</h3><p>Auto Bounce, Overshoot, Split Text, Clean Duplicate, Precomp Each, Paste from Clipboard, an anchor grid and Null / Adjustment / Solid in one row. Each tool is a single undo step.</p>')
 rep('<div class="gk">run 41982</div>', '<div class="gk">layer morph · 3 layers</div>')
 rep('<span>read layers</span>', '<span>read selection</span>')
 rep('<span>apply preset</span>', '<span>arc to the target</span>')
@@ -149,9 +150,9 @@ TRY = r'''
 <section class="s" id="try"><div class="wrap tp">
  <div class="tp-copy rv"><span class="pill"><i></i>try it here</span><h2>The real panel, <em>in your browser.</em></h2>
   <p class="sec-p">Click through every tab: the anchor grid, Effects Lab, Shape Forge with Layer Morph and Templates, Type Studio, Color Lab, Motion Curves, Sound Lab and the rest.</p>
-  <ul class="tp-list"><li><b>Core Toolkit</b>Anchor grid, Null / Adjustment / Solid, Precomp Sep, Elastic, Bounce, Text Exploder, True Dup, Paste Image, focus timer</li>
-   <li><b>Effects Lab</b>Orb Generator, SaaS effects, Silence Remover, Autocaptions, Highlighter, Proximity, 3D Extrusion, Number Counter, Glass Morph, Shakes, Map rigs</li>
-   <li><b>Shape Forge</b>Shape tools, Layer &amp; Path Morph, Akira Grid, 81 Templates</li>
+  <ul class="tp-list"><li><b>Core Toolkit</b>Anchor grid, Null / Adjustment / Solid, Precomp Each, Overshoot, Auto Bounce, Split Text, Clean Duplicate, Paste from Clipboard, focus timer</li>
+   <li><b>Effects Lab</b>Orb Cloner, UI Motion Kit, Silence Cutter, Auto Subtitles, Text Highlighter, Proximity Effector, 3D Depth, Count Up, Frosted Glass, Camera Shake, Map Animator</li>
+   <li><b>Shape Forge</b>Shapes, Layer &amp; Path Morph, Morph Studio, Layout Grid, 81 UI Templates</li>
    <li><b>And more</b>Type Studio, Timeline Control, Color Lab, Comp Vault, Motion Curves, Edit Bay, Sound Lab, Notes Board, themes</li></ul>
  </div>
  <div class="tp-win rv"><div class="tp-bar"><i></i><i></i><i></i><span>Sougetsu Akira FX</span></div>
@@ -264,6 +265,15 @@ if(innerWidth>=900&&'IntersectionObserver'in window){const o=new IntersectionObs
 '''.replace('__CHECKOUT__', CHECKOUT).replace('__SALE_ENDS__', SALE_ENDS)
 rex(r'/\* ---------- pricing meter ---------- \*/.*?\}\)\;\n\}\)\(\);', JS + '\n})();')
 rep("e.target.closest('a,button,summary,input,.pm')", "e.target.closest('a,button,summary,input,.pm,iframe')")
+
+
+# ---------- EN / RU language switch: tools/site/ru.json is applied to the page's text nodes by tools/site/lang.js ----------
+_SITE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'site')
+RU = json.load(open(os.path.join(_SITE, 'ru.json'), encoding='utf-8'))
+s = s.replace('<div class="nr"><span class="stat">', '<div class="nr"><div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ru">RU</button></div><span class="stat">', 1)
+s = s.replace('</style>', '#nav a{white-space:nowrap}@media(max-width:1400px){html[lang=ru] .nr .stat{display:none}}.lang{flex:none;display:inline-flex;border:1px solid rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-right:10px}.lang button{background:none;border:0;color:#aaa;font:700 11px/1 inherit;padding:6px 9px;min-width:30px;cursor:pointer}.lang button[aria-pressed=true]{background:rgba(255,255,255,.14);color:#fff}</style>', 1)
+s = s.replace('</body>', '<script>' + open(os.path.join(_SITE, 'lang.js'), encoding='utf-8').read().replace('__RU__', json.dumps(RU, ensure_ascii=False)) + '</script></body>', 1)
+s = s.replace("$('#per').textContent=on?'Launch price · one-time payment':'One-time payment · per user'", "$('#per').textContent=on?'Launch price · one-time payment':'One-time payment · per user';window.__applyLang&&__applyLang()")
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 open(OUT, 'w', encoding='utf-8').write(s)
