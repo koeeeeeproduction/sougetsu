@@ -6,8 +6,8 @@ Site files: `website/` (index.html, favicon.svg, og-image.png, robots.txt, sitem
 ## Connect checkout
 Open `website/index.html`, search for `const DODO_CHECKOUT_URL='DODO_CHECKOUT_URL';` and paste your Dodo payment link
 (Dodo dashboard › Products › Sougetsu Akira FX › Share/Payment link). Test link first (`test.checkout.dodopayments.com`),
-live link when you launch. (Also replace it in `tools/build_site.py` users? No — the build copies the JS line; edit the
-same line in the built file or in `tools/build_site.py`'s JS_CHECKOUT block so a rebuild keeps it.)
+live link when you launch. To keep it after a rebuild, also paste it into the `JS_CHECKOUT` block in
+`tools/build_site.py`.
 
 ## Publish on Cloudflare Pages (free)
 1. dash.cloudflare.com › sign up › Workers & Pages › Create › Pages › **Upload assets**.
