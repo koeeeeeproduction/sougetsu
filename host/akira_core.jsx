@@ -52,25 +52,11 @@ $._akira.coreVersion = "1.0.0";
             return s ? String(s) : "";
         } catch (e) { return ""; }
     }
-    // The single source of truth. True only when the in-session token matches
-    // the signature of the key currently on disk (present and well-formed).
-    function unlocked() {
-        if (!_gate) { return false; }
-        var k = savedKey();
-        if (!wellFormed(k)) { return false; }
-        return _gate === _sig(k);
-    }
-
-    // Expose isLocked as a derived, read-only-ish property. The setter is a
-    // no-op on purpose. Falls back to a plain value if getters are missing.
-    try {
-        if (typeof $._akira.__defineGetter__ === "function") {
-            $._akira.__defineGetter__("isLocked", function () { return !unlocked(); });
-            $._akira.__defineSetter__("isLocked", function () { /* ignored: the gate is the token, not this flag */ });
-        } else {
-            $._akira.isLocked = true;
-        }
-    } catch (eg) { $._akira.isLocked = true; }
+    // isLocked is a plain boolean (ExtendScript-safe; getters are unreliable in
+    // AE). unlock/lock keep it in sync. The real guard, _guard() below, ALSO
+    // requires the private token to be set, so flipping isLocked from a console
+    // without a valid key does not open the tools.
+    $._akira.isLocked = true;
 
     // Returns "OK" unless something is wrong. The panel treats any string starting with "CRACKED" as a failure.
     $._akira.initSecurity = function (extPath) {
@@ -87,18 +73,20 @@ $._akira.coreVersion = "1.0.0";
     // key and opens the gate by setting the token to the key's signature.
     $._akira.unlockLicenseJSX = function (key) {
         key = String(key);
-        if (!wellFormed(key)) { _gate = 0; return "ERR:bad key"; }
+        if (!wellFormed(key)) { _gate = 0; $._akira.isLocked = true; return "ERR:bad key"; }
         try {
             var f = keyFile();
             f.encoding = "UTF-8";
             if (f.open("w")) { f.write(key); f.close(); }
         } catch (e) { }
         _gate = _sig(key);
+        $._akira.isLocked = false;
         return "OK";
     };
 
     $._akira.lockLicenseJSX = function () {
         _gate = 0;
+        $._akira.isLocked = true;
         try {
             var f = keyFile();
             if (f.exists) { f.remove(); }
@@ -106,12 +94,12 @@ $._akira.coreVersion = "1.0.0";
         return "OK";
     };
 
-    // Rehydrate the gate from the saved key at load time so returning users
-    // keep access across panel reloads and offline sessions. If the key file
-    // is gone or has been tampered with, the gate stays closed.
+    // Rehydrate from the saved key at load time so returning users keep access
+    // across panel reloads and offline sessions without re-entering the key. If
+    // the key file is gone or has been tampered with, the tools stay locked.
     (function () {
         var k = savedKey();
-        if (wellFormed(k)) { _gate = _sig(k); }
+        if (wellFormed(k)) { _gate = _sig(k); $._akira.isLocked = false; }
     })();
 
     // Relative paths resolve against the extension folder; absolute paths pass through unchanged.
@@ -126,8 +114,10 @@ $._akira.coreVersion = "1.0.0";
         } catch (e) { return p; }
     };
 
-    // Helper for feature functions: returns an error string when the panel is not licensed, else null.
+    // Helper for feature functions: returns an error string when not licensed,
+    // else null. Requires BOTH the flag and the private token, so setting
+    // isLocked=false from a console without a valid key stays locked.
     $._akira._guard = function () {
-        return unlocked() ? null : "Extension is locked.";
+        return ($._akira.isLocked || !_gate) ? "Extension is locked." : null;
     };
 })();

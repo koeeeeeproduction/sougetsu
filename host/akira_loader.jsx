@@ -45,9 +45,10 @@
         try { $.evalFile(f); return true; }
         catch (err) { alert("Akira FX: error loading " + name + ": " + err.toString()); return false; }
     }
-    var wasLocked = (typeof $._akira.isLocked === "boolean") ? $._akira.isLocked : true;
     load("akira_core.jsx", true);
-    $._akira.isLocked = wasLocked; // keep the license state across a reload
+    // akira_core rehydrates the license state from the saved key file itself,
+    // so the loader must NOT overwrite isLocked here (that would re-lock a
+    // licensed user on every reload / fresh launch).
     load("akira_tools.jsx", false);
     load("akira_json.jsx", false);
     load("akira_tools2.jsx", false);
@@ -78,6 +79,5 @@
     load("akira_saas.jsx", false);
     load("akira_templates2.jsx", false);
     load("akira_sounds.jsx", false);
-    $._akira.isLocked = wasLocked;
     load("paste_feature.jsx", false);
 })();

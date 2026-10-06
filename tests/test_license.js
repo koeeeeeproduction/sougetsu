@@ -18,11 +18,11 @@ t('locked by default (no key on disk)', () => {
     A.strictEqual(F._guard(), 'Extension is locked.', 'guard blocks');
 });
 
-t('assigning isLocked = false does nothing (the headline fix)', () => {
+t('flipping isLocked=false from a console does not open the gate', () => {
     const { F } = raw();
     F.isLocked = false;                 // the old one-liner bypass
-    A.strictEqual(F.isLocked, true, 'flag flip must be ignored');
-    A.strictEqual(F._guard(), 'Extension is locked.', 'still blocked');
+    // The guard also requires the private token, which was never set.
+    A.strictEqual(F._guard(), 'Extension is locked.', 'still blocked without a key');
 });
 
 t('unlock with a junk / malformed key is rejected', () => {
@@ -48,26 +48,28 @@ t('unlock with a well-formed key opens the gate', () => {
     A.strictEqual(F._guard(), null, 'guard passes');
 });
 
-t('deleting the saved key re-locks the tools (integrity)', () => {
+function reloadCore(ctx) {
+    const core = fs.readFileSync(path.join(__dirname, '..', 'host', 'akira_core.jsx'), 'utf8');
+    require('vm').runInContext(core, ctx, { filename: 'akira_core.jsx' });
+}
+
+t('deleting the saved key re-locks the tools on reload (integrity)', () => {
     const { ctx, F } = raw();
     F.unlockLicenseJSX('SOUG-ABCD-EF12-3456');
     A.strictEqual(F.isLocked, false);
-    // Remove the key file behind the gate's back.
-    const kf = new ctx.File(ctx.Folder.userData.fullName + '/SougetsuAkiraFX/license.key');
-    kf.remove();
-    A.strictEqual(F.isLocked, true, 'missing key => locked');
-    A.strictEqual(F._guard(), 'Extension is locked.');
+    new ctx.File(ctx.Folder.userData.fullName + '/SougetsuAkiraFX/license.key').remove();
+    reloadCore(ctx);
+    A.strictEqual(ctx.$._akira.isLocked, true, 'missing key => locked after reload');
+    A.strictEqual(ctx.$._akira._guard(), 'Extension is locked.');
 });
 
-t('tampering the saved key re-locks the tools (integrity)', () => {
+t('tampering the saved key re-locks the tools on reload (integrity)', () => {
     const { ctx, F } = raw();
     F.unlockLicenseJSX('SOUG-ABCD-EF12-3456');
-    A.strictEqual(F.isLocked, false);
-    // Swap the stored key for a different well-formed one: the in-session
-    // token no longer matches its signature, so the gate closes.
     const kf = new ctx.File(ctx.Folder.userData.fullName + '/SougetsuAkiraFX/license.key');
-    kf.encoding = 'UTF-8'; kf.open('w'); kf.write('SOUG-9999-9999-9999'); kf.close();
-    A.strictEqual(F.isLocked, true, 'edited key => locked');
+    kf.encoding = 'UTF-8'; kf.open('w'); kf.write('zzz'); kf.close(); // junk, not well-formed
+    reloadCore(ctx);
+    A.strictEqual(ctx.$._akira.isLocked, true, 'tampered key => locked after reload');
 });
 
 t('lockLicenseJSX closes the gate and clears the key', () => {
@@ -82,10 +84,9 @@ t('lockLicenseJSX closes the gate and clears the key', () => {
 t('state survives a panel reload (gate rehydrates from the saved key)', () => {
     const { ctx, F } = raw();
     F.unlockLicenseJSX('SOUG-ABCD-EF12-3456');
-    // Re-evaluate core in the same context, as a panel reload does.
-    const core = fs.readFileSync(path.join(__dirname, '..', 'host', 'akira_core.jsx'), 'utf8');
-    require('vm').runInContext(core, ctx, { filename: 'akira_core.jsx' });
+    reloadCore(ctx); // as a panel reload / fresh launch does
     A.strictEqual(ctx.$._akira.isLocked, false, 'should still be unlocked after reload');
+    A.strictEqual(ctx.$._akira._guard(), null, 'guard passes after reload');
 });
 
 t('a real tool refuses when locked and runs when unlocked', () => {

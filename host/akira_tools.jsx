@@ -7,7 +7,7 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
     var F = $._akira;
 
     // ---------- shared helpers ----------
-    function locked() { return F.isLocked ? "ERR:Extension is locked. Enter your license key." : null; }
+    function locked() { return (F._guard ? F._guard() : F.isLocked) ? "ERR:Extension is locked. Enter your license key." : null; }
     function activeComp() {
         var c = app.project ? app.project.activeItem : null;
         return (c && (c instanceof CompItem)) ? c : null;

@@ -29,7 +29,7 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
     }
     function ok(extra) { var o = { success: true }, k; if (extra) { for (k in extra) { if (extra.hasOwnProperty(k)) { o[k] = extra[k]; } } } return J(o); }
     function fail(msg) { return J({ success: false, error: String(msg) }); }
-    function locked() { return F.isLocked ? fail("Extension is locked. Enter your license key.") : null; }
+    function locked() { return (F._guard ? F._guard() : F.isLocked) ? fail("Extension is locked. Enter your license key.") : null; }
 
     // ---------- property helpers ----------
     function layerType(L) {
