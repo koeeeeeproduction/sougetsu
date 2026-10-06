@@ -166,4 +166,15 @@ t('project save info only changes on save', () => {
   A.strictEqual(e.F.getProjectSaveInfo(), 'UNSAVED|');
 });
 
+t('Sound Lab: importSound imports once, reuses the item and drops it at the playhead', () => {
+  const e = env(), f = path.join(__dirname, '..', 'client', 'sounds', 'Jingles', fs.readdirSync(path.join(__dirname, '..', 'client', 'sounds', 'Jingles'))[0]);
+  e.comp.time = 2; e.items.unshift(null);   // AE collections are 1-based
+  const r1 = e.F.importSound(encodeURIComponent(f), 'comp'); A.ok(/^SUCCESS:/.test(r1), r1);
+  const r2 = e.F.importSound(encodeURIComponent(f), 'comp'); A.ok(/^SUCCESS:/.test(r2), r2);
+  A.strictEqual(e.items.filter(i => i instanceof M.FootageItem).length, 1, 'imported once');
+  A.strictEqual(e.comp.numLayers, 2); A.strictEqual(e.comp.layer(1).startTime, 2);
+  A.ok(/^ERR:/.test(e.F.importSound(encodeURIComponent('/nope.wav'), 'comp')));
+  A.strictEqual(e.undo(), 0);
+});
+
 console.log(process.exitCode ? 'SOME TESTS FAILED' : 'ALL ' + passed + ' ENGINE TESTS PASSED');

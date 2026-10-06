@@ -1,0 +1,706 @@
+{
+"v": 1,
+"count": 100,
+"items": [
+{
+"id": "Clicks & Taps/pep-04.wav",
+"name": "Pep 04",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/pep-04.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/pep-05.wav",
+"name": "Pep 05",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/pep-05.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/pluck-02.wav",
+"name": "Pluck 02",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/pluck-02.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-click-01.wav",
+"name": "Soft Click 01",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-click-01.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-click-02.wav",
+"name": "Soft Click 02",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-click-02.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-click-03.wav",
+"name": "Soft Click 03",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-click-03.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-click-04.wav",
+"name": "Soft Click 04",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-click-04.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-mouse-click-01.wav",
+"name": "Soft Mouse Click 01",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-mouse-click-01.wav",
+"dur": 1.0
+},
+{
+"id": "Clicks & Taps/soft-mouse-release-01.wav",
+"name": "Soft Mouse Release 01",
+"cat": "Clicks & Taps",
+"file": "sounds/Clicks & Taps/soft-mouse-release-01.wav",
+"dur": 1.0
+},
+{
+"id": "Drops & FX/scratch-01.wav",
+"name": "Scratch 01",
+"cat": "Drops & FX",
+"file": "sounds/Drops & FX/scratch-01.wav",
+"dur": 1.0
+},
+{
+"id": "Drops & FX/space-trash-05.wav",
+"name": "Space Trash 05",
+"cat": "Drops & FX",
+"file": "sounds/Drops & FX/space-trash-05.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/scroll-02.wav",
+"name": "Scroll 02",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/scroll-02.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/scroll-05.wav",
+"name": "Scroll 05",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/scroll-05.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/soft-hover-rollover-01.wav",
+"name": "Soft Hover Rollover 01",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/soft-hover-rollover-01.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/soft-hover-rollover-03.wav",
+"name": "Soft Hover Rollover 03",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/soft-hover-rollover-03.wav",
+"dur": 1.0
+},
+{
+"id": "Hovers & Scrolls/soft-hover-rollover-04.wav",
+"name": "Soft Hover Rollover 04",
+"cat": "Hovers & Scrolls",
+"file": "sounds/Hovers & Scrolls/soft-hover-rollover-04.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-hit-08.wav",
+"name": "Jingle Hit 08",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-hit-08.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-hit-11.wav",
+"name": "Jingle Hit 11",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-hit-11.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-hit-13.wav",
+"name": "Jingle Hit 13",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-hit-13.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-hit-14.wav",
+"name": "Jingle Hit 14",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-hit-14.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-hit-16.wav",
+"name": "Jingle Hit 16",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-hit-16.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-01.wav",
+"name": "Jingle Pizzicato 01",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-01.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-04.wav",
+"name": "Jingle Pizzicato 04",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-04.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-05.wav",
+"name": "Jingle Pizzicato 05",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-05.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-06.wav",
+"name": "Jingle Pizzicato 06",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-06.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-07.wav",
+"name": "Jingle Pizzicato 07",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-07.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-08.wav",
+"name": "Jingle Pizzicato 08",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-08.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-10.wav",
+"name": "Jingle Pizzicato 10",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-10.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-11.wav",
+"name": "Jingle Pizzicato 11",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-11.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-pizzicato-13.wav",
+"name": "Jingle Pizzicato 13",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-pizzicato-13.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-04.wav",
+"name": "Jingle Sax 04",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-04.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-05.wav",
+"name": "Jingle Sax 05",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-05.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-07.wav",
+"name": "Jingle Sax 07",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-07.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-08.wav",
+"name": "Jingle Sax 08",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-08.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-09.wav",
+"name": "Jingle Sax 09",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-09.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-10.wav",
+"name": "Jingle Sax 10",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-10.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-11.wav",
+"name": "Jingle Sax 11",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-11.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-13.wav",
+"name": "Jingle Sax 13",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-13.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-sax-15.wav",
+"name": "Jingle Sax 15",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-sax-15.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-03.wav",
+"name": "Jingle Steel 03",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-03.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-05.wav",
+"name": "Jingle Steel 05",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-05.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-06.wav",
+"name": "Jingle Steel 06",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-06.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-10.wav",
+"name": "Jingle Steel 10",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-10.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-11.wav",
+"name": "Jingle Steel 11",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-11.wav",
+"dur": 1.0
+},
+{
+"id": "Jingles/jingle-steel-12.wav",
+"name": "Jingle Steel 12",
+"cat": "Jingles",
+"file": "sounds/Jingles/jingle-steel-12.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-01.wav",
+"name": "Laser 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-01.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-04.wav",
+"name": "Laser 04",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-04.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-05.wav",
+"name": "Laser 05",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-05.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-06.wav",
+"name": "Laser 06",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-06.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-07.wav",
+"name": "Laser 07",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-07.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/laser-09.wav",
+"name": "Laser 09",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/laser-09.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/phase-jump-04.wav",
+"name": "Phase Jump 04",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/phase-jump-04.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/phaser-down-01.wav",
+"name": "Phaser Down 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/phaser-down-01.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/phaser-up-01.wav",
+"name": "Phaser Up 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/phaser-up-01.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/phaser-up-05.wav",
+"name": "Phaser Up 05",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/phaser-up-05.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/phaser-up-06.wav",
+"name": "Phaser Up 06",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/phaser-up-06.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-02.wav",
+"name": "Power Up 02",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-02.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-04.wav",
+"name": "Power Up 04",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-04.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-08.wav",
+"name": "Power Up 08",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-08.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-10.wav",
+"name": "Power Up 10",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-10.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/power-up-12.wav",
+"name": "Power Up 12",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/power-up-12.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/zap-02.wav",
+"name": "Zap 02",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/zap-02.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/zap-three-up-01.wav",
+"name": "Zap Three Up 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/zap-three-up-01.wav",
+"dur": 1.0
+},
+{
+"id": "Power-ups & Zaps/zap-two-01.wav",
+"name": "Zap Two 01",
+"cat": "Power-ups & Zaps",
+"file": "sounds/Power-ups & Zaps/zap-two-01.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-03.wav",
+"name": "Soft Switch 03",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-03.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-04.wav",
+"name": "Soft Switch 04",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-04.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-07.wav",
+"name": "Soft Switch 07",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-07.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-09.wav",
+"name": "Soft Switch 09",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-09.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-12.wav",
+"name": "Soft Switch 12",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-12.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-17.wav",
+"name": "Soft Switch 17",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-17.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-18.wav",
+"name": "Soft Switch 18",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-18.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-20.wav",
+"name": "Soft Switch 20",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-20.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-21.wav",
+"name": "Soft Switch 21",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-21.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-23.wav",
+"name": "Soft Switch 23",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-23.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-34.wav",
+"name": "Soft Switch 34",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-34.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-35.wav",
+"name": "Soft Switch 35",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-35.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/soft-switch-37.wav",
+"name": "Soft Switch 37",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/soft-switch-37.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/switch-04.wav",
+"name": "Switch 04",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/switch-04.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/switch-05.wav",
+"name": "Switch 05",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/switch-05.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/switch-06.wav",
+"name": "Switch 06",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/switch-06.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/switch-07.wav",
+"name": "Switch 07",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/switch-07.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/toggle-01.wav",
+"name": "Toggle 01",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/toggle-01.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/toggle-03.wav",
+"name": "Toggle 03",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/toggle-03.wav",
+"dur": 1.0
+},
+{
+"id": "Switches & Toggles/toggle-04.wav",
+"name": "Toggle 04",
+"cat": "Switches & Toggles",
+"file": "sounds/Switches & Toggles/toggle-04.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/question-01.wav",
+"name": "Question 01",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/question-01.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/question-04.wav",
+"name": "Question 04",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/question-04.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-high-down-01.wav",
+"name": "Tone High Down 01",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-high-down-01.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-three-01.wav",
+"name": "Tone Three 01",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-three-01.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-three-02.wav",
+"name": "Tone Three 02",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-three-02.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-two-01.wav",
+"name": "Tone Two 01",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-two-01.wav",
+"dur": 1.0
+},
+{
+"id": "Tones & Alerts/tone-two-02.wav",
+"name": "Tone Two 02",
+"cat": "Tones & Alerts",
+"file": "sounds/Tones & Alerts/tone-two-02.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/maximize-01.wav",
+"name": "Maximize 01",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/maximize-01.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/maximize-04.wav",
+"name": "Maximize 04",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/maximize-04.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/maximize-05.wav",
+"name": "Maximize 05",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/maximize-05.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/maximize-09.wav",
+"name": "Maximize 09",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/maximize-09.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/minimize-01.wav",
+"name": "Minimize 01",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/minimize-01.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/minimize-02.wav",
+"name": "Minimize 02",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/minimize-02.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/minimize-06.wav",
+"name": "Minimize 06",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/minimize-06.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/minimize-09.wav",
+"name": "Minimize 09",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/minimize-09.wav",
+"dur": 1.0
+},
+{
+"id": "Windows & Navigation/open-02.wav",
+"name": "Open 02",
+"cat": "Windows & Navigation",
+"file": "sounds/Windows & Navigation/open-02.wav",
+"dur": 1.0
+}
+]
+}

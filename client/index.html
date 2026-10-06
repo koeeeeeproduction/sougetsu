@@ -8716,7 +8716,7 @@
         <div class="modal-box">
             <div class="close-modal" onclick="closeModal('about-modal')">×</div>
             <div class="modal-title">SOUGETSU AKIRA FX</div>
-            <div class="about-text">Version 1.1.1 <br><br>Engineered for speed.<br>Designed for
+            <div class="about-text">Version 1.2.0 <br><br>Engineered for speed.<br>Designed for
                 motion.<br><br>Created by
                 <span>Saanu/Sougetsu</span><br><br>Video editor and developer hehe.<br><br>
                 <div class="web-link"
@@ -12397,6 +12397,7 @@
         <div id="t-flow" class="tab-item" onclick="switchTab('flow')" data-tooltip="Motion Curves"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M4 19C9 19 9 5 20 5"/><path d="M4 19l4-6M20 5l-4.5 1"/><circle cx="8" cy="13" r="1.4" fill="currentColor"/><circle cx="15.5" cy="6" r="1.4" fill="currentColor"/></svg></div>
 
         <div id="t-ref" class="tab-item" onclick="switchTab('ref')" data-tooltip="Edit Bay"><svg class="ak-ic" viewBox="0 0 24 24"><rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3.5 9l2.2-4.8 15 4.2"/><path d="M8.6 5.4l2.2 3.6M13.6 6.8l2.2 3.4"/></svg></div>
+        <div id="t-sounds" class="tab-item" onclick="switchTab('sounds')" data-tooltip="Sound Lab"><svg class="ak-ic" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div>
         
     </div>
 
@@ -18219,6 +18220,7 @@
         </div>
 
         
+        <div id="view-sounds" class="view"></div>
         <div id="view-ai" class="view">
             
             
@@ -22608,7 +22610,7 @@
         }
         function resetPreferences() { akiraConfirm("ARE YOU ABSOLUTELY SURE?\n\nThis will permanently DELETE:\n- Your License Key\n- All Favorites\n- Custom Theme Settings\n- Layout Preferences\n\nThe extension will restart immediately.", () => { localStorage.clear(); location.reload(); }); }
 
-        const CURRENT_VERSION = "1.1.1"
+        const CURRENT_VERSION = "1.2.0"
         const UPDATE_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/update.json?" + new Date().getTime();
         const ANNOUNCEMENT_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/Changelogs.json?" + new Date().getTime();
         const CREATOR_MESSAGE_JSON_URL = "https://raw.githubusercontent.com/YOUR-GITHUB-USER/sougetsu-akira-fx/refs/heads/main/Text%20From%20Creator.json";
@@ -32392,6 +32394,7 @@ User Prompt: "${userPrompt}"`;
     <script src="js_akira/akira_anime_themes.js?v=1.0.0"></script>
     <script src="js_akira/akira_layout.js?v=1.0.0"></script>
     <script src="js_akira/akira_pixel.js?v=1.0.0"></script>
+    <script src="js_akira/akira_sounds.js?v=1.0.0"></script>
     <script src="js_akira/akira_personality.js?v=1.0.0"></script>
     <script src="js_akira/akira_timer.js?v=1.0.0"></script>
     <script src="js_akira/akira_timer_dock.js?v=1.0.0"></script>

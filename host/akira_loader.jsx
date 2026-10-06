@@ -77,6 +77,7 @@
     load("akira_showcase.jsx", false);
     load("akira_saas.jsx", false);
     load("akira_templates2.jsx", false);
+    load("akira_sounds.jsx", false);
     $._akira.isLocked = wasLocked;
     load("paste_feature.jsx", false);
 })();
