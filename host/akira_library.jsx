@@ -11,6 +11,7 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
     var F = $._akira, H = F._h;
     if (!H) { return; }
     var FFX_DIR = "FFX PRESETS";
+    var PROJ_DIR = "__PROJECTS__";
 
     // ---------- generic helpers ----------
     function jsonStr(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n") + '"'; }
@@ -101,7 +102,7 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         var out = [], items = lib.getFiles(isFolder), i;
         for (i = 0; i < items.length; i += 1) {
             var n = decodeURI(items[i].name);
-            if (n.charAt(0) === "." || n === FFX_DIR) { continue; }
+            if (n.charAt(0) === "." || n === FFX_DIR || n === PROJ_DIR) { continue; }
             out.push(items[i]);
         }
         return out;
@@ -309,6 +310,94 @@ if (typeof $._akira === "undefined") { $._akira = {}; }
         catch (e) { app.endUndoGroup(); return "Error: " + e.toString(); }
         app.endUndoGroup();
         return "Imported " + ok + " comp" + (ok === 1 ? "" : "s") + ".";
+    };
+
+    // ---------- Projects (save a whole project + a still of every comp inside) ----------
+    F.saveProjectLib = function (name) {
+        var g = H.locked(); if (g) { return g; }
+        if (!app.project.file) { return "Error: Save your project first (File > Save), then save it to the library."; }
+        try { app.project.save(); } catch (eS) { }
+        var pdir = new Folder(resolveLib().fullName + "/" + PROJ_DIR);
+        if (!pdir.exists && !pdir.create()) { return "Error: Could not create the projects folder."; }
+        var created = new Date().getTime(), id = String(created) + "_" + Math.floor(Math.random() * 1000);
+        var entry = new Folder(pdir.fullName + "/" + id);
+        if (!entry.create()) { return "Error: Could not create the project entry."; }
+        var projName = (name && String(name).length && String(name) !== "undefined") ? String(name) : app.project.file.name.replace(/\.aep$/i, "");
+        try {
+            app.project.file.copy(entry.fullName + "/project.aep");       // the whole project, untouched
+            var cf = new Folder(entry.fullName + "/comps"); cf.create();
+            var comps = [], i, idx = 0, active = H.activeComp();
+            if (active && typeof active.saveFrameToPng === "function") { try { active.saveFrameToPng(active.time, new File(entry.fullName + "/project.png")); } catch (eA) { } }
+            for (i = 1; i <= app.project.numItems; i += 1) {
+                var it = app.project.item(i);
+                if (!(it instanceof CompItem)) { continue; }
+                var png = new File(cf.fullName + "/" + idx + ".png");
+                try { if (typeof it.saveFrameToPng === "function") { it.saveFrameToPng(it.time, png); } } catch (eP) { }
+                if (idx === 0 && !(new File(entry.fullName + "/project.png")).exists && png.exists) { try { png.copy(entry.fullName + "/project.png"); } catch (eCp) { } }
+                comps.push(encodeURIComponent(it.name) + "|" + (png.exists ? idx : -1));
+                idx += 1;
+            }
+            writeText(new File(entry.fullName + "/meta.txt"), "name=" + encodeURIComponent(projName) + "\ncreated=" + created + "\ncomps=" + comps.join(";"));
+        } catch (e) { rmrf(entry); return "Error: " + e.toString(); }
+        return '{"status":"success","message":' + jsonStr('Saved project "' + projName + '" (' + idx + ' comps)') + "}";
+    };
+    F.scanProjectsLib = function () {
+        var pdir = new Folder(libFolder().fullName + "/" + PROJ_DIR);
+        if (!pdir.exists) { return '{"projects":[]}'; }
+        var entries = pdir.getFiles(isFolder), out = [], i, j;
+        for (i = 0; i < entries.length; i += 1) {
+            var aep = new File(entries[i].fullName + "/project.aep");
+            if (!aep.exists) { continue; }
+            var s = readText(new File(entries[i].fullName + "/meta.txt")), name = decodeURI(entries[i].name), created = 0, compsRaw = "", lines = s.split(/\r\n|\r|\n/);
+            for (j = 0; j < lines.length; j += 1) {
+                var at = lines[j].indexOf("="); if (at < 1) { continue; }
+                var k = lines[j].substring(0, at), v = lines[j].substring(at + 1);
+                if (k === "name") { try { name = decodeURIComponent(v); } catch (e) { name = v; } }
+                else if (k === "created") { created = parseFloat(v) || 0; }
+                else if (k === "comps") { compsRaw = v; }
+            }
+            var cover = new File(entries[i].fullName + "/project.png");
+            var arr = compsRaw.length ? compsRaw.split(";") : [], cj = [], ci;
+            for (ci = 0; ci < arr.length; ci += 1) {
+                var bar = arr[ci].lastIndexOf("|"); if (bar < 0) { continue; }
+                var cn = arr[ci].substring(0, bar), ti = arr[ci].substring(bar + 1); try { cn = decodeURIComponent(cn); } catch (e2) { }
+                var tp = new File(entries[i].fullName + "/comps/" + ti + ".png");
+                cj.push('{"name":' + jsonStr(cn) + ',"thumbPath":' + jsonStr((ti !== "-1" && tp.exists) ? plain(tp) : "") + "}");
+            }
+            out.push({ created: created, json: '{"id":' + jsonStr(decodeURI(entries[i].name)) + ',"name":' + jsonStr(name) + ',"created":' + created + ',"aepPath":' + jsonStr(plain(aep)) + ',"thumbPath":' + jsonStr(cover.exists ? plain(cover) : "") + ',"comps":[' + cj.join(",") + "]}" });
+        }
+        out.sort(function (a, b) { return b.created - a.created; });
+        var oj = []; for (i = 0; i < out.length; i += 1) { oj.push(out[i].json); }
+        return '{"projects":[' + oj.join(",") + "]}";
+    };
+    F.importProjectLib = function (aepPath) {
+        var g = H.locked(); if (g) { return g; }
+        var f = new File(String(aepPath)); if (!f.exists) { return "Error: Project file not found."; }
+        app.beginUndoGroup("Import Saved Project");
+        try { var io = new ImportOptions(f); io.importAs = ImportAsType.PROJECT; app.project.importFile(io); }
+        catch (e) { app.endUndoGroup(); return "Error: " + e.toString(); }
+        app.endUndoGroup();
+        return "Success";
+    };
+    F.importProjectComp = function (aepPath, compName) {
+        var g = H.locked(); if (g) { return g; }
+        var f = new File(String(aepPath)); if (!f.exists) { return "Error: Project file not found."; }
+        app.beginUndoGroup("Import Project Comp");
+        try {
+            var io = new ImportOptions(f); io.importAs = ImportAsType.PROJECT;
+            var item = app.project.importFile(io);
+            var comp = (item instanceof FolderItem) ? findCompIn(item, String(compName)) : null;
+            if (comp) { comp.openInViewer(); }
+        } catch (e) { app.endUndoGroup(); return "Error: " + e.toString(); }
+        app.endUndoGroup();
+        return "Success";
+    };
+    F.deleteProjectLib = function (id) {
+        var g = H.locked(); if (g) { return g; }
+        var f = new Folder(libFolder().fullName + "/" + PROJ_DIR + "/" + safeName(id));
+        if (!f.exists) { return "Error: Project not found."; }
+        rmrf(f);
+        return "Success";
     };
 
     // ---------- FFX presets ----------

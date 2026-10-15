@@ -16877,7 +16877,18 @@
                 </div>
             </div>
             <div class="sc-grid" id="sc-comp-grid"></div>
-            
+
+            <div class="sc-projects-section" style="margin-top:16px;border-top:1px solid var(--glass-border);padding-top:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 4px;">
+                    <span id="sc-proj-title" style="font-size:9.5px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Saved Projects</span>
+                    <div style="display:flex;gap:6px;">
+                        <button id="sc-proj-back" class="save-asset-btn" style="display:none;background:rgba(255,255,255,0.05);border-color:var(--glass-border);color:#aaa;" onclick="closeProjectComps()">‹ BACK</button>
+                        <button class="save-asset-btn" onclick="saveCurrentProject()">+ SAVE PROJECT</button>
+                    </div>
+                </div>
+                <div class="sc-grid" id="sc-projects-grid"></div>
+            </div>
+
             <div class="sc-cat-tabs" id="sc-ffx-sub-tabs" style="margin-top: 14px; margin-bottom: 8px;">
                 <div class="sc-cat-tab active" id="subtab-ffx-presets" onclick="switchFfxSubTab('ffx')">FX PRESETS
                     (.FFX)</div>
@@ -27927,7 +27938,79 @@
             });
         }
 
+        var _scProjects = [];
+        function pThumb(path, label) {
+            var inner = path ? '<img src="' + getSafeUrl(path) + '" style="width:100%;height:100%;object-fit:cover;">'
+                : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;font-size:9px;">' + label + '</div>';
+            return '<div style="height:64px;overflow:hidden;border-radius:6px;background:#111;position:relative;">' + inner;
+        }
+        function loadProjects() {
+            csInterface.evalScript('$._akira.scanProjectsLib()', function (res) {
+                try { var d = JSON.parse(res); _scProjects = d.projects || []; } catch (e) { _scProjects = []; }
+                renderProjects();
+            });
+        }
+        function renderProjects() {
+            var g = document.getElementById('sc-projects-grid'); if (!g) return;
+            var back = document.getElementById('sc-proj-back'), title = document.getElementById('sc-proj-title');
+            if (back) back.style.display = 'none'; if (title) title.textContent = 'Saved Projects';
+            if (!_scProjects.length) { g.innerHTML = '<div style="color:#777;font-size:10px;text-align:center;padding:14px;grid-column:1/-1;">No saved projects yet. Open a project and press + Save Project.</div>'; return; }
+            var html = '', i;
+            for (i = 0; i < _scProjects.length; i++) {
+                var p = _scProjects[i], n = p.comps ? p.comps.length : 0;
+                html += '<div class="sc-item" onclick="openProjectComps(\'' + encodeURIComponent(p.id) + '\')" data-tooltip="' + escapeCompText(p.name) + '">' +
+                    pThumb(p.thumbPath, 'PROJECT') + '<div style="position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.7);color:#fff;font-size:8px;padding:1px 4px;border-radius:4px;">' + n + ' comps</div></div>' +
+                    '<div class="sc-name">' + escapeCompText(p.name) + '</div>' +
+                    '<div class="sc-del" onclick="event.stopPropagation();deleteProject(\'' + encodeURIComponent(p.id) + '\')">✕</div></div>';
+            }
+            g.innerHTML = html;
+        }
+        function openProjectComps(idEnc) {
+            var id = decodeURIComponent(idEnc), p = null, i;
+            for (i = 0; i < _scProjects.length; i++) { if (_scProjects[i].id === id) { p = _scProjects[i]; break; } }
+            if (!p) return;
+            var g = document.getElementById('sc-projects-grid'), back = document.getElementById('sc-proj-back'), title = document.getElementById('sc-proj-title');
+            if (back) back.style.display = ''; if (title) title.textContent = p.name;
+            var pathSafe = p.aepPath.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            var html = '<div class="sc-item" onclick="importProjectAll(\'' + pathSafe + '\')" data-tooltip="Import the whole project">' +
+                '<div style="height:64px;border-radius:6px;background:var(--primary-dim);border:1px solid var(--primary);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:10px;text-align:center;">⬇ IMPORT<br>WHOLE PROJECT</div>' +
+                '<div class="sc-name">All comps</div></div>';
+            var comps = p.comps || [], j;
+            for (j = 0; j < comps.length; j++) {
+                var c = comps[j], cnSafe = c.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                html += '<div class="sc-item" onclick="importProjectComp(\'' + pathSafe + '\',\'' + cnSafe + '\')" data-tooltip="' + escapeCompText(c.name) + '">' +
+                    pThumb(c.thumbPath, 'COMP') + '</div><div class="sc-name">' + escapeCompText(c.name) + '</div></div>';
+            }
+            if (g) g.innerHTML = html;
+        }
+        function closeProjectComps() { renderProjects(); }
+        function saveCurrentProject() {
+            showStatus('Saving project…', 'info');
+            csInterface.evalScript('$._akira.saveProjectLib("")', function (res) {
+                if (res && res.indexOf('Error') === 0) { showStatus(res, 'error'); return; }
+                try { var d = JSON.parse(res); showStatus(d.message || 'Project saved.', 'success'); } catch (e) { showStatus('Project saved.', 'success'); }
+                loadProjects();
+            });
+        }
+        function importProjectAll(aepPath) {
+            csInterface.evalScript('$._akira.importProjectLib("' + aepPath + '")', function (res) {
+                if (res && res.indexOf('Error') === 0) { showStatus(res, 'error'); } else { showStatus('Project imported.', 'success'); }
+            });
+        }
+        function importProjectComp(aepPath, compName) {
+            csInterface.evalScript('$._akira.importProjectComp("' + aepPath + '","' + compName + '")', function (res) {
+                if (res && res.indexOf('Error') === 0) { showStatus(res, 'error'); } else { showStatus('Imported "' + compName + '".', 'success'); }
+            });
+        }
+        function deleteProject(idEnc) {
+            var safeId = decodeURIComponent(idEnc).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            csInterface.evalScript('$._akira.deleteProjectLib("' + safeId + '")', function (res) {
+                if (res && res.indexOf('Error') === 0) { showStatus(res, 'error'); } else { showStatus('Project deleted.', 'success'); loadProjects(); }
+            });
+        }
+
         function loadAssets() {
+            try { loadProjects(); } catch (e) { }
             csInterface.evalScript('$._akira.scanPostComps()', function (res) {
                 if (!res || res === 'undefined' || res === 'null' || res === 'EvalScript error.') {
                     var g = document.getElementById('sc-comp-grid');
