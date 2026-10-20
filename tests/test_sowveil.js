@@ -3,9 +3,9 @@
 const A = require('assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const M = require('./mock_ae');
 const HOST = path.join(__dirname, '..', 'sowveil', 'host');
-const PARTS = ['akira/akira_tools.jsx', 'akira/akira_json.jsx', 'akira/akira_rigs.jsx', 'akira/akira_saas.jsx', 'akira/akira_templates2.jsx',
+const PARTS = ['akira/akira_tools.jsx', 'akira/akira_json.jsx', 'akira/akira_rigs.jsx',
     'akira/akira_expressions.jsx', 'akira/akira_captions.jsx', 'akira/akira_layers.jsx',
-    'sv_core.jsx', 'sv_expressions.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
+    'sv_core.jsx', 'sv_expressions.jsx', 'sv_saas.jsx', 'sv_scene.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
 let passed = 0;
 function t(name, fn) { try { fn(); passed++; } catch (e) { console.error('FAIL', name, '\n ', e.message.slice(0, 500), (e.stack || '').split('\n')[1] || ''); process.exitCode = 1; } }
 
@@ -123,13 +123,10 @@ t('captions: one text layer with keyed captions, highlight selector, pop and a s
 t('captions: nothing to build without blocks', () => { A.ok(/transcribe/.test(env().call('buildCaptions', { blocks: [] }).error)); });
 
 // ---------------- shared engines from Akira FX, under Sowveil's own namespace ----------------
-t('engines: UI animations / glass / templates load as $._svSaaS / $._svA / $._svT2, unlocked', () => {
+t('engines: glass loads as $._svA, unlocked', () => {
     const e = env();
-    A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svSaaS.halftoneWave, 'function');
-    A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
+    A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function');
     const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
-    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.wipe('direction=left;duration=0.8;delay=0.1;feather=160')), 'gradient wipe runs without any license');
-    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.halftoneWave('color=#8b7dff;waves=1;duration=1')), 'halftone wave runs');
     A.ok(/^SUCCESS/.test(e.ctx.$._svA.applyGlassMorph()), 'glass panel runs');
 });
 t('engines: Sowveil never touches Akira FX (namespace + license gate stay intact)', () => {
@@ -137,14 +134,117 @@ t('engines: Sowveil never touches Akira FX (namespace + license gate stay intact
     A.strictEqual(e.ctx.$._akira.isLocked, true, 'Akira stays locked');
     A.ok(e.ctx.$._akira._h && e.ctx.$._svA._h && e.ctx.$._akira._h !== e.ctx.$._svA._h, 'separate helper objects');
     A.strictEqual(e.ctx.$._akira.applyGlassMorph, undefined, 'Sowveil did not add functions to $._akira');
-    A.strictEqual(e.ctx.$._akiraSaaS, undefined); A.strictEqual(e.ctx.$._akiraT2, undefined);
-    const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
-    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.wipe('direction=top')), 'Sowveil still works next to a locked Akira');
+    A.strictEqual(e.ctx.$._akiraSaaS, undefined);
 });
-t('engines: no "Akira" label leaks into layers Sowveil creates', () => {
-    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
-    e.ctx.$._svSaaS.cursor('style=arrow'); e.ctx.$._svSaaS.halftoneWave('color=#ffffff');
-    for (let i = 1; i <= e.comp.numLayers; i++) A.ok(!/Akira|Sougetsu/.test(e.comp.layer(i).name), e.comp.layer(i).name);
+
+// ---------------- SaaS Effects (host/sv_saas.jsx) ----------------
+function clip(e, name) { const L = e.comp.layers.addSolid([1, 1, 1], name || 'Clip', 1920, 1080); L.source.duration = 5; L.source.mainSource = { isStill: false }; L.startTime = 2; L.inPoint = 2; L.outPoint = 7; L.selected = true; return L; }
+function effectsOf(L) { const fx = L.property('ADBE Effect Parade'), out = []; for (let i = 1; i <= fx.numProperties; i++) out.push(fx.property(i).matchName); return out; }
+t('saas: gradient wipe = frozen frame + hidden depth precomp + Colorama/Gradient Wipe keyed into the cut', () => {
+    const e = env(); const L = clip(e);
+    const ffx = path.join(__dirname, '..', 'sowveil', 'presets', 'gradient_wipe.ffx');
+    const r = e.call('gradientWipe', { dir: 'in', duration: 1, depth: 'auto', cycles: 2, softness: 50, ffx });
+    A.ok(r.ok, r.error);
+    const top = e.comp.layer(1); A.ok(/Gradient Wipe/.test(top.name)); A.strictEqual(top.presetApplied, ffx, 'custom palette preset applied');
+    A.strictEqual(top.inPoint, 1); A.strictEqual(top.outPoint, 2); A.strictEqual(top.property('ADBE Time Remapping').numKeys, 0, 'frame frozen');
+    const fx = top.property('ADBE Effect Parade'), gw = fx.property('ADBE Gradient Wipe'), col = fx.property('APC Colorama');
+    const tc = gw.property('ADBE Gradient Wipe-0001'); A.deepStrictEqual([tc.keyTime(1), tc.keyValue(1), tc.keyTime(2), tc.keyValue(2)], [1, 0, 2, 100]);
+    A.strictEqual(col.property('APC Colorama-0008').keyValue(2), 720);
+    const depth = e.comp._l.find(l => /GW Depth/.test(l.name)); A.ok(depth && depth.source instanceof e.ctx.CompItem, 'depth map precomposed'); A.strictEqual(depth.enabled, false);
+    A.strictEqual(gw.property('ADBE Gradient Wipe-0003').value, depth.index);
+    A.ok(e.comp._l.indexOf(top) < e.comp._l.indexOf(L), 'wipe sits above the clip');
+});
+t('saas: gradient wipe makes room when the clip starts at 0, and needs exactly one layer', () => {
+    const e = env(); const L = clip(e); L.startTime = 0; L.inPoint = 0; L.outPoint = 5;
+    A.ok(e.call('gradientWipe', { duration: 1.5, depth: 'ramp' }).ok); A.strictEqual(L.startTime, 1.5);
+    const e2 = env(); A.ok(/one/.test(e2.call('gradientWipe', {}).error));
+});
+t('saas: the Colorama palette patch rewrites the Output Cycle in the preset', () => {
+    global.window = global.window || {};
+    const buf = fs.readFileSync(path.join(__dirname, '..', 'sowveil', 'presets', 'gradient_wipe.ffx'));
+    const SVp = { hexToRgb: h => [1, 2, 3].map(i => parseInt(h.substr(i * 2 - 1, 2), 16) / 255) };
+    const src = fs.readFileSync(path.join(__dirname, '..', 'sowveil', 'js', 'tabs', 'saas.js'), 'utf8');
+    const m = /SV\.patchColorama = (function[\s\S]*?\n    \});/.exec(src); A.ok(m, 'patch function found');
+    const patch = new Function('SV', 'c255', 'Buffer', 'return ' + m[1].replace(/;$/, ''))(SVp, h => SVp.hexToRgb(h).map(x => Math.round(x * 255)), Buffer);
+    const orig = patch(buf, ['#ffb5b5', '#ff8fab', '#ff8fab', '#e1fcff', '#ffb3c6', '#ffe5ec']);
+    A.ok(orig.equals(buf), 'the preset palette patches to the identical file');
+    const out = patch(buf, ['#112233']); A.strictEqual(out.length, buf.length);
+    const at = out.indexOf('aRbp', out.indexOf('aRbs')) + 8; A.deepStrictEqual([...out.slice(at, at + 8)], [0, 0, 0, 0, 255, 0x11, 0x22, 0x33]);
+});
+t('saas: depth reveal keys a Gradient Wipe on a cover layer over the clip', () => {
+    const e = env(); const L = clip(e); e.comp.time = 3;
+    const r = e.call('depthReveal', { look: 'gradient', colors: ['#000000', '#ff0000', '#00ff00', '#0000ff'], duration: 1.5, depth: 'ramp', parX: 20 }); A.ok(r.ok, r.error);
+    const C = e.comp._l.find(l => /Depth Reveal/.test(l.name)); A.ok(C);
+    const gw = C.property('ADBE Effect Parade').property('ADBE Gradient Wipe'); A.strictEqual(gw.property('ADBE Gradient Wipe-0001').keyTime(2), 4.5);
+    A.ok(effectsOf(C).indexOf('ADBE 4ColorGradient') >= 0); A.ok(effectsOf(L).indexOf('ADBE Displacement Map') >= 0);
+});
+t('saas: halftone wave = ring comp under CC Ball Action, tinted, behind the source', () => {
+    const e = env(); const B = e.comp.layers.addShape(); B.name = 'Button'; B.selected = true;
+    const r = e.call('halftoneWave', { color: '#8b7dff', waves: 2, mode: 'behind' }); A.ok(r.ok, r.error);
+    const W = e.comp._l.find(l => /Halftone Wave/.test(l.name)); A.ok(W.source instanceof e.ctx.CompItem);
+    A.deepStrictEqual(effectsOf(W).slice(0, 2), ['CC Ball Action', 'ADBE Fill']); A.strictEqual(e.comp._l.indexOf(W), e.comp._l.indexOf(B) + 1, 'behind the button');
+    A.strictEqual(W.source.layer(1).property('ADBE Root Vectors Group').numProperties, 2, 'two waves');
+});
+t('saas: match cut zoom parents the object to a keyed null peaking on the cut', () => {
+    const e = env(); const L = e.comp.layers.addShape(); L.selected = true; e.comp.time = 2;
+    A.ok(e.call('matchCutZoom', { zoom: 115, before: 5, after: 5 }).ok);
+    const N = L.parent; A.ok(/Match Cut/.test(N.name)); const sc = N.transform.scale;
+    A.strictEqual(sc.numKeys, 2); A.ok(Math.abs((sc.keyTime(1) + sc.keyTime(2)) / 2 - 2) < 1e-9, 'symmetric around the cut'); A.deepEqual(sc.keyValue(2), [115, 115, 100]);
+});
+t('saas: UI morph stretches A\'s rectangle into the cut and settles B out of it', () => {
+    const e = env();
+    const mk = (n, sz, inP) => { const L = e.comp.layers.addShape(); L.name = n; const g = L.property('ADBE Root Vectors Group').addProperty('ADBE Vector Group'); g.property('ADBE Vectors Group').addProperty('ADBE Vector Shape - Rect').property('ADBE Vector Rect Size').setValue(sz); L.inPoint = inP; L.selected = true; return L; };
+    const A1 = mk('A', [400, 120], 0), B1 = mk('B', [300, 500], 2);
+    A.ok(e.call('uiMorph', { grow: 15 }).ok);
+    let rs; (function walk(g) { for (let i = 1; i <= g.numProperties; i++) { const p = g.property(i); if (p.matchName === 'ADBE Vector Rect Size') rs = p; else if (p._kids) walk(p); } })(A1.property('ADBE Root Vectors Group'));
+    A.deepEqual(Array.from(rs.keyValue(2)).map(Math.round), [400, 138]); A.strictEqual(B1.transform.scale.keyTime(1), 2);
+});
+t('saas: mockup precomposes the UI into a matted device screen on a scaling rig', () => {
+    const e = env(); const L = e.comp.layers.addShape(); L.selected = true; e.comp.time = 1;
+    A.ok(e.call('mockup', { device: 'phone' }).ok);
+    const S = e.comp._l.find(l => /Mockup Screen/.test(l.name)); A.ok(S.source instanceof e.ctx.CompItem); A.ok(S.trackMatte, 'matted');
+    const rig = S.parent; A.ok(/Mockup Rig/.test(rig.name)); A.strictEqual(rig.transform.scale.numKeys, 2);
+});
+t('saas: 3D glass shape and the glass refraction scene build Advanced 3D comps with valid expressions', () => {
+    const e = env();
+    A.ok(e.call('glassShape', { shape: 'ring' }).ok);
+    const inner = e.items.find(i => i.name === 'Glass Shape 3D'); A.strictEqual(inner.renderer, 'ADBE Advanced 3d');
+    const S = inner._l.find(l => l.name === 'Glass Shape'); A.ok(S.threeDLayer); compiles(S.transform.yRotation.expression);
+    A.ok(inner._l.some(l => l instanceof e.ctx.LightLayer));
+    const r = e.call('glassScene', { text: 'Hello' }); A.ok(r.ok, r.error);
+    const sc = e.items.find(i => i.name === 'Sowveil Glass Scene'); A.ok(sc._l.length >= 12);
+    ['Red', 'Green', 'Blue', 'Glass', 'Noise', 'Text Blur', 'Background'].forEach(n => A.ok(sc._l.some(l => l.name === n), n));
+});
+
+// ---------------- Templates: 20 scenes, built by host/sv_scene.jsx ----------------
+require('../sowveil/js/scene.js'); require('../sowveil/js/templates_lib.js'); const TPL = global.window.SVTemplates;
+function allExpr(L) { const out = []; (function walk(g) { for (let i = 1; i <= g.numProperties; i++) { const p = g.property(i); if (p.expression) out.push(p.expression); if (p._kids) walk(p); } })(L.root); return out; }
+t('templates: 20 templates, every one builds a comp whose layers, parents and expressions are valid', () => {
+    A.strictEqual(TPL.list.length, 20);
+    TPL.list.forEach(d => {
+        const e = env(), S = TPL.build(d, {});
+        const r = e.call('buildScene', { scene: S }); A.ok(r.ok, d.id + ': ' + r.error);
+        const c = e.items.find(i => i instanceof e.ctx.CompItem && i.name === S.name); A.ok(c, d.id + ' comp');
+        A.ok(c.numLayers >= S.layers.length + 1, d.id + ' layers');
+        S.layers.forEach(l => { if (l.parent) { const L = c._l.find(x => x.name === l.name); A.ok(L.parent && L.parent.name === l.parent, d.id + ': ' + l.name + ' parent'); } });
+        c._l.forEach(L => allExpr(L).forEach(x => { try { compiles(x.replace(/thisComp|thisLayer/g, 'this')); } catch (err) { throw new Error(d.id + ' ' + L.name + ': ' + err.message + '\n' + x); } }));
+    });
+});
+t('templates: keys keep the preview\'s timing and the Speed setting rescales them', () => {
+    const d = TPL.list.find(x => x.id === 'success');
+    const e = env(), S = TPL.build(d, {}); e.call('buildScene', { scene: S });
+    const c = e.items.find(i => i.name === S.name), sp = c._l.find(l => l.name === 'Spinner');
+    A.strictEqual(sp.transform.rotation.numKeys, 2); A.strictEqual(sp.transform.rotation.keyTime(2), 2);
+    const fast = TPL.build(d, { speed: 200 }); A.strictEqual(fast.dur, 2.5);
+    A.strictEqual(fast.layers.find(l => l.name === 'Spinner').anim.rot[1][0], 1);
+});
+t('templates: the typewriter / counter text expressions produce the preview text', () => {
+    const d = TPL.list.find(x => x.id === 'analytics'), e = env(), S = TPL.build(d, {}); e.call('buildScene', { scene: S });
+    const c = e.items.find(i => i.name === S.name), V = c._l.find(l => l.name === 'Value');
+    const x = V.property('ADBE Text Properties').property('ADBE Text Document').expression;
+    const val = new Function('time', 'return ' + '(function(){' + x.replace(/;([^;]*);$/, ';return $1;') + '})()');
+    A.strictEqual(val(10), '$12,480'); A.strictEqual(val(0), '$0');
+    A.strictEqual(global.window.SVScene.sample([[0, 0], [1, 100, 'linear']], 0.5), 50);
 });
 
 // ---------------- 3D carousel = Akira's builder ----------------
@@ -169,7 +269,8 @@ t('loader: with no $.fileName, the panel-provided folder loads every part with n
     vm.runInContext(fs.readFileSync(path.join(HOST, 'sowveil.jsx'), 'utf8'), e.ctx, { filename: 'sowveil.jsx' });
     A.deepStrictEqual(Array.from(e.ctx.$._sv_loadErrors || ['loader did not run']), []);
     ['selInfo', 'applyExpression', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
-    A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
+    ['gradientWipe', 'depthReveal', 'halftoneWave', 'matchCutZoom', 'uiMorph', 'mockup', 'glassShape', 'glassScene'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
+    A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function');
     A.ok(e.ctx.$._svA._h, 'shared helpers ready');
 });
 t('loader: finds itself from $.fileName too', () => {

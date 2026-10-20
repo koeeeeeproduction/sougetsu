@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.sowveil" ExtensionBundleVersion="1.2.1" ExtensionBundleName="Sowveil" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.sowveil" ExtensionBundleVersion="1.3.0" ExtensionBundleName="Sowveil" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.sowveil.panel" Version="1.2.1" />
+    <Extension Id="com.sowveil.panel" Version="1.3.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

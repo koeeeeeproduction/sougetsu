@@ -101,7 +101,7 @@ class AVLayer {
     if (kind === 'shape') this.root._add(group('Contents', 'ADBE Root Vectors Group'));
     if (kind === 'text') { const tp = group('Text', 'ADBE Text Properties', true); tp._add(new Prop('Source Text', 'ADBE Text Document', { text: name, fontSize: 50, justification: 7413, boxText: false }, PVT.CUSTOM_VALUE)); this.root._add(tp); }
     if (kind === 'camera') { const co = group('Camera Options', 'ADBE Camera Options Group', true); this.root._add(co); }
-    if (kind === 'shape' || kind === 'text') { const eg = group('Geometry Options', 'ADBE Extrsn Options Grp'); eg._add(new Prop('Extrusion Depth', 'ADBE Extrsn Depth', 0)); this.root._add(eg); }
+    if (kind === 'shape' || kind === 'text') { const eg = group('Geometry Options', 'ADBE Extrsn Options Grp', true); eg._add(new Prop('Extrusion Depth', 'ADBE Extrsn Depth', 0)); this.root._add(eg); this.root._add(group('Material Options', 'ADBE Material Options Group', true)); }
   }
   property(k) { return this.root.property(k); }
   get numProperties() { return this.root.numProperties; }
@@ -114,6 +114,9 @@ class AVLayer {
   moveToBeginning() { this.remove(); this.containingComp._l.unshift(this); }
   duplicate() { const d = new this.constructor(this.containingComp, this.name, this.kind); d.comment = this.comment; d.source = this.source; d.threeDLayer = this.threeDLayer; this.containingComp._l.splice(this.index - 1, 0, d); return d; }
   setTrackMatte(m, t) { this.trackMatte = m; this.trackMatteType = t; }
+  get timeRemapEnabled() { return !!this._tr; }
+  set timeRemapEnabled(v) { if (v && !this._tr) { this._tr = this.root._add(new Prop('Time Remap', 'ADBE Time Remapping', 0)); this._tr.setValueAtTime(0, 0); this._tr.setValueAtTime(1, 1); } }
+  applyPreset(f) { if (!this.selected) throw new Error('applyPreset: layer not selected'); this.presetApplied = f.p; const fx = this.root.property('ADBE Effect Parade'); fx.addProperty('APC Colorama'); fx.addProperty('ADBE Gradient Wipe'); }
   copyToComp(c) { const L = new this.constructor(c, this.name, this.kind); c._l.unshift(L); return L; }
   get width() { return this.source ? this.source.width : 100; }
 }
@@ -129,6 +132,12 @@ class CompItem {
       addShape: () => put(new ShapeLayer(c, 'Shape Layer', 'shape')), addNull: () => { const L = put(new AVLayer(c, 'Null', 'null')); L.source = { width: 100, height: 100 }; return L; },
       addText: (t) => put(new TextLayer(c, t || 'Text', 'text')), addCamera: (n) => put(new CameraLayer(c, n, 'camera')),
       addSolid: (col, n, w, h) => { const L = put(new AVLayer(c, n, 'solid')); L.source = { width: w, height: h, mainSource: {} }; L.color = col; return L; },
+      addLight: (n, pos) => { const L = put(new LightLayer(c, n, 'light')); L.root._add(group('Light Options', 'ADBE Light Options Group', true)); return L; },
+      precompose: (idx, name, move) => {
+        const inner = new CompItem(name, c.width, c.height, 1, c.duration, c.frameRate); c._items && c._items.push(inner);
+        const moved = idx.map(i => c._l[i - 1]); const at = Math.min.apply(null, idx) - 1;
+        moved.forEach(L => { c._l.splice(c._l.indexOf(L), 1); L.containingComp = inner; inner._l.push(L); });
+        const P = new AVLayer(c, name, 'av'); P.source = inner; c._l.splice(at, 0, P); return inner; },
       add: (item) => { const L = put(new AVLayer(c, item.name, 'av')); L.source = item; L.transform.anchorPoint.setValue([item.width / 2, item.height / 2]); return L; },
     };
   }
@@ -165,8 +174,8 @@ function makeEnv(opts) {
     CompItem, FolderItem, FootageItem, AVLayer, ShapeLayer, TextLayer, CameraLayer, LightLayer, SolidSource: function () { },
     PropertyType: PT, PropertyValueType: PVT,
     ParagraphJustification: { LEFT_JUSTIFY: 7413, CENTER_JUSTIFY: 7415, RIGHT_JUSTIFY: 7414 },
-    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, MULTIPLY: 5, OVERLAY: 13, EXCLUSION: 27 },
-    TrackMatteType: { ALPHA: 1, ALPHA_INVERTED: 2, LUMA: 3 }, AutoOrientType: { CAMERA_OR_POINT_OF_INTEREST: 3 },
+    KeyframeInterpolationType: { LINEAR: 6612, BEZIER: 6613, HOLD: 6614 }, BlendingMode: { NORMAL: 1, MULTIPLY: 5, SCREEN: 9, ADD: 10, OVERLAY: 13, EXCLUSION: 27 },
+    TrackMatteType: { ALPHA: 1, ALPHA_INVERTED: 2, LUMA: 3 }, LightType: { PARALLEL: 1, SPOT: 2, POINT: 3, AMBIENT: 4, ENVIRONMENT: 5 }, AutoOrientType: { CAMERA_OR_POINT_OF_INTEREST: 3 },
     alert: (m) => { throw new Error('alert: ' + m); },
     app: {
       beginUndoGroup() { undoDepth++; undoMax = Math.max(undoMax, undoDepth); }, endUndoGroup() { undoDepth--; },

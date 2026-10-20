@@ -6,7 +6,7 @@ OUT=dist/com.sowveil
 VER=$(sed -n 's/.*ExtensionBundleVersion="\([^"]*\)".*/\1/p' sowveil/CSXS/manifest.xml | head -1)
 rm -rf "$OUT" dist/Sowveil_*.zxp
 mkdir -p "$OUT"
-cp -R sowveil/CSXS sowveil/css sowveil/js sowveil/host sowveil/py sowveil/assets sowveil/index.html "$OUT"/
+cp -R sowveil/CSXS sowveil/css sowveil/js sowveil/host sowveil/py sowveil/assets sowveil/presets sowveil/index.html "$OUT"/
 cat > "$OUT/.debug" <<'XML'
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionList>

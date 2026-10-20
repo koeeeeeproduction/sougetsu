@@ -14,7 +14,7 @@ import os, re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'host')
 DST = os.path.join(ROOT, 'sowveil', 'host', 'akira')
-FILES = ['akira_tools.jsx', 'akira_json.jsx', 'akira_rigs.jsx', 'akira_saas.jsx', 'akira_templates2.jsx', 'akira_expressions.jsx', 'akira_captions.jsx', 'akira_layers.jsx']
+FILES = ['akira_tools.jsx', 'akira_json.jsx', 'akira_rigs.jsx', 'akira_expressions.jsx', 'akira_captions.jsx', 'akira_layers.jsx']
 RENAMES = [(r'\$\._akiraSaaS\b', '$._svSaaS'), (r'\$\._akiraT2\b', '$._svT2'), (r'\$\._akira_extension_path\b', '$._sv_extension_path'), (r'\$\._akira\b', '$._svA')]
 # user-visible labels (layer names, undo steps, messages). Hidden AKIRA_* tags stay as they are.
 # Akira's live preview engine (client/js_akira/preview), in load order
@@ -54,25 +54,12 @@ def main():
         dp = dp.replace(a, b)
     open(os.path.join(ROOT, 'sowveil', 'py', 'depth.py'), 'w', encoding='utf-8').write(dp)
     print('synced depth.py')
-    # Templates 2.0 panel module + its op recorder (panel side of the Templates tab)
     import base64
     vend = os.path.join(ROOT, 'sowveil', 'js', 'vendor')
     os.makedirs(vend, exist_ok=True)
-    for src, dst in (('akira_templates2.js', 'templates2.js'), ('akira_t2_record.js', 't2_record.js')):
-        raw = open(os.path.join(ROOT, 'client', 'js_akira', src), encoding='utf-8').read()
-        m = re.search(r'atob\("([A-Za-z0-9+/=]+)"\)', raw)
-        js = base64.b64decode(m.group(1)).decode('utf-8') if m else raw
-        js = js.replace('$._akiraT2', '$._svT2').replace("hostFile: 'host/templates2'", "hostFile: 'host/akira/akira_templates2'")
-        js = js.replace('        payload: function () {', '        thumb: drawThumb,\n        payload: function () {')
-        for a, b in LABELS + [('Sougetsu', 'Sowveil'), ('SOUGETSU', 'SOWVEIL'), ('sougetsu', 'sowveil')]:
-            js = js.replace(a, b)
-        if '$._akira' in js:
-            raise SystemExit(dst + ' still references $._akira')
-        open(os.path.join(vend, dst), 'w', encoding='utf-8').write('/* Synced from client/js_akira/%s by tools/sync_sowveil_engines.py */\n' % src + js)
-        print('synced', dst)
     # Text Animation = Akira's expression library + its live preview engine; 3D Carousel = Akira's carousel builder;
     # Backgrounds = Akira's animated gradient script; UI Motion Kit = Akira's SaaS FX rigs panel
-    mods = [('expressions.js', 'expressions.js'), ('carousel_3d.js', 'carousel3d.js'), ('akira_gradient_bg.js', 'gradient_bg.js'), ('akira_saasfx.js', 'saasfx.js')]
+    mods = [('expressions.js', 'expressions.js'), ('carousel_3d.js', 'carousel3d.js'), ('akira_gradient_bg.js', 'gradient_bg.js')]
     pdir = os.path.join(ROOT, 'client', 'js_akira', 'preview')
     for name in PREVIEW:
         mods.append(('preview/' + name, 'preview/' + name))

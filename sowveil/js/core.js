@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var SV = window.SV = window.SV || {};
-    SV.VERSION = '1.2.1';
+    SV.VERSION = '1.3.0';
 
     // ---------- environment ----------
     var cs = null;
@@ -17,7 +17,7 @@
     // ---------- host loading ----------
     // AE may start host/sowveil.jsx without its own path, so the panel always makes sure the host is
     // loaded, using the real extension folder, before it sends any command.
-    var READY = "(typeof $._sv !== 'undefined' && $._sv.selInfo && typeof $._svA !== 'undefined' && $._svA._h && typeof $._svSaaS !== 'undefined' && typeof $._svT2 !== 'undefined' && typeof $._svG !== 'undefined') ? 'ok' : 'missing'";
+    var READY = "(typeof $._sv !== 'undefined' && $._sv.selInfo && typeof $._svA !== 'undefined' && $._svA._h && typeof $._svG !== 'undefined') ? 'ok' : 'missing'";
     SV.extDir = function () {
         var p = '';
         try { p = String(cs.getSystemPath(window.SystemPath ? SystemPath.EXTENSION : 'extension') || ''); } catch (e) { return ''; }
@@ -86,12 +86,6 @@
             });
         });
     }
-    // UI animation engine: $._svSaaS.fn("key=value;key=value")
-    SV.motion = function (fn, pairs, okMsg) {
-        var out = [], k;
-        for (k in pairs) { if (pairs.hasOwnProperty(k) && pairs[k] !== undefined && pairs[k] !== null) { out.push(k + '=' + String(pairs[k]).replace(/[;=]/g, '')); } }
-        return legacy('$._svSaaS && $._svSaaS.' + fn + ' ? $._svSaaS.' + fn + '(' + JSON.stringify(out.join(';')) + ') : "ERR:Engine not loaded"', okMsg);
-    };
     // Shared helper engines: $._svA.fn(arg1, arg2...)
     SV.akira = function (fn, args, okMsg) {
         var a = (args || []).map(function (x) { return JSON.stringify(x); }).join(',');

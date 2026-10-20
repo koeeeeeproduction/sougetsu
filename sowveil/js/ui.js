@@ -21,6 +21,7 @@
         var key = tabId + ':' + itemId; values[key] = values[key] || {}; values[key][pid] = val;
         clearTimeout(saveVal.t); saveVal.t = setTimeout(function () { SV.set('values', values); }, 250);
     }
+    SV.saveVal = saveVal;
     SV.resetVals = function (tabId, itemId) { delete values[tabId + ':' + itemId]; SV.set('values', values); };
 
     // ---------- controls ----------

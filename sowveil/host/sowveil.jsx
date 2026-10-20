@@ -28,9 +28,9 @@
     $._svA.isLocked = false;
     try { $._sv_root = here.parent.fullName; $._sv_extension_path = here.parent.fullName; } catch (e0) { }
     var parts = [
-        "akira/akira_tools.jsx", "akira/akira_json.jsx", "akira/akira_rigs.jsx", "akira/akira_saas.jsx", "akira/akira_templates2.jsx",
+        "akira/akira_tools.jsx", "akira/akira_json.jsx", "akira/akira_rigs.jsx",
         "akira/akira_expressions.jsx", "akira/akira_captions.jsx", "akira/akira_layers.jsx",
-        "sv_core.jsx", "sv_expressions.jsx", "sv_media.jsx", "sv_captions.jsx", "sv_library.jsx"
+        "sv_core.jsx", "sv_expressions.jsx", "sv_saas.jsx", "sv_scene.jsx", "sv_media.jsx", "sv_captions.jsx", "sv_library.jsx"
     ], errs = [];
     for (i = 0; i < parts.length; i += 1) {
         var f = new File(here.fullName + "/" + parts[i]);
