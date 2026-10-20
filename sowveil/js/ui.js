@@ -296,6 +296,15 @@
         document.addEventListener('visibilitychange', function () { document.body.classList.toggle('sv-hidden', document.hidden); if (!document.hidden) { poll(); } });
         window.addEventListener('pointerdown', function () { pointerDown = true; }, true);
         window.addEventListener('pointerup', function () { pointerDown = false; }, true);
-        if (SV.isCEP()) { poll(); setInterval(poll, 1200); }
+        if (SV.isCEP()) {
+            SV.ensureHost().then(function (ok) {
+                if (ok) { return; }
+                var host = document.getElementById('banners'), retry = h('button', { text: 'Retry' });
+                var bar = h('div', { class: 'bar remove' }, [h('span', { text: 'Sowveil could not load its After Effects scripts. ' + (SV.hostError || '') }), retry]);
+                retry.addEventListener('click', function () { SV.ensureHost(true).then(function (ok2) { if (ok2) { bar.remove(); SV.toast('Sowveil is ready.'); } }); });
+                host.appendChild(bar);
+            });
+            poll(); setInterval(poll, 1200);
+        }
     };
 })();

@@ -174,4 +174,24 @@ t('carousel: needs a selection', () => {
     const e = env(); A.ok(/Select/.test(e.call('carousel', {}).error));
 });
 
+// ---------------- loader: how After Effects really starts the panel ----------------
+t('loader: with no $.fileName, the panel-provided folder loads every part with no errors', () => {
+    const e = M.makeEnv({ files: [], locked: true });
+    e.ctx.$.fileName = '';
+    e.ctx.$.evalFile = (f) => vm.runInContext(fs.readFileSync(f.fullName || f.p, 'utf8'), e.ctx, { filename: String(f.fullName || f.p) });
+    e.ctx.$._sv_root = path.join(__dirname, '..', 'sowveil');
+    vm.runInContext(fs.readFileSync(path.join(HOST, 'sowveil.jsx'), 'utf8'), e.ctx, { filename: 'sowveil.jsx' });
+    A.deepStrictEqual(Array.from(e.ctx.$._sv_loadErrors || ['loader did not run']), []);
+    ['selInfo', 'textAnimate', 'applyExpression', 'animatedGradient', 'carousel', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
+    A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
+    A.ok(e.ctx.$._svA._h, 'shared helpers ready');
+});
+t('loader: finds itself from $.fileName too', () => {
+    const e = M.makeEnv({ files: [], locked: true });
+    e.ctx.$.fileName = path.join(HOST, 'sowveil.jsx');
+    e.ctx.$.evalFile = (f) => vm.runInContext(fs.readFileSync(f.fullName || f.p, 'utf8'), e.ctx, { filename: String(f.fullName || f.p) });
+    vm.runInContext(fs.readFileSync(path.join(HOST, 'sowveil.jsx'), 'utf8'), e.ctx, { filename: 'sowveil.jsx' });
+    A.strictEqual(typeof e.ctx.$._sv.selInfo, 'function');
+});
+
 console.log(process.exitCode ? 'SOME SOWVEIL TESTS FAILED' : 'ALL ' + passed + ' SOWVEIL TESTS PASSED');

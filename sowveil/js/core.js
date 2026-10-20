@@ -14,17 +14,62 @@
     // ---------- host calls ----------
     // Every host function takes ONE argument (a JSON object literal) and returns a JSON string
     // {"ok":true,...} or {"ok":false,"error":"..."}. Returns a Promise of the parsed object.
+    // ---------- host loading ----------
+    // AE may start host/sowveil.jsx without its own path, so the panel always makes sure the host is
+    // loaded, using the real extension folder, before it sends any command.
+    var READY = "(typeof $._sv !== 'undefined' && $._sv.selInfo && typeof $._svA !== 'undefined' && $._svA._h && typeof $._svSaaS !== 'undefined' && typeof $._svT2 !== 'undefined') ? 'ok' : 'missing'";
+    SV.extDir = function () {
+        var p = '';
+        try { p = String(cs.getSystemPath(window.SystemPath ? SystemPath.EXTENSION : 'extension') || ''); } catch (e) { return ''; }
+        try { p = decodeURIComponent(p); } catch (e2) { }
+        p = p.replace(/^file:(\/\/)?/i, '');
+        if (/^\/[A-Za-z]:[\/\\]/.test(p)) { p = p.substring(1); }
+        return p.replace(/\\/g, '/').replace(/\/+$/, '');
+    };
+    var hostReady = null;
+    SV.ensureHost = function (force) {
+        if (!cs) { return Promise.resolve(false); }
+        if (hostReady && !force) { return hostReady; }
+        hostReady = new Promise(function (resolve) {
+            cs.evalScript(READY, function (r) {
+                if (String(r) === 'ok') { resolve(true); return; }
+                var dir = SV.extDir();
+                var load = 'try { $._sv_root = ' + JSON.stringify(dir) + '; var __f = new File(' + JSON.stringify(dir + '/host/sowveil.jsx') + '); ' +
+                    'if (__f.exists) { $.evalFile(__f); } ' + READY + '; } catch (__e) { "ERR:" + __e.toString(); }';
+                cs.evalScript(load, function (r2) {
+                    if (String(r2) === 'ok') { resolve(true); return; }
+                    cs.evalScript('typeof $._sv_loadErrors !== "undefined" ? $._sv_loadErrors.join("\\n") : "host file not found in ' + dir.replace(/"/g, '') + '"', function (why) {
+                        console.error('Sowveil host failed to load:', r2, why);
+                        SV.hostError = String(why || r2);
+                        resolve(false);
+                    });
+                });
+            });
+        });
+        return hostReady;
+    };
+    function notLoaded(res) { return /Sowveil host not loaded|Engine not loaded/.test(String(res)); }
+    function evalHost(script, cb, retried) {
+        SV.ensureHost().then(function (ready) {
+            if (!ready) { cb('ERR:Sowveil could not load its After Effects scripts. ' + (SV.hostError || '') + ' Restart After Effects; if it persists, reinstall Sowveil.'); return; }
+            cs.evalScript(script, function (res) {
+                if (notLoaded(res) && !retried) { SV.ensureHost(true).then(function () { evalHost(script, cb, true); }); return; }   // AE reset its script engine: reload once
+                cb(res);
+            });
+        });
+    }
+
     SV.call = function (fn, args, opts) {
         opts = opts || {};
         return new Promise(function (resolve) {
             if (!cs) { resolve({ ok: false, error: 'Open Sowveil inside After Effects.', dev: true }); return; }
             var done = false, timer = setTimeout(function () { if (!done) { done = true; resolve({ ok: false, error: 'After Effects did not answer.' }); } }, opts.timeout || 60000);
             var script = '$._sv && $._sv.' + fn + ' ? $._sv.' + fn + '(' + JSON.stringify(args === undefined ? {} : args) + ') : \'{"ok":false,"error":"Sowveil host not loaded"}\'';
-            cs.evalScript(script, function (res) {
+            evalHost(script, function (res) {
                 if (done) { return; }
                 done = true; clearTimeout(timer);
                 var out;
-                try { out = JSON.parse(res); } catch (e) { out = { ok: false, error: (res && res !== 'EvalScript error.') ? String(res) : 'Script error in After Effects.' }; }
+                try { out = JSON.parse(res); } catch (e) { out = { ok: false, error: (res && res !== 'EvalScript error.') ? String(res).replace(/^ERR:/, '') : 'Script error in After Effects.' }; }
                 resolve(out);
             });
         });
@@ -34,7 +79,7 @@
     function legacy(script, okMsg) {
         return new Promise(function (resolve) {
             if (!cs) { resolve({ ok: false, error: 'Open Sowveil inside After Effects.', dev: true }); return; }
-            cs.evalScript(script, function (res) {
+            evalHost(script, function (res) {
                 var r = String(res === undefined || res === null ? '' : res);
                 if (/^SUCCESS/.test(r) || /^OK/.test(r)) { resolve({ ok: true, message: r.replace(/^(SUCCESS|OK):?/, '') || okMsg }); }
                 else { resolve({ ok: false, error: r.replace(/^(ERR(OR)?:?\s*)/, '') || 'Something went wrong.' }); }

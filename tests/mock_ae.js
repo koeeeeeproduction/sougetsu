@@ -147,7 +147,7 @@ function makeEnv(opts) {
   const items = [];
   items.addComp = (n, w, h, par, d, f) => { const c = new CompItem(n, w, h, par, d, f); items.push(c); return c; };
   items.addFolder = (n) => { const f = new FolderItem(n); items.push(f); return f; };
-  const File = function (p) { this.p = String(p); this.fullName = this.p; this.exists = fs.existsSync(this.p); this.encoding = ''; this.parent = { fullName: path.dirname(this.p) }; };
+  const File = function (p) { this.p = String(p); this.fullName = this.p; this.exists = fs.existsSync(this.p); this.encoding = ''; }; Object.defineProperty(File.prototype, 'parent', { get() { return new Folder(path.dirname(this.p)); } });
   File.prototype.open = function (mode) { this._mode = mode || 'r'; if (this._mode === 'r') { return this.exists; } return true; };
   File.prototype.read = function () { return fs.readFileSync(this.p, 'utf8'); };
   File.prototype.write = function (s) { try { fs.mkdirSync(path.dirname(this.p), { recursive: true }); } catch (e) { } fs.writeFileSync(this.p, String(s)); this.exists = true; };
