@@ -1,10 +1,11 @@
-// Sowveil host engine tests (mock After Effects): text animation, backgrounds, carousel, selection info, Remove.
+// Sowveil host engine tests (mock After Effects): Akira text library + carousel, backgrounds, captions, selection info, Remove, loader.
 'use strict';
 const A = require('assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const M = require('./mock_ae');
 const HOST = path.join(__dirname, '..', 'sowveil', 'host');
-const PARTS = ['akira/akira_tools.jsx', 'akira/akira_rigs.jsx', 'akira/akira_saas.jsx', 'akira/akira_templates2.jsx',
-    'sv_core.jsx', 'sv_text.jsx', 'sv_expressions.jsx', 'sv_gradients.jsx', 'sv_carousel.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
+const PARTS = ['akira/akira_tools.jsx', 'akira/akira_json.jsx', 'akira/akira_rigs.jsx', 'akira/akira_saas.jsx', 'akira/akira_templates2.jsx',
+    'akira/akira_expressions.jsx', 'akira/akira_captions.jsx', 'akira/akira_layers.jsx',
+    'sv_core.jsx', 'sv_expressions.jsx', 'sv_gradients.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
 let passed = 0;
 function t(name, fn) { try { fn(); passed++; } catch (e) { console.error('FAIL', name, '\n ', e.message.slice(0, 500), (e.stack || '').split('\n')[1] || ''); process.exitCode = 1; } }
 
@@ -21,54 +22,52 @@ function text(e, name) { const L = e.comp.layers.addText(name || 'Hello World');
 function animators(L) { return L.property('ADBE Text Properties').property('ADBE Text Animators'); }
 function compiles(expr) { new Function(expr); return true; }   // AE expressions are JS: must at least parse
 
-// ---------------- text animation ----------------
-t('text: Fade Up adds a named animator with a sweeping range selector', () => {
-    const e = env(); const L = text(e); e.comp.time = 2;
-    const r = e.call('textAnimate', { preset: 'fade-up', label: 'Fade Up', duration: 1, stagger: 40, distance: 40 });
-    A.ok(r.ok, r.error);
-    const an = animators(L); A.strictEqual(an.numProperties, 1);
-    A.strictEqual(an.property(1).name, 'Sowveil · Fade Up');
-    const props = an.property(1).property('ADBE Text Animator Properties');
-    A.strictEqual(props.property('ADBE Text Opacity').value, 0, 'hidden state = opacity 0');
-    const off = an.property(1).property('ADBE Text Selectors').property(1).property('ADBE Text Percent Offset');
-    A.strictEqual(JSON.stringify(off.keys.map(k => [k.t, k.v])), '[[2,-40],[3,100]]', 'offset sweeps -width -> 100 from the playhead');
+// ---------------- text animation = Akira's expression library ----------------
+global.window = {}; require('../sowveil/js/vendor/expressions.js'); const LIB = global.window.expressionLibrary;
+function G(e, fn, ...args) { return JSON.parse(e.ctx.$._svG[fn](...args)); }
+t('text: the library is Akira FX\'s (7 categories, 143 presets) and every buildCode compiles', () => {
+    A.deepStrictEqual(Object.keys(LIB), ['textanimator', 'text', 'motion', 'physics', 'transform', 'effects', 'glitch']);
+    let n = 0;
+    for (const c in LIB) for (const x of LIB[c]) {
+        n++; const p = {}; (x.params || []).forEach(q => { p[q.name] = q.default; });
+        const code = x.buildCode ? x.buildCode(p) : x.code; A.ok(typeof code === 'string' && code.length, x.name);
+    }
+    A.strictEqual(n, 143);
 });
-t('text: backward order sweeps the other way with a Ramp Down shape', () => {
+t('text: applyExpressionToTargets lives in $._svG (not the global scope Akira FX uses)', () => {
+    const e = env(); A.strictEqual(typeof e.ctx.$._svG.applyExpressionToTargets, 'function');
+    A.strictEqual(typeof e.ctx.applyExpressionToTargets, 'undefined');
+});
+t('text: an animator preset adds a "Sowveil ·" Expressible Selector animator with its properties', () => {
     const e = env(); const L = text(e);
-    e.call('textAnimate', { preset: 'blur-in', order: 'backward', stagger: 30, duration: 2 });
-    const sel = animators(L).property(1).property('ADBE Text Selectors').property(1);
-    A.strictEqual(JSON.stringify(sel.property('ADBE Text Percent Offset').keys.map(k => k.v)), '[100,-30]');
-    A.strictEqual(sel.property('ADBE Text Range Advanced').property('ADBE Text Range Shape').value, 3);
+    const x = LIB.textanimator[0], p = {}; x.params.forEach(q => { p[q.name] = q.default; });
+    const r = G(e, 'applyExpressionToTargets', '// sowveil\n' + x.buildCode(p), 'animator', 'Sowveil · ' + x.name, { basedOn: 3, props: [{ type: 'position', value: [0, 80] }, { type: 'opacity', value: 0 }] });
+    A.ok(r.success, r.error);
+    const an = animators(L).property(1); A.strictEqual(an.name, 'Sowveil · Apple Style Text');
+    const sel = an.property('ADBE Text Selectors').property(1); A.strictEqual(sel.matchName, 'ADBE Text Expressible Selector');
+    A.ok(/textIndex/.test(sel.property('ADBE Text Expressible Amount').expression));
+    A.strictEqual(e.call('selInfo').hasSv, true);
 });
-t('text: Pop adds an overshoot animator riding the sweep (Triangle shape)', () => {
-    const e = env(); const L = text(e);
-    A.ok(e.call('textAnimate', { preset: 'pop', label: 'Pop', overshoot: true, overshootAmt: 25 }).ok);
-    const an = animators(L); A.strictEqual(an.numProperties, 2);
-    A.strictEqual(an.property(2).name, 'Sowveil · Pop overshoot');
-    A.strictEqual(JSON.stringify(an.property(2).property('ADBE Text Animator Properties').property('ADBE Text Scale 3D').value), '[125,125,100]');
-    A.strictEqual(an.property(2).property('ADBE Text Selectors').property(1).property('ADBE Text Range Advanced').property('ADBE Text Range Shape').value, 4);
+t('text: transform presets go on every picked property; errors are clear', () => {
+    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'S', 100, 100); L.selected = true;
+    const r = G(e, 'applyExpressionToTargets', '// sowveil\nwiggle(5, 20)', 'Position,Rotation', 'Sowveil · Wiggle', { basedOn: 1, props: [] });
+    A.ok(r.success, r.error); A.strictEqual(r.count, 2);
+    A.ok(/wiggle/.test(L.transform.position.expression)); A.ok(/wiggle/.test(L.transform.rotation.expression));
+    A.ok(/text layer/i.test(G(e, 'applyExpressionToTargets', 'x', 'animator', 'n', {}).error));
+    const e2 = env({ noComp: true }); A.ok(/composition/i.test(G(e2, 'applyExpressionToTargets', 'x', 'Position', 'n', {}).error));
 });
-t('text: every preset applies cleanly', () => {
-    ['fade-up', 'hero-reveal', 'slide', 'blur-in', 'letter-rise', 'word-stagger', 'pop', 'drop-in', 'spin-in', 'skew-in', 'tracking-in', 'typewriter', 'scramble', 'color-sweep'].forEach(id => {
-        const e = env(); text(e); const r = e.call('textAnimate', { preset: id }); A.ok(r.ok, id + ': ' + r.error);
-    });
-});
-t('text: clear errors without a comp or without text layers', () => {
-    const e1 = env({ noComp: true }); A.ok(/composition/.test(e1.call('textAnimate', { preset: 'pop' }).error));
-    const e2 = env(); const s = e2.comp.layers.addShape(); s.selected = true;
-    A.ok(/text layers/.test(e2.call('textAnimate', { preset: 'pop' }).error));
-    const e3 = env(); text(e3); A.ok(/Unknown/.test(e3.call('textAnimate', { preset: 'nope' }).error));
-});
-t('text: Add Text creates a centred, selected text layer', () => {
-    const e = env(); const r = e.call('addText', { text: 'Hi' });
-    A.ok(r.ok, r.error); A.ok(e.comp.layer(1) instanceof e.ctx.TextLayer); A.ok(e.comp.layer(1).selected);
+t('text: Remove expressions from selection (Akira deleteSelectedExpressions) clears them', () => {
+    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'S', 100, 100); L.selected = true;
+    G(e, 'applyExpressionToTargets', 'wiggle(5, 20)', 'Position,Scale', 'n', {});
+    A.strictEqual(e.ctx.$._svA.deleteSelectedExpressions(), 'SUCCESS:2'); A.strictEqual(L.transform.position.expression, '');
 });
 
 // ---------------- selection info + remove ----------------
 t('selInfo reports layers and Sowveil presence; Remove strips the animators', () => {
     const e = env(); const L = text(e);
     A.strictEqual(e.call('selInfo').hasSv, false);
-    e.call('textAnimate', { preset: 'pop' });
+    G(e, 'applyExpressionToTargets', '// sowveil\nvar x = 1; x', 'animator', 'Sowveil · Pop', { basedOn: 1, props: [{ type: 'scale', value: [0, 0] }] });
+    G(e, 'applyExpressionToTargets', '// sowveil\nvar y = 1; y', 'animator', 'Sowveil · Fade', { basedOn: 1, props: [{ type: 'opacity', value: 0 }] });
     const s = e.call('selInfo'); A.ok(s.comp); A.strictEqual(s.layers, 1); A.strictEqual(s.hasSv, true);
     const r = e.call('removeSowveil'); A.ok(r.ok, r.error); A.strictEqual(r.stats.animators, 2);
     A.strictEqual(animators(L).numProperties, 0);
@@ -143,35 +142,17 @@ t('engines: no "Akira" label leaks into layers Sowveil creates', () => {
     for (let i = 1; i <= e.comp.numLayers; i++) A.ok(!/Akira|Sougetsu/.test(e.comp.layer(i).name), e.comp.layer(i).name);
 });
 
-// ---------------- carousel ----------------
-t('carousel: cards parent to a controller null with live controls and valid expressions', () => {
-    const e = env(); const cards = [1, 2, 3, 4].map(i => { const L = e.comp.layers.addSolid([1, 1, 1], 'Card ' + i, 400, 300); L.selected = true; return L; });
-    const r = e.call('carousel', { tilt: 15, spin: 20, backOpacity: 30, camera: true });
-    A.ok(r.ok, r.error);
-    const ctrl = cards[0].parent; A.ok(ctrl, 'parented'); A.ok(/Sowveil Carousel/.test(ctrl.name)); A.ok(ctrl.threeDLayer);
-    const names = []; for (let i = 1; i <= ctrl.property('ADBE Effect Parade').numProperties; i++) names.push(ctrl.property('ADBE Effect Parade').property(i).name);
-    A.deepStrictEqual(names, ['Radius', 'Rotation', 'Spin', 'Rise', 'Back Opacity', 'Face Camera']);
-    A.strictEqual(ctrl.transform.xRotation.value, 15);
-    cards.forEach(c => { A.strictEqual(c.parent, ctrl); A.ok(c.threeDLayer); [c.transform.position, c.transform.orientation, c.transform.opacity].forEach(p => { A.ok(p.expression.indexOf('// sowveil') === 0); compiles(p.expression); }); });
-    let cams = 0; for (let i = 1; i <= e.comp.numLayers; i++) if (e.comp.layer(i) instanceof e.ctx.CameraLayer) cams++;
-    A.strictEqual(cams, 1);
+// ---------------- 3D carousel = Akira's builder ----------------
+t('carousel: $._svA.buildCarousel3D builds the rig with Sowveil names', () => {
+    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'card src', 400, 300); L.selected = true;
+    const payload = { preset: 'cylindrical_ring', name: 'Cylindrical Ring', axis: 'y', facing: 'tangent', count: 6, radius: 700, arc: 360, tiltX: 0, tiltY: 0, roll: 0, rise: 0, cardScale: 0.24, cardW: 260, source: 'timeline', media: [], layers: [L.index], duration: 8, turns: 1, direction: 1, loop: true, stepped: false, depthBlur: true, introOutro: false, style: 'fade', camera: { zoom: 2666, pos: [0, -600, -2200], poi: [0, 0, 0] }, swatches: ['ff0055', '22aaff'] };
+    const r = e.ctx.$._svA.buildCarousel3D(JSON.stringify(payload)); A.ok(/^OK:6 cards/.test(r), r);
+    A.strictEqual(L.parent.name, 'SowveilCarousel Spin');
+    for (let i = 1; i <= e.comp.numLayers; i++) A.ok(!/Akira/.test(e.comp.layer(i).name), e.comp.layer(i).name);
 });
-t('carousel: one selected layer is duplicated into the requested copies', () => {
-    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
-    A.ok(e.call('carousel', { copies: 6, camera: false }).ok);
-    let kids = 0; for (let i = 1; i <= e.comp.numLayers; i++) if (e.comp.layer(i).parent) kids++;
-    A.strictEqual(kids, 6);
-});
-t('carousel: Remove on the controller frees the cards and deletes the rig', () => {
-    const e = env(); const cards = [1, 2, 3].map(i => { const L = e.comp.layers.addSolid([1, 1, 1], 'C' + i, 400, 300); L.selected = true; return L; });
-    e.call('carousel', { camera: false });
-    const ctrl = cards[0].parent; e.comp._l.forEach(l => { l.selected = false; }); ctrl.selected = true;
-    const r = e.call('removeSowveil'); A.ok(r.ok, r.error);
-    A.strictEqual(e.comp._l.indexOf(ctrl), -1, 'controller deleted');
-    cards.forEach(c => { A.strictEqual(c.parent, null); A.strictEqual(c.transform.position.expression, ''); });
-});
-t('carousel: needs a selection', () => {
-    const e = env(); A.ok(/Select/.test(e.call('carousel', {}).error));
+t('carousel: the panel module calls $._svA, never $._akira', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'sowveil', 'js', 'vendor', 'carousel3d.js'), 'utf8');
+    A.ok(src.indexOf('$._svA.buildCarousel3D(') > 0); A.ok(!/\$\._akira/.test(src)); A.ok(/window\.SowveilCarousel3D/.test(src));
 });
 
 // ---------------- loader: how After Effects really starts the panel ----------------
@@ -182,7 +163,7 @@ t('loader: with no $.fileName, the panel-provided folder loads every part with n
     e.ctx.$._sv_root = path.join(__dirname, '..', 'sowveil');
     vm.runInContext(fs.readFileSync(path.join(HOST, 'sowveil.jsx'), 'utf8'), e.ctx, { filename: 'sowveil.jsx' });
     A.deepStrictEqual(Array.from(e.ctx.$._sv_loadErrors || ['loader did not run']), []);
-    ['selInfo', 'textAnimate', 'applyExpression', 'animatedGradient', 'carousel', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
+    ['selInfo', 'applyExpression', 'animatedGradient', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
     A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
     A.ok(e.ctx.$._svA._h, 'shared helpers ready');
 });

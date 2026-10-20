@@ -140,6 +140,7 @@
     SV.show = function (tabId) {
         var first = !state.tab;
         state.tab = tabId; SV.set('tab', tabId);
+        SV.emit('tab', tabId);
         movePills(!first);
         render();
     };
@@ -150,7 +151,7 @@
         content.innerHTML = '';
         if (!t) { return; }
         if (t.full) { var f = h('div', { class: 'full' }); content.appendChild(f); t.full(f); return; }
-        var items = t.items(), fav = favs(t.id);
+        var grp = groupOf(t), items = t.items(grp), fav = favs(t.id);
         if (!state.sel[t.id] || !items.some(function (i) { return i.id === state.sel[t.id]; })) { state.sel[t.id] = items[0] && items[0].id; }
         var sorted = items.slice().sort(function (a, b) { return (fav.indexOf(a.id) < 0) - (fav.indexOf(b.id) < 0); });
         var nFav = items.filter(function (i) { return fav.indexOf(i.id) >= 0; }).length;
@@ -165,7 +166,12 @@
             list.appendChild(row);
             if (isFav && i === nFav - 1 && nFav < items.length) { list.appendChild(h('div', { class: 'fav-sep' })); }
         });
-        var master = h('aside', { class: 'master' }, [h('div', { class: 'master-head' }, [h('span', { text: t.label }), h('span', { text: String(items.length) })]), list]);
+        var headLabel = h('span', { text: t.label });
+        if (t.groups) {   // optional category picker above the list
+            headLabel = h('select', { class: 'master-grp', onchange: function () { SV.set('grp:' + t.id, this.value); render(); } }, t.groups.map(function (g) { return h('option', { value: g[0], text: g[1] }); }));
+            headLabel.value = grp;
+        }
+        var master = h('aside', { class: 'master' }, [h('div', { class: 'master-head' }, [headLabel, h('span', { text: String(items.length) })]), list]);
         var inspector = h('section', { class: 'inspector' });
         content.appendChild(master); content.appendChild(inspector);
         placePill(list, pill, false);
@@ -178,6 +184,11 @@
             drawInspector(inspector);
         }
     }
+    function groupOf(t) {
+        if (!t.groups) { return null; }
+        var g = SV.get('grp:' + t.id, t.groups[0][0]);
+        return t.groups.some(function (x) { return x[0] === g; }) ? g : t.groups[0][0];
+    }
     function placePill(list, pill, animate) {
         var on = list.querySelector('.item.on');
         if (!on) { pill.style.opacity = 0; return; }
@@ -186,7 +197,7 @@
         if (!animate) { requestAnimationFrame(function () { pill.style.transition = ''; }); }
     }
     function drawInspector(el) {
-        var t = SV.tabById(state.tab), item = null, items = t.items(), i;
+        var t = SV.tabById(state.tab), item = null, items = t.items(groupOf(t)), i;
         for (i = 0; i < items.length; i++) { if (items[i].id === state.sel[t.id]) { item = items[i]; } }
         SV.emit('inspector:leave');
         el.innerHTML = '';

@@ -9,7 +9,7 @@
     function load(cb) {
         SV.call('scanProjects', { lib: lib() }).then(function (r) {
             loaded = true;
-            if (r.ok) { data = r; } else if (!r.dev) { SV.toast(r.error, 'error'); }
+            if (r.ok && r.projects) { data = r; } else if (!r.ok && !r.dev) { SV.toast(r.error, 'error'); }
             if (cb) { cb(); }
         });
     }

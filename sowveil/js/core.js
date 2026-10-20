@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var SV = window.SV = window.SV || {};
-    SV.VERSION = '1.1.0';
+    SV.VERSION = '1.2.0';
 
     // ---------- environment ----------
     var cs = null;
@@ -17,7 +17,7 @@
     // ---------- host loading ----------
     // AE may start host/sowveil.jsx without its own path, so the panel always makes sure the host is
     // loaded, using the real extension folder, before it sends any command.
-    var READY = "(typeof $._sv !== 'undefined' && $._sv.selInfo && typeof $._svA !== 'undefined' && $._svA._h && typeof $._svSaaS !== 'undefined' && typeof $._svT2 !== 'undefined') ? 'ok' : 'missing'";
+    var READY = "(typeof $._sv !== 'undefined' && $._sv.selInfo && typeof $._svA !== 'undefined' && $._svA._h && typeof $._svSaaS !== 'undefined' && typeof $._svT2 !== 'undefined' && typeof $._svG !== 'undefined') ? 'ok' : 'missing'";
     SV.extDir = function () {
         var p = '';
         try { p = String(cs.getSystemPath(window.SystemPath ? SystemPath.EXTENSION : 'extension') || ''); } catch (e) { return ''; }
@@ -97,6 +97,25 @@
         var a = (args || []).map(function (x) { return JSON.stringify(x); }).join(',');
         return legacy('$._svA && $._svA.' + fn + ' ? $._svA.' + fn + '(' + a + ') : "ERR:Engine not loaded"', okMsg);
     };
+
+    // Expression library engine (Akira's applyExpressionToTargets & co.): $._svG.fn(args) -> {"success":bool,...}
+    SV.lib = function (fn, args) {
+        var a = (args || []).map(function (x) { return JSON.stringify(x); }).join(',');
+        return new Promise(function (resolve) {
+            if (!cs) { resolve({ ok: false, error: 'Open Sowveil inside After Effects.', dev: true }); return; }
+            evalHost('$._svG && $._svG.' + fn + ' ? $._svG.' + fn + '(' + a + ') : \'{"success":false,"error":"Engine not loaded"}\'', function (res) {
+                var o; try { o = JSON.parse(res); } catch (e) { o = { success: false, error: String(res || 'Script error in After Effects.') }; }
+                o.ok = !!o.success; if (!o.ok && !o.error) { o.error = 'Something went wrong.'; }
+                resolve(o);
+            });
+        });
+    };
+    // Raw evalScript that first makes sure the host is loaded (for synced Akira panel modules).
+    SV.evalRaw = function (script, cb) { if (!cs) { if (cb) { cb('ERR:Open Sowveil inside After Effects.'); } return; } evalHost(script, cb || function () { }); };
+    // modules synced from Akira FX (templates, 3D carousel) call window.csInterface.evalScript directly
+    if (cs) { window.csInterface = Object.create(cs); window.csInterface.evalScript = function (script, cb) { SV.evalRaw(script, cb); }; }
+    window.showStatus = window.showStatus || function (msg, type) { SV.toast(String(msg), type === 'error' ? 'error' : ''); };
+    window.closeModal = window.closeModal || function () { };
 
     // ---------- storage ----------
     SV.get = function (k, d) { try { var v = localStorage.getItem('sowveil:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
