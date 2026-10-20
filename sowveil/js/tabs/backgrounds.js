@@ -1,77 +1,104 @@
-/* Sowveil - Backgrounds tab: preset list, animated CSS preview, parameters, add to comp. */
+/* Sowveil - Backgrounds tab: the animated palette gradients from Akira FX. Every card is a live
+   preview of the orbiting 4-colour gradient that gets built in After Effects. */
 (function () {
     'use strict';
     var SV = window.SV, h = SV.h;
-    var C = function (id, label, def) { return { id: id, label: label, type: 'color', def: def }; };
-    var N = function (id, label, min, max, def, unit, step) { return { id: id, label: label, type: 'number', min: min, max: max, def: def, unit: unit, step: step || 1 }; };
-    var T = function (id, label, def) { return { id: id, label: label, type: 'toggle', def: def }; };
-
-    var PRESETS = [
-        { id: 'mesh', label: 'Mesh Gradient', subtitle: 'Four drifting colours', params: [C('c1', 'Colour 1', '#6d5cff'), C('c2', 'Colour 2', '#ff5ca8'), C('c3', 'Colour 3', '#00c2ff'), C('c4', 'Colour 4', '#ffb35c'), N('blend', 'Blend', 0, 400, 100), T('animate', 'Animate', true), N('speed', 'Speed', 0, 3, 0.4, '', 0.05)] },
-        { id: 'aurora', label: 'Aurora', subtitle: 'Soft glowing light', params: [C('base', 'Base', '#07070f'), C('c1', 'Colour 1', '#3cffb0'), C('c2', 'Colour 2', '#6d5cff'), C('c3', 'Colour 3', '#ff5ca8'), N('intensity', 'Intensity', 10, 100, 85, '%'), N('softness', 'Softness', 40, 600, 260), T('animate', 'Animate', true), N('speed', 'Speed', 0, 3, 0.35, '', 0.05)] },
-        { id: 'linear', label: 'Linear Gradient', subtitle: 'Two-colour ramp', params: [C('c1', 'Start', '#1b1446'), C('c2', 'End', '#6d5cff'), N('angle', 'Angle', 0, 360, 135, '°'), N('scatter', 'Dither', 0, 50, 8)] },
-        { id: 'radial', label: 'Radial Glow', subtitle: 'Centre light falloff', params: [C('c1', 'Centre', '#6d5cff'), C('c2', 'Edge', '#0a0a14'), N('x', 'Centre X', 0, 100, 50, '%'), N('y', 'Centre Y', 0, 100, 45, '%'), N('size', 'Size', 10, 150, 60, '%'), T('animate', 'Drift', false), N('speed', 'Speed', 0, 3, 0.3, '', 0.05)] },
-        { id: 'spotlight', label: 'Spotlight', subtitle: 'Light from above', params: [C('c1', 'Light', '#3a3a52'), C('c2', 'Dark', '#060609'), N('y', 'Source Y', -50, 100, 0, '%'), N('reach', 'Reach', 30, 200, 110, '%')] },
-        { id: 'grid', label: 'Grid', subtitle: 'Blueprint lines', params: [C('base', 'Base', '#0b0b12'), C('c1', 'Lines', '#8b7dff'), N('spacing', 'Spacing', 16, 300, 80, 'px'), N('line', 'Line width', 1, 10, 2, 'px'), N('opacity', 'Line opacity', 2, 100, 18, '%'), T('animate', 'Scroll', false), N('speed', 'Speed', 0, 200, 30)] },
-        { id: 'dots', label: 'Dot Pattern', subtitle: 'Halftone-style dots', params: [C('base', 'Base', '#0b0b12'), C('c1', 'Dots', '#ffffff'), N('spacing', 'Spacing', 12, 200, 48, 'px'), N('dot', 'Dot size', 1, 40, 5, 'px'), N('opacity', 'Opacity', 2, 100, 35, '%'), T('animate', 'Scroll', false), N('speed', 'Speed', 0, 200, 20)] },
-        { id: 'grain', label: 'Film Grain', subtitle: 'Overlay texture on top', params: [N('amount', 'Amount', 1, 100, 35, '%'), N('opacity', 'Opacity', 5, 100, 60, '%')] }
+    var PALETTES = [
+        { label: 'Deep Navy', colors: ["#050B14", "#0A192F", "#112240", "#233554"] },
+        { label: 'Electric Purple', colors: ["#1E053A", "#3A0CA3", "#4361EE", "#4CC9F0"] },
+        { label: 'Vibrant Green', colors: ["#00A344", "#00C652", "#33D675", "#66E598"] },
+        { label: 'Warm Orange', colors: ["#E63946", "#F07167", "#FFB703", "#FB8500"] },
+        { label: 'Light Blue', colors: ["#8ECAE6", "#219EBC", "#023047", "#126782"] },
+        { label: 'Floral Blue', colors: ["#08101E", "#1A365D", "#2B6CB0", "#63B3ED"] },
+        { label: 'Neutral Grey', colors: ["#F8F9FA", "#E9ECEF", "#DEE2E6", "#CED4DA"] },
+        { label: 'Studio Crimson', colors: ["#0A0005", "#1D0312", "#3B0625", "#660A3B"] },
+        { label: 'Deep Plum', colors: ["#0A0616", "#180D2F", "#2E165E", "#4E1E96"] },
+        { label: 'Vibrant Magenta', colors: ["#FF94D1", "#FF4DB8", "#C529FF", "#7B1BFF"] },
+        { label: 'Soft Lilac', colors: ["#FFFFFF", "#FCF3FF", "#F8E2FF", "#F1C9FF"] },
+        { label: 'Dark Violet', colors: ["#140E24", "#24193F", "#392562", "#563690"] },
+        { label: 'Neon Glow', colors: ["#FF1E89", "#D500F9", "#651FFF", "#3D00B7"] },
+        { label: 'Neutral Grey 2', colors: ["#F8F9FA", "#F1F3F5", "#E9ECEF", "#DEE2E6"] },
+        { label: 'Neon Magenta', colors: ["#FF0055", "#FF1E89", "#D500F9", "#9D00FF"] },
+        { label: 'Deep Void', colors: ["#000000", "#0A0A0A", "#141414", "#222222"] },
+        { label: 'Gamer Rgb', colors: ["#00FFFF", "#3A86FF", "#8338EC", "#FF006E"] },
+        { label: 'Wing Sunset', colors: ["#023047", "#219EBC", "#FFB703", "#FB8500"] },
+        { label: 'Aero Blue', colors: ["#48CAE4", "#90E0EF", "#CAF0F8", "#FFFFFF"] },
+        { label: 'Retro Sunset', colors: ["#2B2D42", "#8D99AE", "#EF233C", "#D90429"] },
+        { label: 'Pastel Dream', colors: ["#FFB5A7", "#FCD5CE", "#F8EDEB", "#F9DEC9"] },
+        { label: 'Mint Fresh', colors: ["#E8F5E9", "#A5D6A7", "#66BB6A", "#43A047"] },
+        { label: 'Cyberpunk', colors: ["#0B0C10", "#1F2833", "#C5A059", "#45A29E"] },
+        { label: 'Ocean Depths', colors: ["#03045E", "#0077B6", "#00B4D8", "#90E0EF"] },
+        { label: 'Forest Mist', colors: ["#1E352F", "#3E6359", "#789D90", "#A9CBB7"] },
+        { label: 'Golden Hour', colors: ["#3D2645", "#8338EC", "#FF006E", "#FFBE0B"] },
+        { label: 'Lavender Haze', colors: ["#312244", "#4D3B66", "#846CA8", "#E0B1CB"] },
+        { label: 'Monochrome Tech', colors: ["#121212", "#242424", "#3a3a3a", "#e0e0e0"] },
+        { label: 'Vintage Oat', colors: ["#D8C3A5", "#8E8D8A", "#E98074", "#E85D04"] },
+        { label: 'Sherbet', colors: ["#FF9F1C", "#FFBF69", "#FFFFFF", "#2EC4B6"] },
+        { label: 'Deep Berry', colors: ["#2B1B17", "#5C2626", "#9E2A2B", "#E07A5F"] }
     ];
+    var ORBITS = [[0.22, 0.24, 0.20, 0.14, 0.00, 1], [0.78, 0.26, 0.17, 0.19, 0.35, -1], [0.24, 0.76, 0.19, 0.16, 0.62, -1], [0.76, 0.74, 0.16, 0.20, 0.85, 1]];
+    var query = '';
 
-    function preview(box, item, v) {
-        box.innerHTML = ''; box.style.background = ''; box.style.backgroundImage = '';
-        var s = 0.28;
-        if (item.id === 'mesh') {
-            box.style.background = 'radial-gradient(at 10% 10%,' + v.c1 + ' 0,transparent 60%),radial-gradient(at 90% 15%,' + v.c2 + ' 0,transparent 60%),radial-gradient(at 15% 90%,' + v.c3 + ' 0,transparent 60%),radial-gradient(at 90% 85%,' + v.c4 + ' 0,transparent 60%),' + v.c1;
-            if (v.animate) { box.animate([{ backgroundSize: '100% 100%', backgroundPosition: '0 0' }, { backgroundSize: '140% 140%', backgroundPosition: '30% 20%' }, { backgroundSize: '100% 100%', backgroundPosition: '0 0' }], { duration: 9000 / Math.max(0.1, v.speed), iterations: Infinity }); }
-        } else if (item.id === 'aurora') {
-            box.style.background = v.base;
-            [v.c1, v.c2, v.c3].forEach(function (col, i) {
-                var b = h('div', { style: { position: 'absolute', width: '75%', height: '60%', left: (12 + i * 14) + '%', top: (10 + (i % 2) * 25) + '%', borderRadius: '50%', background: col, opacity: v.intensity / 100, filter: 'blur(' + (v.softness * s / 3) + 'px)' } });
-                box.appendChild(b);
-                if (v.animate) { b.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(' + (i % 2 ? -18 : 18) + '%,' + (i ? 10 : -10) + '%)' }, { transform: 'translate(0,0)' }], { duration: (7000 + i * 1500) / Math.max(0.1, v.speed), iterations: Infinity, easing: 'ease-in-out' }); }
-            });
-        } else if (item.id === 'linear') {
-            box.style.background = 'linear-gradient(' + (v.angle + 90) + 'deg,' + v.c1 + ',' + v.c2 + ')';
-        } else if (item.id === 'radial') {
-            box.style.background = 'radial-gradient(circle at ' + v.x + '% ' + v.y + '%,' + v.c1 + ' 0,' + v.c2 + ' ' + v.size + '%)';
-        } else if (item.id === 'spotlight') {
-            box.style.background = 'radial-gradient(ellipse at 50% ' + v.y + '%,' + v.c1 + ' 0,' + v.c2 + ' ' + v.reach + '%)';
-        } else if (item.id === 'grid') {
-            var g = Math.max(4, v.spacing * s), a = Math.round(v.opacity * 2.55).toString(16).padStart(2, '0');
-            box.style.background = v.base;
-            box.style.backgroundImage = 'linear-gradient(' + v.c1 + a + ' ' + Math.max(1, v.line * s) + 'px,transparent 0),linear-gradient(90deg,' + v.c1 + a + ' ' + Math.max(1, v.line * s) + 'px,transparent 0)';
-            box.style.backgroundSize = g + 'px ' + g + 'px';
-            if (v.animate) { box.animate([{ backgroundPosition: '0 0' }, { backgroundPosition: g + 'px ' + g + 'px' }], { duration: g / Math.max(1, v.speed * s) * 1000, iterations: Infinity }); }
-        } else if (item.id === 'dots') {
-            var d = Math.max(3, v.spacing * s), a2 = Math.round(v.opacity * 2.55).toString(16).padStart(2, '0');
-            box.style.background = v.base;
-            box.style.backgroundImage = 'radial-gradient(' + v.c1 + a2 + ' ' + Math.max(0.6, v.dot * s / 2) + 'px,transparent ' + Math.max(0.8, v.dot * s / 2 + 0.6) + 'px)';
-            box.style.backgroundSize = d + 'px ' + d + 'px';
-            if (v.animate) { box.animate([{ backgroundPosition: '0 0' }, { backgroundPosition: '0 ' + d + 'px' }], { duration: d / Math.max(1, v.speed * s) * 1000, iterations: Infinity }); }
-        } else if (item.id === 'grain') {
-            box.style.background = 'linear-gradient(135deg,#6d5cff,#ff5ca8)';
-            var svg = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>') + '")';
-            var gr = h('div', { style: { position: 'absolute', inset: '-20px', backgroundImage: svg, opacity: v.amount / 100 * v.opacity / 100 * 1.6, mixBlendMode: 'overlay' } });
-            box.appendChild(gr);
-            gr.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(-10px,6px)' }, { transform: 'translate(7px,-8px)' }], { duration: 300, iterations: Infinity, easing: 'steps(3)' });
-        }
+    function custom() { return SV.get('bgCustom', []); }
+    function swatchCard(p, i, opts) {
+        var art = h('div', { class: 'thumb bg-art', style: { background: p.colors[0] } });
+        p.colors.slice(0, 4).forEach(function (c, k) {
+            var o = ORBITS[k], blob = h('i', { class: 'bg-blob', style: { left: (o[0] * 100) + '%', top: (o[1] * 100) + '%', background: 'radial-gradient(circle, ' + c + ' 0, ' + c + 'cc 25%, transparent 68%)',
+                animationDuration: (9 + k * 1.7) + 's', animationDirection: o[5] > 0 ? 'normal' : 'reverse', animationDelay: (-o[4] * 9) + 's', '--rx': (o[2] * 100) + '%', '--ry': (o[3] * 100) + '%' } });
+            art.appendChild(blob);
+        });
+        var dots = h('div', { class: 'bg-dots' }, p.colors.slice(0, 4).map(function (c) { return h('span', { style: { background: c } }); }));
+        var card = h('div', { class: 'card', style: { animationDelay: Math.min(i, 16) * 18 + 'ms' }, title: 'Build ' + p.label, onclick: function () { apply(p); } },
+            [art, h('div', { class: 'cap' }, [h('div', { class: 'c1', text: p.label }), dots])]);
+        if (opts && opts.remove) { card.appendChild(h('button', { class: 'del', text: '✕', title: 'Delete palette', onclick: function (e) { e.stopPropagation(); opts.remove(); } })); }
+        return card;
+    }
+    function apply(p) {
+        SV.toast('Building ' + p.label + '…');
+        SV.call('animatedGradient', { label: p.label, colors: p.colors, target: SV.get('bgTarget', 'new'), blend: SV.get('bgBlend', 120), loops: SV.get('bgLoops', 1) }).then(function (r) { SV.result(r); });
     }
 
-    SV.registerTab({
-        id: 'backgrounds', label: 'Backgrounds', icon: 'bg',
-        items: function () { return PRESETS; },
-        inspector: function (el, item, v) {
-            var box = h('div', { class: 'preview' });
-            el.appendChild(SV.ui.section('Live preview', [box]));
-            var redraw = function () { box.getAnimations ? box.getAnimations({ subtree: true }).forEach(function (an) { an.cancel(); }) : 0; preview(box, item, v); };
-            el.appendChild(SV.ui.params('backgrounds', item, v, redraw));
-            el.appendChild(SV.ui.section('', [
-                SV.ui.action(item.id === 'grain' ? 'Add grain on top' : 'Add background to comp', function () {
-                    return SV.call('background', Object.assign({ kind: item.id, label: item.label }, v)).then(function (r) { SV.result(r); });
-                }),
-                h('div', { class: 'hint', text: item.id === 'grain' ? 'Adds an overlay grain layer above everything.' : 'Placed at the bottom of the active comp. Every setting stays editable in Effect Controls / Contents.' })
-            ]));
-            redraw();
+    function render(root) {
+        root.innerHTML = '';
+        var search = h('input', { placeholder: 'Search palettes', value: query });
+        var bar = h('div', { class: 'toolbar' }, [h('div', { class: 'search', html: SV.icon('search') })]);
+        bar.firstChild.appendChild(search);
+        var tgt = SV.ui.param({ type: 'seg', label: '', options: [['new', 'New layer'], ['layer', 'Selected layer']] }, SV.get('bgTarget', 'new'), function (v) { SV.set('bgTarget', v); });
+        tgt.firstChild.remove(); tgt.style.margin = 0; bar.appendChild(tgt);
+        var opts = h('div', { class: 'section bg-opts' }, [
+            SV.ui.param({ type: 'number', label: 'Blend', min: 0, max: 400, step: 5, def: 120 }, SV.get('bgBlend', 120), function (v) { SV.set('bgBlend', v); }),
+            SV.ui.param({ type: 'number', label: 'Orbits over the layer', min: 0.25, max: 6, step: 0.25, def: 1 }, SV.get('bgLoops', 1), function (v) { SV.set('bgLoops', v); }),
+            h('div', { class: 'hint', text: 'Click a palette to build it. New layer = full-comp background at the bottom; Selected layer = the gradient animates across that layer\'s own duration.' })
+        ]);
+        var grid = h('div', { class: 'grid' });
+        root.appendChild(bar); root.appendChild(opts); root.appendChild(grid);
+        function draw() {
+            grid.innerHTML = '';
+            var q = query.toLowerCase(), i = 0;
+            // custom palette maker
+            if (!q) {
+                var cols = SV.get('bgDraft', ['#6d5cff', '#ff5ca8', '#00c2ff', '#ffb35c']);
+                var pick = h('div', { class: 'bg-pick' }, cols.map(function (c, k) {
+                    var inp = h('input', { type: 'color', value: c }); inp.addEventListener('input', function () { cols[k] = inp.value; SV.set('bgDraft', cols); sw.style.background = inp.value; });
+                    var sw = h('label', { class: 'swatch', style: { background: c } }, [inp]); return sw;
+                }));
+                grid.appendChild(h('div', { class: 'card bg-new' }, [h('div', { class: 'thumb' }, [pick]), h('div', { class: 'cap' }, [
+                    h('div', { class: 'c1', text: 'Your palette' }),
+                    h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } }, [
+                        h('button', { class: 'btn small', text: 'Build', onclick: function () { apply({ label: 'Custom', colors: cols.slice() }); } }),
+                        h('button', { class: 'btn ghost small', text: 'Save', onclick: function () { var list = custom(); list.unshift({ label: 'Custom ' + (list.length + 1), colors: cols.slice() }); SV.set('bgCustom', list); draw(); } })
+                    ])])]));
+            }
+            custom().forEach(function (p, k) {
+                if (q && p.label.toLowerCase().indexOf(q) < 0) { return; }
+                grid.appendChild(swatchCard(p, i++, { remove: function () { var list = custom(); list.splice(k, 1); SV.set('bgCustom', list); draw(); } }));
+            });
+            PALETTES.forEach(function (p) { if (!q || p.label.toLowerCase().indexOf(q) >= 0) { grid.appendChild(swatchCard(p, i++)); } });
+            if (!grid.children.length) { grid.appendChild(h('div', { class: 'empty', text: 'No palette matches "' + query + '".' })); }
         }
-    });
+        search.addEventListener('input', function () { query = search.value.trim(); draw(); });
+        draw();
+    }
+
+    SV.registerTab({ id: 'backgrounds', label: 'Backgrounds', icon: 'bg', full: render });
 })();

@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var SV = window.SV = window.SV || {};
-    SV.VERSION = '1.0.0';
+    SV.VERSION = '1.1.0';
 
     // ---------- environment ----------
     var cs = null;
@@ -28,6 +28,29 @@
                 resolve(out);
             });
         });
+    };
+
+    // Engines synced from Akira FX answer "SUCCESS[:msg]" / "ERR:msg" strings instead of JSON.
+    function legacy(script, okMsg) {
+        return new Promise(function (resolve) {
+            if (!cs) { resolve({ ok: false, error: 'Open Sowveil inside After Effects.', dev: true }); return; }
+            cs.evalScript(script, function (res) {
+                var r = String(res === undefined || res === null ? '' : res);
+                if (/^SUCCESS/.test(r) || /^OK/.test(r)) { resolve({ ok: true, message: r.replace(/^(SUCCESS|OK):?/, '') || okMsg }); }
+                else { resolve({ ok: false, error: r.replace(/^(ERR(OR)?:?\s*)/, '') || 'Something went wrong.' }); }
+            });
+        });
+    }
+    // UI animation engine: $._svSaaS.fn("key=value;key=value")
+    SV.motion = function (fn, pairs, okMsg) {
+        var out = [], k;
+        for (k in pairs) { if (pairs.hasOwnProperty(k) && pairs[k] !== undefined && pairs[k] !== null) { out.push(k + '=' + String(pairs[k]).replace(/[;=]/g, '')); } }
+        return legacy('$._svSaaS && $._svSaaS.' + fn + ' ? $._svSaaS.' + fn + '(' + JSON.stringify(out.join(';')) + ') : "ERR:Engine not loaded"', okMsg);
+    };
+    // Shared helper engines: $._svA.fn(arg1, arg2...)
+    SV.akira = function (fn, args, okMsg) {
+        var a = (args || []).map(function (x) { return JSON.stringify(x); }).join(',');
+        return legacy('$._svA && $._svA.' + fn + ' ? $._svA.' + fn + '(' + a + ') : "ERR:Engine not loaded"', okMsg);
     };
 
     // ---------- storage ----------
@@ -61,7 +84,7 @@
                 if (k === 'class') { el.className = attrs[k]; }
                 else if (k === 'html') { el.innerHTML = attrs[k]; }
                 else if (k === 'text') { el.textContent = attrs[k]; }
-                else if (k === 'style' && typeof attrs[k] === 'object') { Object.assign(el.style, attrs[k]); }
+                else if (k === 'style' && typeof attrs[k] === 'object') { for (var sk in attrs[k]) { if (attrs[k].hasOwnProperty(sk)) { if (sk.indexOf('--') === 0) { el.style.setProperty(sk, attrs[k][sk]); } else { el.style[sk] = attrs[k][sk]; } } } }
                 else if (k.indexOf('on') === 0 && typeof attrs[k] === 'function') { el.addEventListener(k.substring(2), attrs[k]); }
                 else { el.setAttribute(k, attrs[k] === true ? '' : attrs[k]); }
             }
@@ -94,7 +117,12 @@
         back: '<path d="M15 5l-7 7 7 7"/>',
         close: '<path d="M6 6l12 12M18 6L6 18"/>',
         folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
-        plus: '<path d="M12 5v14M5 12h14"/>'
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        code: '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>',
+        glass: '<rect x="3.5" y="5" width="17" height="14" rx="4"/><path d="M7 15l5-6M10.5 15.5l3.5-4"/>',
+        motion: '<rect x="3" y="6" width="9" height="12" rx="2"/><path d="M15 9h6M15 12h4M15 15h6"/>',
+        captions: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 15h4M13 15h4M7 11h10"/>',
+        templates: '<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>'
     };
     SV.icon = function (name, cls) {
         return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (P[name] || '') + '</svg>';

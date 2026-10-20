@@ -3,12 +3,15 @@
 const A = require('assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const M = require('./mock_ae');
 const HOST = path.join(__dirname, '..', 'sowveil', 'host');
-const PARTS = ['sv_core.jsx', 'sv_text.jsx', 'sv_backgrounds.jsx', 'sv_carousel.jsx', 'sv_media.jsx', 'sv_library.jsx'];
+const PARTS = ['akira/akira_tools.jsx', 'akira/akira_rigs.jsx', 'akira/akira_saas.jsx', 'akira/akira_templates2.jsx',
+    'sv_core.jsx', 'sv_text.jsx', 'sv_expressions.jsx', 'sv_gradients.jsx', 'sv_carousel.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
 let passed = 0;
 function t(name, fn) { try { fn(); passed++; } catch (e) { console.error('FAIL', name, '\n ', e.message.slice(0, 500), (e.stack || '').split('\n')[1] || ''); process.exitCode = 1; } }
 
 function env(opts) {
     const e = M.makeEnv(Object.assign({ files: [], locked: true }, opts || {}));
+    if (opts && opts.withAkira) { vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'host', 'akira_core.jsx'), 'utf8'), e.ctx, { filename: 'akira_core.jsx' }); vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'host', 'akira_tools.jsx'), 'utf8'), e.ctx, { filename: 'akira_tools.jsx' }); }
+    e.ctx.$._svA = e.ctx.$._svA || {}; e.ctx.$._svA.isLocked = false;   // what sowveil.jsx does before loading parts
     PARTS.forEach(f => vm.runInContext(fs.readFileSync(path.join(HOST, f), 'utf8'), e.ctx, { filename: f }));
     e.SV = e.ctx.$._sv;
     e.call = (fn, args) => JSON.parse(e.SV[fn](args || {}));
@@ -72,30 +75,72 @@ t('selInfo reports layers and Sowveil presence; Remove strips the animators', ()
     A.strictEqual(e.call('selInfo').hasSv, false);
 });
 
-// ---------------- backgrounds ----------------
-t('backgrounds: mesh is a tagged solid at the bottom with a drifting 4-colour gradient', () => {
-    const e = env(); const top = e.comp.layers.addShape(); top.name = 'Art';
-    const r = e.call('background', { kind: 'mesh', c1: '#ff0000', c2: '#00ff00', c3: '#0000ff', c4: '#ffffff', animate: true, speed: 0.5 });
-    A.ok(r.ok, r.error);
-    const bg = e.comp.layer(e.comp.numLayers);
-    A.ok(/Mesh Gradient/.test(bg.name)); A.ok(/sowveil/.test(bg.comment));
-    const fx = bg.property('ADBE Effect Parade').property(1);
-    A.strictEqual(fx.matchName, 'ADBE 4ColorGradient'); A.strictEqual(JSON.stringify(fx.property(2).value), '[1,0,0]');
-    A.ok(fx.property(1).expression.indexOf('// sowveil') === 0); compiles(fx.property(1).expression);
+// ---------------- expressions ----------------
+const CODES = { scalar: '// sowveil · W\nwiggle(2, 40, 1);', vector: '// sowveil · W\nwiggle(2, 40, 1);', scale: '// sowveil · W\nwiggle(2, 4, 1);' };
+t('expressions: Position target applies to every selected layer', () => {
+    const e = env(); const a = e.comp.layers.addSolid([1, 1, 1], 'A', 100, 100), b = e.comp.layers.addSolid([1, 1, 1], 'B', 100, 100); a.selected = b.selected = true;
+    const r = e.call('applyExpression', { label: 'Wiggle', target: 'position', codes: CODES }); A.ok(r.ok, r.error);
+    [a, b].forEach(L => A.ok(L.transform.position.expression.indexOf('// sowveil') === 0));
+    A.strictEqual(e.call('selInfo').hasSv, true, 'Remove bar sees it');
 });
-t('backgrounds: aurora = blob shape layer over a base solid, both at the bottom', () => {
+t('expressions: Scale gets the scale variant; Auto falls back to the preset default target', () => {
+    const e = env(); const a = e.comp.layers.addSolid([1, 1, 1], 'A', 100, 100); a.selected = true;
+    e.call('applyExpression', { label: 'W', target: 'scale', codes: CODES }); A.ok(/wiggle\(2, 4, 1\)/.test(a.transform.scale.expression));
+    e.call('applyExpression', { label: 'W', target: 'auto', fallback: 'rotation', codes: CODES }); A.ok(a.transform.rotation.expression.length > 0);
+    A.ok(/Select/.test(env().call('applyExpression', { target: 'position', codes: CODES }).error));
+});
+
+// ---------------- animated gradients (Backgrounds) ----------------
+t('gradients: new layer = tagged solid at the bottom with 4 orbiting keyed points', () => {
     const e = env(); e.comp.layers.addShape().name = 'Art';
-    A.ok(e.call('background', { kind: 'aurora', c1: '#ff0000', c2: '#00ff00', c3: '#0000ff' }).ok);
-    const n = e.comp.numLayers;
-    A.ok(/Aurora Base/.test(e.comp.layer(n).name)); A.ok(/Aurora$/.test(e.comp.layer(n - 1).name)); A.strictEqual(e.comp.layer(1).name, 'Art');
+    const r = e.call('animatedGradient', { label: 'Deep Navy', colors: ['#050B14', '#0A192F', '#112240', '#233554'], target: 'new' }); A.ok(r.ok, r.error);
+    const L = e.comp.layer(e.comp.numLayers); A.ok(/Sowveil Gradient · Deep Navy/.test(L.name)); A.ok(/sowveil/.test(L.comment));
+    const g = L.property('ADBE Effect Parade').property(1); A.strictEqual(g.matchName, 'ADBE 4ColorGradient'); A.strictEqual(g.name, 'Sowveil · Deep Navy');
+    [1, 3, 5, 7].forEach(i => A.strictEqual(g.property(i).numKeys, 9));
 });
-t('backgrounds: every kind builds', () => {
-    ['mesh', 'linear', 'radial', 'aurora', 'grid', 'dots', 'spotlight', 'grain'].forEach(k => { const e = env(); const r = e.call('background', { kind: k, animate: true }); A.ok(r.ok, k + ': ' + r.error); });
+t('gradients: Selected layer mode needs exactly one layer', () => {
+    const e = env(); A.ok(/exactly one/.test(e.call('animatedGradient', { colors: ['#000000'], target: 'layer' }).error));
+    const L = e.comp.layers.addShape(); L.selected = true; A.ok(e.call('animatedGradient', { colors: ['#ff0000', '#00ff00'], target: 'layer' }).ok);
 });
-t('backgrounds: grain goes on top in overlay mode', () => {
-    const e = env(); e.comp.layers.addShape();
-    e.call('background', { kind: 'grain' });
-    A.ok(/Film Grain/.test(e.comp.layer(1).name)); A.strictEqual(e.comp.layer(1).blendingMode, e.ctx.BlendingMode.OVERLAY);
+
+// ---------------- captions ----------------
+t('captions: one text layer with keyed captions, highlight selector, pop and a sized box', () => {
+    const e = env();
+    const blocks = [{ text: 'hello there', start: 0.5, end: 1.4, words: [0.5, 0.9] }, { text: 'general kenobi', start: 2.5, end: 3.2, words: [2.5, 2.8] }];
+    const r = e.call('buildCaptions', { blocks, offset: 1, style: { highlight: true, box: true, anim: 'pop', size: 64 } }); A.ok(r.ok, r.error);
+    let T = null, B = null; for (let i = 1; i <= e.comp.numLayers; i++) { const L = e.comp.layer(i); if (/^Sowveil Captions$/.test(L.name)) T = L; if (/Box$/.test(L.name)) B = L; }
+    A.ok(T && B, 'text + box layers');
+    const st = T.property('ADBE Text Properties').property('ADBE Text Document');
+    A.strictEqual(JSON.stringify(st.keys.map(k => [k.t, k.v.text])), JSON.stringify([[1.5, 'hello there'], [2.4, ' '], [3.5, 'general kenobi'], [4.2, ' ']]), 'captions keyed with blanks in the gaps (offset applied)');
+    const an = T.property('ADBE Text Properties').property('ADBE Text Animators').property(1); A.strictEqual(an.name, 'Sowveil · Highlight');
+    const amt = an.property('ADBE Text Selectors').property(1).property('ADBE Text Expressible Amount').expression; compiles(amt); A.ok(/textIndex/.test(amt));
+    compiles(T.transform.scale.expression); compiles(B.transform.position.expression); compiles(B.transform.opacity.expression);
+});
+t('captions: nothing to build without blocks', () => { A.ok(/transcribe/.test(env().call('buildCaptions', { blocks: [] }).error)); });
+
+// ---------------- shared engines from Akira FX, under Sowveil's own namespace ----------------
+t('engines: UI animations / glass / templates load as $._svSaaS / $._svA / $._svT2, unlocked', () => {
+    const e = env();
+    A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svSaaS.halftoneWave, 'function');
+    A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
+    const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
+    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.wipe('direction=left;duration=0.8;delay=0.1;feather=160')), 'gradient wipe runs without any license');
+    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.halftoneWave('color=#8b7dff;waves=1;duration=1')), 'halftone wave runs');
+    A.ok(/^SUCCESS/.test(e.ctx.$._svA.applyGlassMorph()), 'glass panel runs');
+});
+t('engines: Sowveil never touches Akira FX (namespace + license gate stay intact)', () => {
+    const e = env({ withAkira: true });
+    A.strictEqual(e.ctx.$._akira.isLocked, true, 'Akira stays locked');
+    A.ok(e.ctx.$._akira._h && e.ctx.$._svA._h && e.ctx.$._akira._h !== e.ctx.$._svA._h, 'separate helper objects');
+    A.strictEqual(e.ctx.$._akira.applyGlassMorph, undefined, 'Sowveil did not add functions to $._akira');
+    A.strictEqual(e.ctx.$._akiraSaaS, undefined); A.strictEqual(e.ctx.$._akiraT2, undefined);
+    const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
+    A.ok(/^SUCCESS/.test(e.ctx.$._svSaaS.wipe('direction=top')), 'Sowveil still works next to a locked Akira');
+});
+t('engines: no "Akira" label leaks into layers Sowveil creates', () => {
+    const e = env(); const L = e.comp.layers.addSolid([1, 1, 1], 'Card', 400, 300); L.selected = true;
+    e.ctx.$._svSaaS.cursor('style=arrow'); e.ctx.$._svSaaS.halftoneWave('color=#ffffff');
+    for (let i = 1; i <= e.comp.numLayers; i++) A.ok(!/Akira|Sougetsu/.test(e.comp.layer(i).name), e.comp.layer(i).name);
 });
 
 // ---------------- carousel ----------------

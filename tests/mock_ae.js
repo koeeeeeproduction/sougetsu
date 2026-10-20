@@ -13,7 +13,7 @@ class Prop {
     this.expression = ''; this.canSetExpression = true; this.keys = []; this.enabled = true; this.parentProperty = null; this.dimensionsSeparated = false;
   }
   get expressionEnabled() { return !!this.expression; }
-  get value() { return this.valueAtTime(0, false); }
+  get value() { const v = this.valueAtTime(0, false); return (v && typeof v === 'object' && !Array.isArray(v)) ? Object.assign({}, v) : v; }  // AE hands out a copy of a TextDocument
   valueAtTime(t) {
     if (!this.keys.length) return this._v;
     let k = this.keys[0]; for (const kk of this.keys) if (kk.t <= t) k = kk; return k.v;
