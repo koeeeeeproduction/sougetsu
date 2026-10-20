@@ -92,7 +92,7 @@ class AVLayer {
     this.transform = {
       anchorPoint: P('Anchor Point', 'ADBE Anchor Point', [0, 0], PVT.ThreeD_SPATIAL), position: P('Position', 'ADBE Position', [0, 0], PVT.ThreeD_SPATIAL),
       scale: P('Scale', 'ADBE Scale', [100, 100], PVT.ThreeD), rotation: P('Rotation', 'ADBE Rotate Z', 0), opacity: P('Opacity', 'ADBE Opacity', 100),
-      xRotation: P('X Rotation', 'ADBE Rotate X', 0), yRotation: P('Y Rotation', 'ADBE Rotate Y', 0), pointOfInterest: P('Point of Interest', 'ADBE Point of Interest', [0, 0, 0]),
+      xRotation: P('X Rotation', 'ADBE Rotate X', 0), yRotation: P('Y Rotation', 'ADBE Rotate Y', 0), orientation: P('Orientation', 'ADBE Orientation', [0, 0, 0], PVT.ThreeD_SPATIAL), pointOfInterest: P('Point of Interest', 'ADBE Point of Interest', [0, 0, 0]),
     };
     this.transform.zRotation = this.transform.rotation;
     this.root = group('root', 'root');
@@ -104,6 +104,7 @@ class AVLayer {
     if (kind === 'shape' || kind === 'text') { const eg = group('Geometry Options', 'ADBE Extrsn Options Grp'); eg._add(new Prop('Extrusion Depth', 'ADBE Extrsn Depth', 0)); this.root._add(eg); }
   }
   property(k) { return this.root.property(k); }
+  get numProperties() { return this.root.numProperties; }
   get index() { return this.containingComp._l.indexOf(this) + 1; }
   sourceRectAtTime() { return this.rect; }
   remove() { const a = this.containingComp._l; a.splice(a.indexOf(this), 1); }
@@ -134,6 +135,7 @@ class CompItem {
   get numLayers() { return this._l.length; }
   layer(i) { return this._l[i - 1]; }
   get selectedLayers() { return this._l.filter(l => l.selected).sort((a, b) => a._sel - b._sel); }  // AE: selection order
+  get selectedProperties() { return []; }
   saveFrameToPng(t, f) { this.savedFrame = f.p; }
   openInViewer() { }
 }

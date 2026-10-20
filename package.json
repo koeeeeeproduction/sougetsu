@@ -4,8 +4,9 @@
   "private": true,
   "description": "Sougetsu Akira FX - After Effects CEP extension (build tooling).",
   "scripts": {
-    "test": "node tests/test_contracts.js && node tests/test_engines.js && node tests/test_templates2.js && node tests/test_license.js",
+    "test": "node tests/test_contracts.js && node tests/test_engines.js && node tests/test_templates2.js && node tests/test_license.js && node tests/test_sowveil.js",
     "build": "bash tools/build_cep.sh",
+    "build:sowveil": "bash tools/build_sowveil.sh",
     "obfuscate": "node tools/obfuscate_build.js"
   },
   "devDependencies": {

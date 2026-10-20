@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sowveil</title>
+<link rel="stylesheet" href="css/sowveil.css">
+</head>
+<body>
+<div id="app">
+  <div id="banners"></div>
+  <header class="topbar" id="topbar">
+    <button class="round-btn logo-btn" id="logoBtn" title="Settings" aria-label="Settings"></button>
+    <div class="tabs-scroll" id="tabsScroll">
+      <div class="seg" id="seg"><div class="seg-pill" id="segPill"></div></div>
+    </div>
+    <button class="round-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"></button>
+  </header>
+  <div class="body-row" id="bodyRow">
+    <nav class="rail" id="rail"></nav>
+    <main class="content" id="content"></main>
+  </div>
+  <footer class="statusbar">
+    <div class="sb-left"><span class="dot" id="connDot"></span><span id="connText">Disconnected</span><span class="sep">·</span><span id="selText">—</span></div>
+    <div class="sb-right" id="verText">Sowveil</div>
+  </footer>
+</div>
+<div class="modal-wrap" id="settings" hidden></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/CSInterface.js"></script>
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tabs/text.js"></script>
+<script src="js/tabs/backgrounds.js"></script>
+<script src="js/tabs/downloader.js"></script>
+<script src="js/tabs/carousel.js"></script>
+<script src="js/tabs/library.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

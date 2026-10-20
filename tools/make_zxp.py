@@ -29,13 +29,14 @@ SKIP = {'.DS_Store', 'Thumbs.db', '.debug'}
 
 def key_and_cert():
     os.makedirs(SIGN_DIR, exist_ok=True)
-    kp, cp = os.path.join(SIGN_DIR, 'akira_sign_key.pem'), os.path.join(SIGN_DIR, 'akira_sign_cert.pem')
+    sid = os.environ.get('ZXP_SIGN_ID', 'akira')   # separate key/cert per product (e.g. ZXP_SIGN_ID=sowveil)
+    kp, cp = os.path.join(SIGN_DIR, sid + '_sign_key.pem'), os.path.join(SIGN_DIR, sid + '_sign_cert.pem')
     if os.path.exists(kp) and os.path.exists(cp):
         key = serialization.load_pem_private_key(open(kp, 'rb').read(), None)
         return key, x509.load_pem_x509_certificate(open(cp, 'rb').read())
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, 'KZ'), x509.NameAttribute(NameOID.ORGANIZATION_NAME, 'Sougetsu'),
-                      x509.NameAttribute(NameOID.COMMON_NAME, 'Sougetsu Akira FX')])
+    name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, 'KZ'), x509.NameAttribute(NameOID.ORGANIZATION_NAME, os.environ.get('ZXP_SIGN_ORG', 'Sougetsu')),
+                      x509.NameAttribute(NameOID.COMMON_NAME, os.environ.get('ZXP_SIGN_CN', 'Sougetsu Akira FX'))])
     now = datetime.datetime.now(datetime.timezone.utc)
     cert = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(key.public_key())
             .serial_number(x509.random_serial_number()).not_valid_before(now - datetime.timedelta(days=1))
