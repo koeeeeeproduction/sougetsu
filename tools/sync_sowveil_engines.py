@@ -17,6 +17,10 @@ DST = os.path.join(ROOT, 'sowveil', 'host', 'akira')
 FILES = ['akira_tools.jsx', 'akira_json.jsx', 'akira_rigs.jsx', 'akira_saas.jsx', 'akira_templates2.jsx', 'akira_expressions.jsx', 'akira_captions.jsx', 'akira_layers.jsx']
 RENAMES = [(r'\$\._akiraSaaS\b', '$._svSaaS'), (r'\$\._akiraT2\b', '$._svT2'), (r'\$\._akira_extension_path\b', '$._sv_extension_path'), (r'\$\._akira\b', '$._svA')]
 # user-visible labels (layer names, undo steps, messages). Hidden AKIRA_* tags stay as they are.
+# Akira's live preview engine (client/js_akira/preview), in load order
+PREVIEW = ['namespace.js', 'config.js', 'state.js', 'easing.js', 'utils.js', 'formulas/math.js', 'formulas/dynamics.js', 'formulas/transform.js',
+           'formulas/effects.js', 'formulas/camera.js', 'formulas/glitch.js', 'formulas/text.js', 'formulas/index.js', 'render.js', 'textanimator.js',
+           'easing-graph.js', 'engine.js']
 LABELS = [('Sougetsu Akira FX', 'Sowveil'), ('Akira FX', 'Sowveil'), ('AkiraCarousel', 'SowveilCarousel'), ('AkiraProjects', 'SowveilProjects'), ('Akira ', 'Sowveil ')]
 
 
@@ -45,6 +49,11 @@ def main():
     os.makedirs(os.path.join(ROOT, 'sowveil', 'py'), exist_ok=True)
     open(os.path.join(ROOT, 'sowveil', 'py', 'autocaptions.py'), 'w', encoding='utf-8').write(py)
     print('synced autocaptions.py')
+    dp = open(os.path.join(ROOT, 'client', 'js_akira', 'akira_depth.py'), encoding='utf-8').read()
+    for a, b in LABELS + [('Sougetsu', 'Sowveil')]:
+        dp = dp.replace(a, b)
+    open(os.path.join(ROOT, 'sowveil', 'py', 'depth.py'), 'w', encoding='utf-8').write(dp)
+    print('synced depth.py')
     # Templates 2.0 panel module + its op recorder (panel side of the Templates tab)
     import base64
     vend = os.path.join(ROOT, 'sowveil', 'js', 'vendor')
@@ -61,12 +70,21 @@ def main():
             raise SystemExit(dst + ' still references $._akira')
         open(os.path.join(vend, dst), 'w', encoding='utf-8').write('/* Synced from client/js_akira/%s by tools/sync_sowveil_engines.py */\n' % src + js)
         print('synced', dst)
-    # Text Animation tab = Akira's expression library; 3D Carousel tab = Akira's carousel builder
-    for src, dst in (('expressions.js', 'expressions.js'), ('carousel_3d.js', 'carousel3d.js')):
+    # Text Animation = Akira's expression library + its live preview engine; 3D Carousel = Akira's carousel builder;
+    # Backgrounds = Akira's animated gradient script; UI Motion Kit = Akira's SaaS FX rigs panel
+    mods = [('expressions.js', 'expressions.js'), ('carousel_3d.js', 'carousel3d.js'), ('akira_gradient_bg.js', 'gradient_bg.js'), ('akira_saasfx.js', 'saasfx.js')]
+    pdir = os.path.join(ROOT, 'client', 'js_akira', 'preview')
+    for name in PREVIEW:
+        mods.append(('preview/' + name, 'preview/' + name))
+    os.makedirs(os.path.join(vend, 'preview', 'formulas'), exist_ok=True)
+    for src, dst in mods:
         raw = open(os.path.join(ROOT, 'client', 'js_akira', src), encoding='utf-8').read()
         m = re.search(r'atob\("([A-Za-z0-9+/=]+)"\)', raw)
         js = base64.b64decode(m.group(1)).decode('utf-8') if m else raw
-        js = js.replace('$._akira.', '$._svA.')
+        js = js.replace('$._akiraSaaS', '$._svSaaS').replace('$._akira.', '$._svA.').replace('$._akira &&', '$._svA &&')
+        js = js.replace("p + '/host/saas_effects.jsx'", "p + '/host/sowveil.jsx'")
+        js = js.replace("path.join(extensionDir(), 'client', 'js_akira', 'akira_depth.py')", "path.join(extensionDir(), 'py', 'depth.py')")
+        js = js.replace('AkiraGradientBG', 'SowveilGradientBG').replace('akiraSaaSFX', 'SowveilUIKit').replace('SOUGETSU AKIRA FX PREVIEW', 'SOWVEIL PREVIEW')
         js = js.replace('buildCarousel3D is missing from the compiled host \u2014 recompile host/index.jsx to jsxbin.', 'Sowveil host not loaded \u2014 restart After Effects.')
         for a, b in LABELS + [('Sougetsu', 'Sowveil'), ('SOUGETSU', 'SOWVEIL'), ('sougetsu', 'sowveil')]:
             js = js.replace(a, b)

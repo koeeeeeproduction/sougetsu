@@ -2,7 +2,7 @@
 (function () {
     'use strict';
     var SV = window.SV = window.SV || {};
-    SV.VERSION = '1.2.0';
+    SV.VERSION = '1.2.1';
 
     // ---------- environment ----------
     var cs = null;

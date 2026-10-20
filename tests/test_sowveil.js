@@ -5,7 +5,7 @@ const M = require('./mock_ae');
 const HOST = path.join(__dirname, '..', 'sowveil', 'host');
 const PARTS = ['akira/akira_tools.jsx', 'akira/akira_json.jsx', 'akira/akira_rigs.jsx', 'akira/akira_saas.jsx', 'akira/akira_templates2.jsx',
     'akira/akira_expressions.jsx', 'akira/akira_captions.jsx', 'akira/akira_layers.jsx',
-    'sv_core.jsx', 'sv_expressions.jsx', 'sv_gradients.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
+    'sv_core.jsx', 'sv_expressions.jsx', 'sv_media.jsx', 'sv_captions.jsx', 'sv_library.jsx'];
 let passed = 0;
 function t(name, fn) { try { fn(); passed++; } catch (e) { console.error('FAIL', name, '\n ', e.message.slice(0, 500), (e.stack || '').split('\n')[1] || ''); process.exitCode = 1; } }
 
@@ -89,17 +89,22 @@ t('expressions: Scale gets the scale variant; Auto falls back to the preset defa
     A.ok(/Select/.test(env().call('applyExpression', { target: 'position', codes: CODES }).error));
 });
 
-// ---------------- animated gradients (Backgrounds) ----------------
-t('gradients: new layer = tagged solid at the bottom with 4 orbiting keyed points', () => {
+// ---------------- animated gradients (Backgrounds) = Akira's own build script ----------------
+global.window = global.window || {}; global.window.addEventListener = () => {}; global.document = global.document || { readyState: 'loading' }; require('../sowveil/js/vendor/gradient_bg.js'); const GBG = global.window.SowveilGradientBG;
+t('gradients: Akira\'s script builds a bottom solid with 4 orbiting keyed points and no "Akira" label', () => {
     const e = env(); e.comp.layers.addShape().name = 'Art';
-    const r = e.call('animatedGradient', { label: 'Deep Navy', colors: ['#050B14', '#0A192F', '#112240', '#233554'], target: 'new' }); A.ok(r.ok, r.error);
-    const L = e.comp.layer(e.comp.numLayers); A.ok(/Sowveil Gradient · Deep Navy/.test(L.name)); A.ok(/sowveil/.test(L.comment));
-    const g = L.property('ADBE Effect Parade').property(1); A.strictEqual(g.matchName, 'ADBE 4ColorGradient'); A.strictEqual(g.name, 'Sowveil · Deep Navy');
-    [1, 3, 5, 7].forEach(i => A.strictEqual(g.property(i).numKeys, 9));
+    const r = vm.runInContext(GBG.buildScript(['#050B14', '#0A192F', '#112240', '#233554'], { newLayer: true, blend: 120 }), e.ctx);
+    A.ok(/^OK\|/.test(r), r);
+    const L = e.comp.layer(e.comp.numLayers); A.strictEqual(L.name, 'Gradient BG');
+    const g = L.property('ADBE Effect Parade').property(1); A.strictEqual(g.matchName, 'ADBE 4ColorGradient');
+    let keyed = 0; for (let i = 1; i <= g.numProperties; i++) if (g.property(i).numKeys === 9) keyed++;
+    A.strictEqual(keyed, 4);
+    A.ok(!/Akira/.test(GBG.buildScript(['#000000'], {})));
 });
-t('gradients: Selected layer mode needs exactly one layer', () => {
-    const e = env(); A.ok(/exactly one/.test(e.call('animatedGradient', { colors: ['#000000'], target: 'layer' }).error));
-    const L = e.comp.layers.addShape(); L.selected = true; A.ok(e.call('animatedGradient', { colors: ['#ff0000', '#00ff00'], target: 'layer' }).ok);
+t('gradients: with one layer selected (and New layer off) it goes on that layer', () => {
+    const e = env(); const L = e.comp.layers.addShape(); L.selected = true;
+    const r = vm.runInContext(GBG.buildScript(['#ff0000', '#00ff00'], { newLayer: false }), e.ctx);
+    A.ok(/^OK\|/.test(r), r); A.strictEqual(L.property('ADBE Effect Parade').property(1).matchName, 'ADBE 4ColorGradient');
 });
 
 // ---------------- captions ----------------
@@ -163,7 +168,7 @@ t('loader: with no $.fileName, the panel-provided folder loads every part with n
     e.ctx.$._sv_root = path.join(__dirname, '..', 'sowveil');
     vm.runInContext(fs.readFileSync(path.join(HOST, 'sowveil.jsx'), 'utf8'), e.ctx, { filename: 'sowveil.jsx' });
     A.deepStrictEqual(Array.from(e.ctx.$._sv_loadErrors || ['loader did not run']), []);
-    ['selInfo', 'applyExpression', 'animatedGradient', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
+    ['selInfo', 'applyExpression', 'buildCaptions', 'scanProjects', 'importMedia'].forEach(fn => A.strictEqual(typeof e.ctx.$._sv[fn], 'function', fn));
     A.strictEqual(typeof e.ctx.$._svSaaS.wipe, 'function'); A.strictEqual(typeof e.ctx.$._svA.applyGlassMorph, 'function'); A.strictEqual(typeof e.ctx.$._svT2.build, 'function');
     A.ok(e.ctx.$._svA._h, 'shared helpers ready');
 });

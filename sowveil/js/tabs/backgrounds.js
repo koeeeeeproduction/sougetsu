@@ -54,8 +54,15 @@
         return card;
     }
     function apply(p) {
+        // exactly Akira FX's animated gradient: its own build script (js/vendor/gradient_bg.js)
+        var G = window.SowveilGradientBG;
+        if (!G) { SV.toast('The background engine did not load.', 'error'); return; }
         SV.toast('Building ' + p.label + '…');
-        SV.call('animatedGradient', { label: p.label, colors: p.colors, target: SV.get('bgTarget', 'new'), blend: SV.get('bgBlend', 120), loops: SV.get('bgLoops', 1) }).then(function (r) { SV.result(r); });
+        SV.evalRaw(G.buildScript(p.colors, { newLayer: SV.get('bgTarget', 'new') === 'new', blend: SV.get('bgBlend', 120) }), function (res) {
+            var s = String(res == null ? '' : res);
+            if (s.indexOf('OK|') === 0) { var b = s.split('|'); SV.result({ ok: true, message: p.label + ' gradient built over ' + b[1] + 's on "' + b[2] + '"' }); }
+            else { SV.result({ ok: false, error: s.replace(/^ERR[|:]/, '') || 'Gradient could not be built.' }); }
+        });
     }
 
     function render(root) {
@@ -67,7 +74,6 @@
         tgt.firstChild.remove(); tgt.style.margin = 0; bar.appendChild(tgt);
         var opts = h('div', { class: 'section bg-opts' }, [
             SV.ui.param({ type: 'number', label: 'Blend', min: 0, max: 400, step: 5, def: 120 }, SV.get('bgBlend', 120), function (v) { SV.set('bgBlend', v); }),
-            SV.ui.param({ type: 'number', label: 'Orbits over the layer', min: 0.25, max: 6, step: 0.25, def: 1 }, SV.get('bgLoops', 1), function (v) { SV.set('bgLoops', v); }),
             h('div', { class: 'hint', text: 'Click a palette to build it. New layer = full-comp background at the bottom; Selected layer = the gradient animates across that layer\'s own duration.' })
         ]);
         var grid = h('div', { class: 'grid' });

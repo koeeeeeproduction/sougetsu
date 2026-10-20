@@ -84,6 +84,33 @@
         try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
     }
 
+    // ---------- live preview: Akira FX's preview engine (js/vendor/preview), driven the way Akira drives it ----------
+    var PARAM_MAP = { dur: 'duration', totalSec: 'duration', startNum: 'startVal', revealSpeed: 'duration', wordsPerSec: 'charsPerSec', speed: 'freq', intensity: 'amp',
+        startAmp: 'amp', decaySpeed: 'decay', gridSize: 'snap', v0: 'velocity', drag: 'friction', overshootPct: 'amp', throwSpeed: 'velocity', driftAmount: 'amp',
+        initialVelocity: 'velocity', freqX: 'freq', ampX: 'amp', anticipation: 'duration', popAmount: 'pullback', rate: 'freq', amount: 'amp', flicker: 'freq',
+        frequency: 'freq', probability: 'stutterRate' };
+    function perChar(item) {
+        var e = item.exp;
+        if (item.id.indexOf('textanimator:') === 0 || String(e.category || '').toLowerCase() === 'textanimator') { return !!(e.animatorProps && e.animatorProps.length) || item.targets.indexOf('animator') >= 0; }
+        return !!(e.animatorProps && e.animatorProps.length && item.targets.indexOf('animator') >= 0);
+    }
+    function playPreview(item, v) {
+        var P = window.LivePreviewEngine, e = item.exp;
+        if (!P) { return; }
+        var name = String(e.name || '').toLowerCase(), pc = perChar(item), type = 'wiggle';
+        if (pc) { type = '__textanimator__'; }
+        else if (window.PreviewEngine && PreviewEngine.Formulas && PreviewEngine.Formulas[name]) { type = name; }
+        var params = {};
+        (e.params || []).forEach(function (x) { var val = v[x.name] === undefined ? x['default'] : v[x.name]; params[PARAM_MAP[x.name] || x.name] = val; });
+        params._targets = pickedTargets(item);
+        if (pc) {
+            params._perChar = true; params._taName = name; params._animatorProps = e.animatorProps || [];
+            params._exit = !!e.exitMode; if (e.easePreview) { params._ease = true; }
+            params._basedOn = parseInt(v._basedOn || e.defaultBasedOn || 1, 10);
+        }
+        try { P.play(type, params); } catch (err) { console.error(err); }
+    }
+
     SV.registerTab({
         id: 'text', label: 'Text Animation', icon: 'text',
         groups: GROUPS,
@@ -96,6 +123,14 @@
                 h('div', { class: 'ex-desc', text: e.description || '' })
             ]));
 
+            if (window.LivePreviewEngine) {
+                window.AKIRA_THEME_RGB = '139, 125, 255';   // preview accent = Sowveil violet
+                var cv = h('canvas', { class: 'tx-cv' }), stage = h('div', { class: 'preview tx-stage' }, [cv]);
+                el.appendChild(SV.ui.section('Live preview', [stage]));
+                requestAnimationFrame(function () { try { LivePreviewEngine.init(cv); playPreview(item, v); } catch (err) { console.error(err); } });
+                var off = SV.on('inspector:leave', function () { try { LivePreviewEngine.stop(); } catch (err) { } off(); });
+            }
+
             var all = item.targets.filter(function (t) { return t !== 'any' && t !== 'animator'; });
             if (all.length > 1 && !e.customApply) {
                 var picked = pickedTargets(item);
@@ -105,6 +140,7 @@
                         onclick: e.lockedTargets ? null : function () {
                             var i = picked.indexOf(t); if (i < 0) { picked.push(t); } else if (picked.length > 1) { picked.splice(i, 1); }
                             SV.set('tgt:' + item.id, picked); this.classList.toggle('on', picked.indexOf(t) >= 0);
+                            playPreview(item, v);
                         }
                     });
                 }));
@@ -112,7 +148,7 @@
             }
 
             var codeEl = h('pre', { class: 'ex-code' }), copy = h('button', { class: 'btn ghost small ex-copy', text: 'Copy' });
-            function showCode() { codeEl.textContent = codeFor(item, v); }
+            function showCode() { codeEl.textContent = codeFor(item, v); playPreview(item, v); }
             el.appendChild(SV.ui.params('text', item, v, showCode));
             if (!e.customApply) {
                 el.appendChild(SV.ui.section('Expression', [h('div', { class: 'ex-codewrap' }, [codeEl, copy])]));

@@ -311,3 +311,14 @@ html.dark .sx-s { color: #ff7a6b; } html.dark .sx-k { color: #fc5fa3; } html.dar
 
 /* 3D Carousel: Akira's builder, scaled up to Sowveil's type size */
 .car3d-wrap { display: flex; flex-direction: column; min-height: 100%; padding: 10px 12px; zoom: 1.3; }
+
+/* UI Motion Kit: Akira's panel, shown in place instead of as a modal */
+.uikit-wrap { padding: 10px 12px; zoom: 1.25; }
+.uikit-wrap #saasfx-modal { position: static; display: block; background: none; }
+.uikit-wrap #saasfx-modal .modal-box { width: auto; max-height: none; overflow: visible; padding: 4px 0; background: none; border: 0; box-shadow: none; }
+.uikit-wrap #saasfx-modal .close-modal { display: none; }
+.uikit-wrap #saasfx-modal .modal-title { font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+
+/* Text Animation: Akira's canvas live preview */
+.tx-stage { height: 190px; padding: 0; overflow: hidden; background: #0b0b0e; }
+.tx-cv { display: block; width: 100%; height: 100%; }
