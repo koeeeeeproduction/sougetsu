@@ -3,7 +3,7 @@
 - product renamed to Sougetsu Akira FX, copy rewritten around features the panel really has
 - hero: the REAL panel (website/panel/, built by tools/build_site_panel.py) inside the original 3D glass card, auto-touring
 - "Try the panel": the real panel, clickable, in a framed window (lazy-loaded)
-- one license: $89, or the launch price while SALE_ENDS is in the future; buy buttons -> Dodo checkout
+- no prices on the page: every buy button goes straight to the Dodo payment link (CHECKOUT)
 - Download & Install section, SEO / Open Graph for sougetsustore.com
 Settings you may change are in the CONFIG block of the page script (search for "CONFIG").
 usage: python3 tools/build_site_panel.py && python3 tools/build_site.py"""
@@ -13,8 +13,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SRC = os.path.join(ROOT, 'docs', 'website_original_v5.html')
 OUT = os.path.join(ROOT, 'website', 'index.html')
 SITE = 'https://sougetsustore.com/'
-CHECKOUT = 'https://checkout.dodopayments.com/buy/pdt_0NowJEjPaMC6jAfdP2dI3?quantity=1&redirect_url=https://sougetsustore.com'
-SALE_ENDS = '2026-10-07T00:00:00Z'   # launch price ends here (UTC). 18 h before this is when you should publish.
+CHECKOUT = 'https://checkout.dodopayments.com/buy/pdt_0NpI3SFhFf4VZAVkfuIgd?quantity=1&redirect_url=https://sougetsustore.com'
+VERSION = '1.2.4'
 s = open(SRC, encoding='utf-8').read()
 
 def rep(old, new, count=1):
@@ -48,20 +48,20 @@ rep('<title>Sougetsu Core</title>', '''<title>Sougetsu Akira FX · After Effects
 <meta name="twitter:title" content="Sougetsu Akira FX · Motion work, minus the busywork">
 <meta name="twitter:description" content="One After Effects panel for the repetitive steps. Try it in your browser.">
 <meta name="twitter:image" content="''' + SITE + '''og-image.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Sougetsu Akira FX","brand":{"@type":"Brand","name":"Sougetsu"},"description":"After Effects extension for motion designers.","url":"''' + SITE + '''","image":"''' + SITE + '''og-image.png","offers":{"@type":"Offer","price":"89.00","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"''' + SITE + '''#pricing"}}</script>''')
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Sougetsu Akira FX","brand":{"@type":"Brand","name":"Sougetsu"},"description":"After Effects extension for motion designers.","url":"''' + SITE + '''","image":"''' + SITE + '''og-image.png","softwareVersion":"''' + VERSION + '''"}</script>''')
 
 # ================================================================ nav
 rep('<div class="links"><a href="#glue">Flow</a><a href="#how">How it works</a><a href="#week">Dashboard</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>',
-    '<div class="links"><a href="#glue">Tools</a><a href="#try">Try the panel</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#install">Install</a><a href="#faq">FAQ</a></div>')
+    '<div class="links"><a href="#glue">Tools</a><a href="#try">Try the panel</a><a href="#how">How it works</a><a href="#pricing">Get it</a><a href="#install">Install</a><a href="#faq">FAQ</a></div>')
 rep('<button class="cart" aria-label="Cart">Cart<b id="cnt">0</b></button>',
-    '<a class="cart buy" href="' + CHECKOUT + '" aria-label="Buy Sougetsu Akira FX">Buy<b class="js-price">$89</b></a>')
+    '<a class="cart buy" href="' + CHECKOUT + '" aria-label="Buy Sougetsu Akira FX">Buy</a>')
 
 # ================================================================ hero
-rep('<span class="pill"><i></i>48 presets · new ones every month</span>', '<span class="pill"><i></i>11 tabs · 81 templates · free updates for life</span>')
+rep('<span class="pill"><i></i>48 presets · new ones every month</span>', '<span class="pill"><i></i>v' + VERSION + ' · 11 tabs · 81 templates · free updates for life</span>')
 rep('<p class="lead">Sougetsu Core runs the repetitive steps inside After Effects, so you only touch what needs your eye.</p>',
     '<p class="lead">Sougetsu Akira FX is one panel inside After Effects for the repetitive steps, so you only touch what needs your eye.</p>')
 rep('<a class="btn" href="#pricing">Get Core · $89</a><a class="btn g" href="#how">See how it works</a>',
-    '<a class="btn buy" href="' + CHECKOUT + '">Get Sougetsu Akira FX · <span class="js-price">$89</span></a><a class="btn g" href="#try">Try the panel</a>')
+    '<a class="btn buy" href="' + CHECKOUT + '">Get Sougetsu Akira FX</a><a class="btn g" href="#try">Try the panel</a>')
 rep('<p class="note">Instant download · Windows &amp; macOS · After Effects 2022+</p>', '<p class="note">Instant download · Windows &amp; macOS · After Effects 2022+</p>')
 # the glass card now holds the real panel (auto tour); the 3D tilt, glare and scan line of the original card stay
 rex(r'<div class="tb"><b>Title card.*?<div class="gs"></div></div></div>',
@@ -114,17 +114,16 @@ rep('<p class="ill rv">Illustrative numbers.</p>', '<p class="ill rv">Example nu
 rep('<h3>Choose a preset</h3><p>Preview any of the 48 styles before it touches your comp.</p>', '<h3>Press a tool</h3><p>Or pick one of 81 templates and preview its motion right in the panel before it touches your comp.</p>')
 rep('<h3>Dial it in and render</h3><p>Fine-tune with sliders, then send it to the queue.</p>', '<h3>Tweak and render</h3><p>Everything stays editable: sliders live in Effect Controls and one Ctrl+Z takes a step back.</p>')
 
-# ================================================================ pricing: one license, launch price with a real deadline
+# ================================================================ get it: no price on the page, the button opens the payment link
 rex(r'<section class="s" id="pricing">.*?</section>', '''<section class="s" id="pricing"><div class="wrap">
  <div class="hd rv"><h2>One license. <em>Every tool.</em></h2></div>
- <div class="pr rv"><div><div class="big"><span id="tot" class="js-price">$89</span><s id="old" hidden>$89</s></div><p class="pm2" id="per">One-time payment · per user</p>
+ <div class="pr rv"><div><p class="pm2">One-time payment · per user</p>
   <ul class="in2"><li>Every tab and tool in the panel</li><li>Free updates for life</li><li>Download link + license key by email</li></ul>
-  <a class="btn buy" id="add" href="''' + CHECKOUT + '''">Get Sougetsu Akira FX · <span class="js-price">$89</span></a>
+  <a class="btn buy" id="add" href="''' + CHECKOUT + '''">Get Sougetsu Akira FX</a>
   <p class="dl-note">Download link + license key are emailed right after checkout. Secure payment by Dodo Payments.</p></div>
-  <div class="sale" id="sale" hidden><span class="pill"><i></i>launch price</span><p class="sale-h">$49.99 instead of $89</p><p class="sale-t">ends in</p>
-   <div class="cd" id="cd" role="timer" aria-live="off"><div><b id="cdH">00</b><small>hours</small></div><div><b id="cdM">00</b><small>min</small></div><div><b id="cdS">00</b><small>sec</small></div></div>
-   <p class="sale-f">After the timer runs out the price goes back to $89.</p></div>
-  <div class="sale" id="nosale"><span class="pill"><i></i>what you get</span><p class="sale-h">Sougetsu Akira FX</p><p class="sale-f">Install with a ZXP installer, paste your key, done. Works on After Effects 2022 and newer, Windows and macOS.</p></div></div>
+  <div class="sale" id="nosale"><span class="pill"><i></i>new in v''' + VERSION + '''</span><p class="sale-h">Sougetsu Akira FX ''' + VERSION + '''</p>
+   <ul class="in2 news"><li>Comp Vault saves whole projects with a cover and a preview of every comp, then imports the project or any single comp</li><li>Remove Expressions clears every expression on the selected layers</li><li>Halftone Wave shows up straight away</li><li>More reliable license activation</li></ul>
+   <p class="sale-f">Install with a ZXP installer, paste your key, done. Works on After Effects 2022 and newer, Windows and macOS.</p></div></div>
 </div></section>''')
 
 # ================================================================ reviews: generic placeholders
@@ -141,7 +140,7 @@ rex(r'<details><summary>Which After Effects versions work\?</summary>.*?</div></
  <details><summary>Is the panel on this page the real one?</summary><p>Yes, it is the real panel interface running in your browser. The tools themselves need After Effects, so clicking them here only shows a preview message.</p></details>
  <details><summary>I lost my license key or download link.</summary><p>Search your inbox for the Dodo Payments receipt from your purchase, it has both. Still stuck? Email <a class="ul" href="mailto:support@sougetsustore.com">support@sougetsustore.com</a>.</p></details></div></div></section>''')
 
-rep('<a class="btn rv" href="#pricing">Get Core · $89</a>', '<a class="btn rv buy" href="' + CHECKOUT + '">Get Sougetsu Akira FX · <span class="js-price">$89</span></a>')
+rep('<a class="btn rv" href="#pricing">Get Core · $89</a>', '<a class="btn rv buy" href="' + CHECKOUT + '">Get Sougetsu Akira FX</a>')
 rep('<footer><span>© 2026 Sougetsu</span><span>Instant digital download</span></footer>',
     '<footer><span>© 2026 Sougetsu · <a href="' + SITE + '">sougetsustore.com</a></span><span><a href="#install">Install guide</a> · <a href="mailto:support@sougetsustore.com">support@sougetsustore.com</a> · Instant digital download</span></footer>')
 
@@ -240,20 +239,8 @@ rep('</style>', CSS + '</style>')
 rex(r'function runFlow\(\)\{.*?setInterval\(\(\)=>\{i=i>=5\?-1:i\+1;set\(\)\},1300\)\}', 'function runFlow(){}')
 JS = r'''
 /* ---------- CONFIG ---------- */
-const CHECKOUT_URL='__CHECKOUT__';      // Dodo payment link (regular price)
-const SALE_CHECKOUT_URL=CHECKOUT_URL;   // Dodo link that charges the launch price ($49.99). Must charge 49.99 while the sale runs!
-const SALE_ENDS='__SALE_ENDS__';        // launch price ends at this moment (UTC, ISO 8601). After it: $89 everywhere.
-const PRICE='$89',SALE_PRICE='$49.99';
-/* ---------- price + checkout ---------- */
-function saleLeft(){const t=Date.parse(SALE_ENDS);return isNaN(t)?0:t-Date.now()}
-function applyPrice(){const on=saleLeft()>0;
- $$('.js-price').forEach(e=>e.textContent=on?SALE_PRICE:PRICE);$$('a.buy').forEach(a=>a.href=on?SALE_CHECKOUT_URL:CHECKOUT_URL);
- const old=$('#old');if(old){old.hidden=!on;old.textContent=PRICE}
- const sl=$('#sale'),ns=$('#nosale');if(sl){sl.hidden=!on;ns.hidden=on}
- $('#per').textContent=on?'Launch price · one-time payment':'One-time payment · per user'}
-function tick(){const ms=saleLeft();if(ms<=0){applyPrice();return}const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sc=Math.floor(ms%6e4/1e3),p=n=>String(n).padStart(2,'0');
- $('#cdH').textContent=p(h);$('#cdM').textContent=p(m);$('#cdS').textContent=p(sc)}
-applyPrice();tick();setInterval(tick,1000);
+const CHECKOUT_URL='__CHECKOUT__';      // Dodo payment link: every .buy button opens it (no price is shown on the page)
+$$('a.buy').forEach(a=>a.href=CHECKOUT_URL);
 /* ---------- hero panel: scale the 400px-wide panel to the glass card ---------- */
 function fitHero(){const hp=$('#hp');if(!hp)return;const w=hp.clientWidth||360,k=w/400;hp.style.setProperty('--hps',k);hp.style.setProperty('--hph',Math.round(Math.min(720*k,innerHeight*.62))+'px')}
 fitHero();addEventListener('resize',fitHero);
@@ -262,7 +249,7 @@ const tf=$('#tryFrame');
 function loadTry(){if(!tf||tf.querySelector('iframe'))return;const f=document.createElement('iframe');f.src='panel/index.html';f.title='Sougetsu Akira FX panel, interactive preview';f.setAttribute('allow','autoplay');tf.appendChild(f);const b=$('#tryLoad');if(b)b.remove()}
 $('#tryLoad').addEventListener('click',loadTry);
 if(innerWidth>=900&&'IntersectionObserver'in window){const o=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){loadTry();o.disconnect()}},{rootMargin:'300px'});o.observe(tf)}
-'''.replace('__CHECKOUT__', CHECKOUT).replace('__SALE_ENDS__', SALE_ENDS)
+'''.replace('__CHECKOUT__', CHECKOUT)
 rex(r'/\* ---------- pricing meter ---------- \*/.*?\}\)\;\n\}\)\(\);', JS + '\n})();')
 rep("e.target.closest('a,button,summary,input,.pm')", "e.target.closest('a,button,summary,input,.pm,iframe')")
 
@@ -273,9 +260,9 @@ RU = json.load(open(os.path.join(_SITE, 'ru.json'), encoding='utf-8'))
 s = s.replace('<div class="nr"><span class="stat">', '<div class="nr"><div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ru">RU</button></div><span class="stat">', 1)
 s = s.replace('</style>', '#nav a{white-space:nowrap}@media(max-width:1400px){html[lang=ru] .nr .stat{display:none}}.lang{flex:none;display:inline-flex;border:1px solid rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-right:10px}.lang button{background:none;border:0;color:#aaa;font:700 11px/1 inherit;padding:6px 9px;min-width:30px;cursor:pointer}.lang button[aria-pressed=true]{background:rgba(255,255,255,.14);color:#fff}</style>', 1)
 s = s.replace('</body>', '<script>' + open(os.path.join(_SITE, 'lang.js'), encoding='utf-8').read().replace('__RU__', json.dumps(RU, ensure_ascii=False)) + '</script></body>', 1)
-s = s.replace("$('#per').textContent=on?'Launch price · one-time payment':'One-time payment · per user'", "$('#per').textContent=on?'Launch price · one-time payment':'One-time payment · per user';window.__applyLang&&__applyLang()")
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 open(OUT, 'w', encoding='utf-8').write(s)
 left = [m.group(0) for m in re.finditer(r'.{0,40}\b(Core|Flex|48 presets|Glow Engine|Premiere|Resolve|Frame\.io)\b.{0,30}', s) if 'Core Toolkit' not in m.group(0) and 'core toolkit' not in m.group(0)]
-print('wrote', OUT, len(s), 'bytes; leftovers:', left)
+prices = re.findall(r'\$\d+(?:\.\d+)?', re.sub(r'<script.*?</script>', '', s, flags=re.S))
+print('wrote', OUT, len(s), 'bytes; leftovers:', left, '; prices on page:', prices)
